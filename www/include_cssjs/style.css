@@ -1,0 +1,525 @@
+body {
+	margin:5px;
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color:#6D6D6D;
+	background:url(../images/bkg.gif);
+}
+td {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	color: #6D6D6D;
+}
+.titre {
+	color: #1765CA;
+	font-size : 18px;
+	font-weight: bold;
+}
+.main {
+	border: 1px solid #d5d5d5;
+	width: 938px;
+	margin:0;padding:0
+}
+table.adminform {
+	background-color: #f5f5f5;
+	border: solid 1px #d5d5d5;
+	width: 100%;
+	padding: 10px;
+	border-collapse: collapse;
+}
+.titrecolonne{
+	font-weight: bold;
+	color:#FFFFFF;
+}
+
+
+/*############### FORMULAIRE #################*/
+
+form {margin: 0;}
+input, textarea, select {
+	background-color: #FFFFFF;
+	border: #000000 1px solid;
+	color: #000000;
+	text-align: left;
+	margin: 2px;
+	width: 830px;
+	border :1px solid grey;
+}
+textarea {height: 20em;}
+input checkbox {
+	margin: 2px;
+	color: #000000;
+	width: 20px;
+	border: 0px; 
+	background-color:transparent;
+}
+input,select {
+	width: 270px;
+	BACKGROUND-COLOR: #FFFFFF; 
+	COLOR: #000000;
+}
+input.radio{width: auto;}
+input.formsubmit {
+	width: 100px;
+	BACKGROUND-COLOR: #E5F2F8;
+	COLOR: #000000;
+	border:1px solid #7777AA;
+	text-align:center;
+}
+input.formradio {width: auto;border:0px;BACKGROUND-COLOR: #f5f5f5;}
+input.formsubmit:hover {BACKGROUND-COLOR: #7777AA;}
+fieldset {
+	margin: 2px;
+	padding: 2px;
+	border: 1px solid #000000;
+	text-align: left;
+}
+.inscription table{FONT-SIZE: 12px;}
+.inscription input.inscriptobli,.inscription select.inscriptobli {background-color: #E4EDF9;}
+input.inscriptobli:focus, input:focus, textarea:focus, select:focus {
+	border: 1px solid #1765CA;
+	background: #EDE69B;
+	color:#000;
+}
+input.bouton{
+	width: auto;
+	/*background: url(fond_bouton.gif) repeat-x;*/
+	font-size: 11px;
+	color: #000;
+	border: 1px solid #b9b9b9;
+}
+input.taille1{width: 120px;}
+input.taille2{width: 220px;}
+input.taille3{width: 350px;}
+input.taille4{width: 830px;}
+textarea.taille2{width: 220px;}
+textarea.taille3{width: 350px;}
+textarea.taille4{width: 880px;}
+textarea.taille5{width: 780px;}
+input.bouton:hover {border: 1px solid #1765CA;}
+input.identification{width:220px;}
+
+/*################### LIEN ###################*/
+
+a:link {
+	color: #08438F;
+	text-decoration:none;
+}
+a:visited {
+	color: #08438F;
+	text-decoration:none;
+}
+a:hover {
+	color: #000000;
+	text-decoration:none;
+}
+a:visited:hover {
+	color: #000000;
+	text-decoration:none;
+}
+
+/*################### MENU DHTML ###################*/
+
+#mainContainer{
+	width:984px;
+	height:600px;
+	border:1px solid #000000;
+	margin:0 auto;
+	background-image:url('../../images/heading3.gif');
+	background-repeat:no-repeat;
+	padding-top:85px;			
+}
+#mainMenu{
+	background-color: #FFF;	/* Background color of main menu */
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;	/* Fonts of main menu items */
+	font-size:11px;	/* Font size of main menu items */
+	border-bottom:1px solid #000000;	/* Bottom border of main menu */
+	height:20px;	/* Height of main menu */
+	position:relative;	/* Don't change this position attribute */
+}
+#mainMenu a{
+	padding:5px;
+	font-weight:bold;
+	/* Don't change these two options */
+	position:absolute;
+	bottom:-1px;	/* Change this value to -2px if you're not using a strict doctype */
+}
+#submenu{		
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;	/* Font  of sub menu items */
+	background-color:#E2EBED;	/* Background color of sub menu items */
+	width:100%;	/* Don't change this option */
+}
+#submenu div{
+	white-space:nowrap;	/* Don't change this option */
+	padding:5px 0px 5px 0px;
+}
+#mainMenu .activeMenuItem{
+	/* Border options */
+	border-left:1px solid #000000;
+	border-top:1px solid #000000;
+	border-right:1px solid #000000;		
+	background-color: #E2EBED;	/* Background color */
+	cursor:pointer;	/* Cursor like a hand when the user moves the mouse over the menu item */
+}
+#mainMenu .activeMenuItem img{
+	position:absolute;
+	bottom:0px;
+	right:0px;
+}
+#mainMenu .inactiveMenuItem{		
+	color: #000;	/* Text color */
+	cursor:pointer;	/* Cursor like a hand when the user moves the mouse over the menu item */
+}
+#submenu a{	
+	text-decoration:none;	/* No underline on sub menu items - use text-decoration:underline; if you want the links to be underlined */
+	padding:0px;
+	color: #000;	/* Text color */
+	font-size:11px; 
+}
+#submenu a:hover{
+	color: #FF0000;	/* Red color when the user moves the mouse over sub menu items */
+}
+
+/*################### DIVERS ###################*/
+
+a.menu {
+	color: #B84139;
+	font-size: 10px;
+	background-color: #F5F5F5;
+	border: 1px #C9C9C9 solid;
+	text-decoration: none;
+	padding : 1px 3px;
+	vertical-align : middle;
+	height : 9px;
+}
+a.menu:hover {
+	color: #ffffff;
+	font-size: 10px;
+	background-color: #008AD5;
+	border: 1px #C9C9C9 solid;
+	padding : 1px 3px;
+	vertical-align : middle;
+	height : 9px;
+}
+.bouton { 
+	font-family: Verdana, sans-serif; 
+	font-size: 8pt; 
+	font-weight: normal; 
+	color:#000000;
+	border-style: solid; 
+	border-width: 1px; 
+	border: 1px #C9C9C9 solid;
+	vertical-align : top;
+	height : 18px;
+}
+H1 {
+	color: #C1D858;
+	font-family:  Verdana, Arial, Helvetica, Geneva,sans-serif;
+	font-size: 18px;
+}
+H2 {
+	color: #5696CD;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 13px;
+	font-weight: bold;
+	text-align: center;
+}
+.titreentete {
+	background-color: #FFFFFF;
+	font-family : Verdana, Arial, Helvetica, sans-serif;
+	margin: 0px;
+	padding: 0px;
+	border: 0px;
+	width: 100%;
+	border-collapse: collapse;
+	color: #FF9E31;
+	font-size : 18px;
+	font-weight: bold;
+	text-align: left;
+}
+.authentification {
+	border: 1px solid #d5d5d5;
+	width: 400px;
+}
+li{
+	list-style:none;
+	padding:1px;
+	cursor:move;
+}
+
+/*################### Calendrier dans formulaire ###################*/
+
+.ds_box {
+	background-color: #6D6D6D;
+	border: 1px solid #000;
+	position: absolute;
+	z-index: 32767;
+}
+.ds_tbl {background-color: #6D6D6D;}
+.ds_head {
+	background-color: #6D6D6D;
+	color: #FFF;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-weight: bold;
+	text-align: center;
+	letter-spacing: 2px;
+}
+.ds_subhead {
+	background-color: #CCC;
+	color: #000;
+	font-size: 10px;
+	font-weight: bold;
+	text-align: center;
+	font-family: Arial, Helvetica, sans-serif;
+	width: 20px;
+}
+.ds_cell {
+	background-color: #EEE;
+	color: #000;
+	font-size: 10px;
+	text-align: center;
+	font-family: Arial, Helvetica, sans-serif;
+	padding: 5px;
+	cursor: pointer;
+}
+.ds_cell2 {
+	background-color: #CCC;
+	color: #000;
+	font-size: 10px;
+	text-align: center;
+	font-family: Arial, Helvetica, sans-serif;
+	padding: 5px;
+	cursor: pointer;
+}
+.ds_cell:hover {background-color: #F3F3F3;} /* This hover code won't work for IE */
+
+/*######################## POPUP  sans js ########################*/
+
+.popup {
+	position: relative;
+	color: #FF0000;
+}
+.popup:hover{
+	background-color: transparent;
+	cursor:default;
+	background: none;
+}
+html * .popup:hover{z-index:1;} 
+
+.popup span{ /*CSS for enlarged image*/
+	position: absolute;
+	background-color: #FFFFCC;
+	padding: 0px;
+	margin: 0px;
+	left: -9999px;
+	border: 1px dashed gray;
+	visibility: hidden;
+	color: #FF0000;
+	text-decoration: none;
+	width: 250px;
+	z-index:99;
+}
+.popup span img{border-width: 0;}
+.popup span H1{
+	padding: 2px;
+	margin: 0px;
+	font-size:1.2em;
+	color: #000000;
+}
+.popup span P{
+	padding: 0px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+.popup:hover span{
+	visibility: visible;
+	top: 15px;
+	left: -100px;
+}
+
+
+/*################### Graphe ###################*/
+
+.formgraphe input,.formgraphe select {
+	width: 30px;
+	BACKGROUND-COLOR: #E4EDF9; 
+	COLOR: #000000;
+}
+.formgraphe input.texte {width: 130px;}
+.formgraphe select{width: 100px;}
+.formgraphe input.formradio {width: auto;border:0px;BACKGROUND-COLOR: #f5f5f5;}
+.formgraphe input.checkbox {
+	margin: 2px;
+	color: #000000;
+	width: 20px;
+	border: 0px; 
+	background-color:transparent;
+}
+.formgraphe input.formsubmit {
+	width: 90px;
+	BACKGROUND-COLOR: #E5F2F8;
+	COLOR: #000000;
+	border:2px solid #7777AA;
+	text-align:center;
+}
+.formgraphe input.formsubmit:hover {BACKGROUND-COLOR: #7777AA;}
+.formgraphe input:focus, .formgraphe textarea:focus, .formgraphe select:focus {
+	border: 1px solid #1765CA;
+	background: #EDE69B;
+	color:#000;
+}
+
+/*################### PLANS ###################*/
+
+.plan {
+	position: relative;
+	z-index: 0;
+	height: 535px;
+	margin:0;padding:0;
+}
+.plan .image {
+	width: 926px;
+	height: 535px;
+	z-index: 0;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+.plan .spanun {
+	z-index: 2;
+	color: #0000FF;
+	width: 50px;
+	text-shadow: #FFF8DC 1px -1px 1px;
+	text-align: left;
+	padding: 1px;
+	margin: 0px;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+.plan .spandeux {
+	z-index: 2;
+	border: 1px dashed gray;
+	background-color: #FFFFCC;
+	color: #0000FF;
+	width: 30px;
+	text-shadow: #FFF8DC 1px -1px 1px;
+	text-align: left;
+	padding: 4px;
+	margin: 0px;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+.plan .meteo {
+	z-index: 90;
+	border: 1px dashed gray;
+	background-color: #FFFFCC;
+	color: #0000FF;
+	width: 920px;
+	padding: 2px;
+	margin: 0 0 5px 0;
+	float: left;
+	'position: absolute;
+	'top: 5px;
+	'left: 5px;
+}
+.plan .meteo .cadre {
+	width: 170px;
+	padding: 5px;
+	margin: 0px;
+	float: left;
+}
+.plan .meteo .icone {
+	border: 0px;
+	width: 50px;
+	height: 50px
+}
+.plan .ack {
+	text-align: center;
+	z-index: 90;
+	border: 1px dashed gray;
+	background-color: #FFFFCC;
+	color: #0000FF;
+	width: 100px;
+	padding: 2px;
+	margin: 0px;
+	position: absolute;
+	top: 505px;
+	left: 810px;
+}
+.plan .cadresl, .plan .cadresr{
+	text-align: center;
+	z-index: 90;
+	border: 1px dashed gray;
+	background-color: #FFFFCC;
+	color: #0000FF;
+	padding: 2px;
+	margin: 5px;
+}
+.plan .cadresl {float: left;width:650px;position: relative;}
+.plan .cadresl table {float: left;}
+.plan .cadresr {float: right;position: relative;}
+.plan .cadresl td, .plan .cadresr td{
+		border:0px;padding:1px;margin:0;
+}
+.plan .lien {position:absolute;bottom:0;right:0;margin:4px;}
+
+
+
+
+/*################### fisheye ###################*/
+
+.fisheye{
+	z-index: 99;
+	text-align: center;
+	height: 40px;
+	position: relative;
+}
+a.fisheyeItem
+{
+	text-align: center;
+	color: #000;
+	font-weight: bold;
+	text-decoration: none;
+	width: 40px;
+	position: absolute;
+	display: block;
+	top: 0;
+}
+a.fisheyeItem2
+{
+	text-align: center;
+	color: #000;
+	font-weight: bold;
+	text-decoration: none;
+	width: 40px;
+	position: absolute;
+	display: block;
+	bottom: 0;
+}
+.fisheyeItem img
+{
+	border: none;
+	margin: 0 auto 5px auto;
+	width: 100%;
+}
+.fisheyeItem2 img
+{
+	border: none;
+	margin: 5px auto 0 auto;
+	width: 100%;
+}
+.fisheyeItem span, .fisheyeItem2 span
+{
+	display: none;
+	position: absolute;
+}
+.fisheyeContainter
+{
+	height: 50px;
+	width: 200px;
+	left: 500px;
+	position: absolute;
+}
