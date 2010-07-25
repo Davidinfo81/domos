@@ -1,6 +1,6 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <PublishUrlHistory>R:\Projects\publish\|D:\Domotique\Project\Domos\publish\</PublishUrlHistory>
+    <PublishUrlHistory>publish\|R:\Projects\publish\|D:\Domotique\Project\Domos\publish\</PublishUrlHistory>
     <InstallUrlHistory>\\localhost\publishfile\</InstallUrlHistory>
     <SupportUrlHistory>
     </SupportUrlHistory>

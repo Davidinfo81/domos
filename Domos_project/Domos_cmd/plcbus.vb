@@ -109,14 +109,14 @@ Public Class plcbus
                         Dim i As Integer = 0
                         Do While (port.BytesToWrite > 0 And i < 50) ' Wait for the transmit buffer to empty.
                             i = i + 1
-                            Domos.log("PLC : Wait " & port.BytesToWrite & "BytesToWrite " & i, 9)
-                            Domos.wait(10)
+                            domos_cmd.log("PLC : Wait " & port.BytesToWrite & "BytesToWrite " & i, 9)
+                            domos_cmd.wait(10)
                         Loop
                         i = 0
                         Do While (port.BytesToRead > 0 And i < 20) ' Wait for the receipt buffer to empty.
                             i = i + 1
-                            Domos.log("PLC : Wait " & port.BytesToRead & "BytesToRead " & i, 9)
-                            Domos.wait(10)
+                            domos_cmd.log("PLC : Wait " & port.BytesToRead & "BytesToRead " & i, 9)
+                            domos_cmd.wait(10)
                         Loop
                         port.Close()
                         port.Dispose()
@@ -203,13 +203,13 @@ Public Class plcbus
             Try
                 _adresse = adresse_to_hex(adresse)
             Catch ex As Exception
-                Domos.log("PLC : " & adresse & " non valide", 2)
+                domos_cmd.log("PLC : " & adresse & " non valide", 2)
                 _err = True
             End Try
             Try
                 _cmd = com_to_hex(commande)
             Catch ex As Exception
-                Domos.log("PLC : " & commande & " n'est pas une commande valide", 2)
+                domos_cmd.log("PLC : " & commande & " n'est pas une commande valide", 2)
                 _err = True
             End Try
             If Not _err Then
@@ -286,29 +286,29 @@ Public Class plcbus
                         If ack Then
                             ackreceived = True 'c'est un Ack
                             reponse = " <- PLC : ACK :" & plcbus_commande & "-" & plcbus_adresse & " : " & data1 & "-" & data2 & " : " & comBuffer(7)
-                            Domos.log(reponse, 9)
+                            domos_cmd.log(reponse, 9)
                         Else
                             'ce n'est pas un ack, je traite le paquet
                             ackreceived = False
                             Dim valeur As String = data1
                             Dim tabletmp() As DataRow
                             Try
-                                tabletmp = Domos.table_composants.Select("composants_adresse = '" & plcbus_adresse & "'")
+                                tabletmp = domos_cmd.table_composants.Select("composants_adresse = '" & plcbus_adresse & "'")
                                 If tabletmp.GetUpperBound(0) >= 0 Then
                                     '--- comparaison du relevé avec le dernier etat ---
                                     Dim x As String = tabletmp(0)("composants_etat").ToString()
                                     If valeur <> x Then
-                                        Domos.log("PLC : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur, 6)
+                                        domos_cmd.log("PLC : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur, 6)
                                         '  --- modification de l'etat du composant dans la table en memoire ---
                                         tabletmp(0)("composants_etat") = valeur
                                     Else
-                                        Domos.log("PLC : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur & " (inchangé)", 7)
+                                        domos_cmd.log("PLC : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur & " (inchangé)", 7)
                                     End If
                                 Else
-                                    Domos.log("PLC : Pas de composant pour cette adresse : " & plcbus_adresse & " : " & valeur, 2)
+                                    domos_cmd.log("PLC : Pas de composant pour cette adresse : " & plcbus_adresse & " : " & valeur, 2)
                                 End If
                             Catch ex As Exception
-                                Domos.log("PLC : ERROR acces table_composants : " & ex.Message, 2)
+                                domos_cmd.log("PLC : ERROR acces table_composants : " & ex.Message, 2)
                             End Try
 
                         End If

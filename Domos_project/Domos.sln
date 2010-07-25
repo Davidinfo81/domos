@@ -3,6 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "Domos_cmd", "Domos_cmd\Domos_cmd.vbproj", "{6DAEC8D4-5309-48FD-83F0-439934B92FB9}"
 EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "Domos_svc", "Domos_svc\Domos_svc.vbproj", "{77E87EA7-963A-4075-A8B0-56229B8D9E23}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup_cmd", "Setup1\Setup1.vdproj", "{426CE8F8-8F65-45B3-AC67-ACFB721E75E4}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup_svc", "Setup_svc\Setup_svc.vdproj", "{CE392277-69F0-4890-B02D-307E65D5C850}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -17,6 +23,14 @@ Global
 		{6DAEC8D4-5309-48FD-83F0-439934B92FB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6DAEC8D4-5309-48FD-83F0-439934B92FB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6DAEC8D4-5309-48FD-83F0-439934B92FB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77E87EA7-963A-4075-A8B0-56229B8D9E23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77E87EA7-963A-4075-A8B0-56229B8D9E23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77E87EA7-963A-4075-A8B0-56229B8D9E23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77E87EA7-963A-4075-A8B0-56229B8D9E23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{426CE8F8-8F65-45B3-AC67-ACFB721E75E4}.Debug|Any CPU.ActiveCfg = Debug
+		{426CE8F8-8F65-45B3-AC67-ACFB721E75E4}.Release|Any CPU.ActiveCfg = Release
+		{CE392277-69F0-4890-B02D-307E65D5C850}.Debug|Any CPU.ActiveCfg = Debug
+		{CE392277-69F0-4890-B02D-307E65D5C850}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

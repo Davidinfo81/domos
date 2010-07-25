@@ -4,8 +4,7 @@ Imports System.Timers
 Imports System.IO
 Imports System.Globalization
 
-
-Public Class Domos
+Public Class domos_cmd
     'declaration de mes classes_
     Shared onewire As New onewire
     Shared onewire2 As New onewire
@@ -32,7 +31,6 @@ Public Class Domos
     Public Shared var_soleil_coucher As Date = DateAndTime.Now.ToString("yyyy-MM-dd") & " 21:00:00" 'heure de coucher du soleil par defaut
     Public Shared var_soleil_lever2 As Date = DateAndTime.Now.ToString("yyyy-MM-dd") & " 07:00:00" 'heure du lever du soleil par defaut
     Public Shared var_soleil_coucher2 As Date = DateAndTime.Now.ToString("yyyy-MM-dd") & " 21:00:00" 'heure de coucher du soleil par defaut
-
 
     Private Sub Domos_load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Me.Load
 
@@ -127,7 +125,7 @@ Public Class Domos
                     Directory.CreateDirectory("logs")
                 End If
                 If log_dest = 0 Or log_dest = 2 Then
-                    Domos.EcrireFichier(fichierlog, dateheure & " " & niveau & " " & texte & Environment.NewLine())
+                    domos_cmd.EcrireFichier(fichierlog, dateheure & " " & niveau & " " & texte & Environment.NewLine())
                 End If
                 If (log_dest = 1 Or log_dest = 2) And mysql.connected Then
                     texte = STRGS.Replace(texte, "'", "&#39;")
@@ -158,10 +156,10 @@ Public Class Domos
             If Not Directory.Exists("logs") Then
                 Directory.CreateDirectory("logs")
             End If
-            Select Case Domos.log_niveau
+            Select Case domos_cmd.log_niveau
                 Case 0 'log tout
                     If log_dest = 0 Or log_dest = 2 Then
-                        Domos.EcrireFichier(fichierlog, dateheure & " " & texte2 & Environment.NewLine())
+                        domos_cmd.EcrireFichier(fichierlog, dateheure & " " & texte2 & Environment.NewLine())
                     End If
                     If (log_dest = 1 Or log_dest = 2) And mysql.connected Then
                         mysql.mysql_nonquery("INSERT INTO logs(logs_source,logs_description,logs_date) VALUES('domos_cmd', '" & texte2 & "', '" & dateheure & "')")
@@ -169,7 +167,7 @@ Public Class Domos
                 Case 1 'log tout sauf (inchangé)
                     If STRGS.InStr(texte, "(inchangé") = 0 Then
                         If log_dest = 0 Or log_dest = 2 Then
-                            Domos.EcrireFichier(fichierlog, dateheure & " " & texte2 & Environment.NewLine())
+                            domos_cmd.EcrireFichier(fichierlog, dateheure & " " & texte2 & Environment.NewLine())
                         End If
                         If (log_dest = 1 Or log_dest = 2) And mysql.connected Then
                             mysql.mysql_nonquery("INSERT INTO logs(logs_source,logs_description,logs_date) VALUES('domos_cmd', '" & texte2 & "', '" & dateheure & "')")
@@ -178,7 +176,7 @@ Public Class Domos
                 Case 2 'log juste les erreurs
                     If STRGS.InStr(texte, "ERR:") > 0 Or STRGS.Left(texte, 1) = "!" Then 'si c'est une erreur ou texte à loguer (commence par !)
                         If log_dest = 0 Or log_dest = 2 Then
-                            Domos.EcrireFichier(fichierlog, dateheure & " " & texte2 & Environment.NewLine())
+                            domos_cmd.EcrireFichier(fichierlog, dateheure & " " & texte2 & Environment.NewLine())
                         End If
                         If (log_dest = 1 Or log_dest = 2) And mysql.connected Then
                             mysql.mysql_nonquery("INSERT INTO logs(logs_source,logs_description,logs_date) VALUES('domos_cmd', '" & texte2 & "', '" & dateheure & "')")
@@ -914,7 +912,7 @@ Public Class Domos
             Next
             log("     -> " & temp, 0)
         Next
-        
+
         'Affiche la table Macro
         log("AFF: table_macros", 0)
         For i = 0 To table_macros.Rows.Count() - 1
@@ -1439,12 +1437,12 @@ Public Class Domos
                 tabletmp = table_composants.Select("composants_id = '" & compid & "'")
                 If tabletmp.GetLength(0) > 0 Then
 
-                Select Case tabletmp(0)("composants_modele_norme").ToString
+                    Select Case tabletmp(0)("composants_modele_norme").ToString
                         Case "PLC"
                             'verification si on a pas déjà un thread qui ecrit sur le plcbus sinon on boucle pour attendre PLC_timeout/10 = 5 sec par défaut
                             Dim tblthread = table_thread.Select("norme='PLC' AND source='ECR_PLC' AND composant_id<>'" & compid & "'")
                             While (tblthread.GetLength(0) > 0 And limite < (PLC_timeout / 10))
-                                Domos.wait(10)
+                                domos_cmd.wait(10)
                                 tblthread = table_thread.Select("norme='PLC' AND source='ECR_PLC' AND composant_id<>'" & compid & "'")
                                 limite = limite + 1
                             End While
@@ -1466,7 +1464,7 @@ Public Class Domos
                                 Else
                                     log(err, 5)
                                 End If
-                                Domos.wait(100) 'pause de 1sec pour recevoir le ack et libérer le bus correctement
+                                domos_cmd.wait(100) 'pause de 1sec pour recevoir le ack et libérer le bus correctement
                             Else
                                 log("ECR: Le port PLCBUS nest pas disponible pour une ecriture : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
                             End If
@@ -1527,23 +1525,23 @@ Public Class Domos
                     If tabletmp(0)("composants_etat").ToString() = "" Then tabletmp(0)("composants_etat") = 0
                     'comparaison du relevé avec le dernier etat
                     If valeur2.ToString <> tabletmp(0)("composants_etat").ToString() Then
-                        If Domos.lastetat And valeur2.ToString = tabletmp(0)("lastetat").ToString() Then
-                            Domos.log("POL : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur2 & "°C (inchangé lastetat)", 8)
+                        If domos_cmd.lastetat And valeur2.ToString = tabletmp(0)("lastetat").ToString() Then
+                            domos_cmd.log("POL : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur2 & "°C (inchangé lastetat)", 8)
                         Else
                             If IsNumeric(valeur2) Then
                                 'on vérifie que la valeur a changé de plus de composants_precision sinon inchangé
                                 'If (valeur2 + CDbl(tabletmp(0)("composants_precision"))).ToString >= tabletmp(0)("composants_etat").ToString() And (valeur2 - CDbl(tabletmp(0)("composants_precision"))).ToString <= tabletmp(0)("composants_etat").ToString() Then
                                 If (CDbl(valeur2) + CDbl(tabletmp(0)("composants_precision"))) >= CDbl(tabletmp(0)("composants_etat")) And (CDbl(valeur2) - CDbl(tabletmp(0)("composants_precision"))) <= CDbl(tabletmp(0)("composants_etat")) Then
-                                    Domos.log("POL : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur2 & "°C (inchangé precision)", 8)
+                                    domos_cmd.log("POL : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur2 & "°C (inchangé precision)", 8)
                                 Else
-                                    Domos.log("POL : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur2 & "°C ", 6)
+                                    domos_cmd.log("POL : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur2 & "°C ", 6)
                                     '--- modification de l'etat du composant dans la table en memoire ---
                                     tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
                                     tabletmp(0)("composants_etat") = valeur2
                                     tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                                 End If
                             Else
-                                Domos.log("POL : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur2 & "°C ", 6)
+                                domos_cmd.log("POL : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur2 & "°C ", 6)
                                 '--- modification de l'etat du composant dans la table en memoire ---
                                 tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
                                 tabletmp(0)("composants_etat") = valeur2
@@ -1551,11 +1549,11 @@ Public Class Domos
                             End If
                         End If
                     Else
-                        Domos.log("POL : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur2 & "°C (inchangé)", 7)
+                        domos_cmd.log("POL : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur2 & "°C (inchangé)", 7)
                     End If
                 Else
                     'erreur
-                    Domos.log("POL : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur, 2)
+                    domos_cmd.log("POL : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur, 2)
                 End If
                 '--- suppresion du thread de la liste des thread lancé ---
                 tabletmp = table_thread.Select("composant_id = '" & _id & "'")
@@ -1568,7 +1566,7 @@ Public Class Domos
                 If tabletmp.GetUpperBound(0) >= 0 Then
                     tabletmp(0).Delete()
                 End If
-                Domos.log("POL : DS18B20 " & ex.ToString, 2)
+                domos_cmd.log("POL : DS18B20 " & ex.ToString, 2)
             End Try
         End Sub
     End Class
@@ -1589,18 +1587,18 @@ Public Class Domos
                     valeur_etat = STRGS.Left(valeur, 1)
                     valeur_activite = STRGS.Right(valeur, 1)
                     If valeur_activite <> tabletmp(0)("composants_etat").ToString() Then
-                        Domos.log("POL DS2406_capteur : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur_activite & " ", 6)
+                        domos_cmd.log("POL DS2406_capteur : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur_activite & " ", 6)
                         '--- modification de l'etat du composant dans la table en memoire ---
                         tabletmp(0)("composants_etat") = valeur_activite
                     Else
-                        Domos.log("POL DS2406_capteur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur_activite, 7)
+                        domos_cmd.log("POL DS2406_capteur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur_activite, 7)
                     End If
                 Else
                     'erreur
-                    Domos.log("POL DS2406_capteur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur, 2)
+                    domos_cmd.log("POL DS2406_capteur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur, 2)
                 End If
             Catch ex As Exception
-                Domos.log("POL : DS2406_capteur " & ex.ToString, 2)
+                domos_cmd.log("POL : DS2406_capteur " & ex.ToString, 2)
             End Try
 
         End Sub
@@ -1622,15 +1620,15 @@ Public Class Domos
                 If STRGS.Left(valeur, 4) <> "ERR:" Then 'si y a pas erreur d'acquisition, action
                     '--- comparaison du relevé avec le dernier etat ---
                     If valeur <> tabletmp(0)("composants_etat").ToString() Then
-                        Domos.log("POL DS2423 : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur & " ", 6)
+                        domos_cmd.log("POL DS2423 : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur & " ", 6)
                         '--- modification de l'etat du composant dans la table en memoire ---
                         tabletmp(0)("composants_etat") = valeur
                     Else
-                        Domos.log("POL DS2423 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur, 7)
+                        domos_cmd.log("POL DS2423 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur, 7)
                     End If
                 Else
                     'erreur
-                    Domos.log("POL DS2423 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur, 2)
+                    domos_cmd.log("POL DS2423 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur, 2)
                 End If
                 '--- suppresion du thread de la liste des thread lancé ---
                 tabletmp = table_thread.Select("composant_id = '" & _id & "'")
@@ -1643,7 +1641,7 @@ Public Class Domos
                 If tabletmp.GetUpperBound(0) >= 0 Then
                     tabletmp(0).Delete()
                 End If
-                Domos.log("POL : DS2423 " & ex.ToString, 2)
+                domos_cmd.log("POL : DS2423 " & ex.ToString, 2)
             End Try
 
         End Sub

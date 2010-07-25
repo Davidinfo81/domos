@@ -81,7 +81,7 @@ Public Class sockets
                 mystream2.Close()
 
                 'on lance l'action adequat
-                Domos.action(clientdata)
+                domos_cmd.action(clientdata)
 
             End If
         Catch ex As Exception
@@ -92,9 +92,10 @@ Public Class sockets
     Public Sub WriteLog(ByVal message As String)
         'utilise la fonction de base pour loguer un event
         If STRGS.InStr(message, "ERR:") > 0 Then
-            Domos.log("SOC : " & message, 2)
+            domos_cmd.log("SOC : " & message, 2)
         Else
-            Domos.log("SOC : " & message, 3)
+            domos_cmd.log("SOC : " & message, 3)
         End If
     End Sub
+
 End Class

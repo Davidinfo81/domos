@@ -293,7 +293,7 @@ Public Class rfxcom
 
     Public Sub ProcessReceivedChar(ByVal sComChar As Byte)
         'si Domos est actif
-        If Domos.Serv_DOMOS Then
+        If domos_cmd.Serv_DOMOS Then
             'rassemble un message complet pour le traiter ensuite avec displaymess
             Dim temp As Byte
             maxticks = 0
@@ -2317,9 +2317,9 @@ Public Class rfxcom
     Public Sub WriteLog(ByVal message As String)
         'utilise la fonction de base pour loguer un event
         If STRGS.InStr(message, "ERR:") > 0 Then
-            Domos.log("RFX : " & message, 2)
+            domos_cmd.log("RFX : " & message, 2)
         Else
-            Domos.log("RFX : " & message, 9)
+            domos_cmd.log("RFX : " & message, 9)
         End If
     End Sub
 
@@ -2327,10 +2327,10 @@ Public Class rfxcom
         Dim tabletmp() As DataRow
         Dim dateheure, Err As String
         Try
-            tabletmp = Domos.table_composants.Select("composants_adresse = '" & adresse.ToString & "' AND composants_modele_norme = 'RFX'")
+            tabletmp = domos_cmd.table_composants.Select("composants_adresse = '" & adresse.ToString & "' AND composants_modele_norme = 'RFX'")
             If tabletmp.GetUpperBound(0) >= 0 Then
                 '--- On attend au moins x seconde entre deux receptions de valeur pour le meme composant (x sec = rfx_tpsentrereponse/100)
-                If (DateTime.Now - Date.Parse(tabletmp(0)("composants_etatdate"))).TotalMilliseconds > Domos.rfx_tpsentrereponse Then
+                If (DateTime.Now - Date.Parse(tabletmp(0)("composants_etatdate"))).TotalMilliseconds > domos_cmd.rfx_tpsentrereponse Then
                     If VB.Left(valeur, 4) <> "ERR:" Then 'si y a pas erreur d'acquisition
                         '--- Remplacement de , par .
                         valeur = STRGS.Replace(valeur, ",", ".")
@@ -2344,24 +2344,24 @@ Public Class rfxcom
                             'si nombre alors 
                             If (IsNumeric(valeur) And IsNumeric(tabletmp(0)("lastetat")) And IsNumeric(tabletmp(0)("composants_etat"))) Then
                                 'on vérifie que la valeur a changé par rapport a l'avant dernier etat (lastetat) si domos.lastetat (table config)
-                                If Domos.lastetat And valeur.ToString = tabletmp(0)("lastetat").ToString() Then
-                                    Domos.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString & " (inchangé lastetat " & tabletmp(0)("lastetat").ToString() & ")", 8)
+                                If domos_cmd.lastetat And valeur.ToString = tabletmp(0)("lastetat").ToString() Then
+                                    domos_cmd.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString & " (inchangé lastetat " & tabletmp(0)("lastetat").ToString() & ")", 8)
                                     '--- Modification de la date dans la base SQL ---
                                     dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-                                    Err = Domos.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
+                                    Err = domos_cmd.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
                                     If Err <> "" Then Log("SQL: table_comp_changed " & Err, 2)
                                 Else
                                     'on vérifie que la valeur a changé de plus de composants_precision sinon inchangé
                                     'If (valeur + CDbl(tabletmp(0)("composants_precision"))).ToString >= tabletmp(0)("composants_etat").ToString() And (valeur - CDbl(tabletmp(0)("composants_precision"))).ToString <= tabletmp(0)("composants_etat").ToString() Then
                                     If (CDbl(valeur) + CDbl(tabletmp(0)("composants_precision"))) >= CDbl(tabletmp(0)("composants_etat")) And (CDbl(valeur) - CDbl(tabletmp(0)("composants_precision"))) <= CDbl(tabletmp(0)("composants_etat")) Then
                                         'log de "inchangé précision"
-                                        Domos.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString & " (inchangé precision " & tabletmp(0)("composants_etat").ToString & "+-" & tabletmp(0)("composants_precision").ToString & ")", 8)
+                                        domos_cmd.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString & " (inchangé precision " & tabletmp(0)("composants_etat").ToString & "+-" & tabletmp(0)("composants_precision").ToString & ")", 8)
                                         '--- Modification de la date dans la base SQL ---
                                         dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-                                        Err = Domos.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
+                                        Err = domos_cmd.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
                                         If Err <> "" Then Log("SQL: table_comp_changed " & Err, 2)
                                     Else
-                                        Domos.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString, 6)
+                                        domos_cmd.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString, 6)
                                         '  --- modification de l'etat du composant dans la table en memoire ---
                                         tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
                                         tabletmp(0)("composants_etat") = valeur.ToString
@@ -2369,7 +2369,7 @@ Public Class rfxcom
                                     End If
                                 End If
                             Else
-                                Domos.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString, 6)
+                                domos_cmd.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString, 6)
                                 '  --- modification de l'etat du composant dans la table en memoire ---
                                 tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
                                 tabletmp(0)("composants_etat") = valeur.ToString
@@ -2381,30 +2381,30 @@ Public Class rfxcom
                             'tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                         Else
                             'la valeur n'a pas changé, on log en 7 et on maj la date dans la base sql
-                            Domos.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString & " (inchangé " & tabletmp(0)("composants_etat").ToString() & ")", 7)
+                            domos_cmd.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString & " (inchangé " & tabletmp(0)("composants_etat").ToString() & ")", 7)
                             '--- Modification de la date dans la base SQL ---
                             dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-                            Err = Domos.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
+                            Err = domos_cmd.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
                             If Err <> "" Then Log("SQL: table_comp_changed " & Err, 2)
                         End If
                     Else
                         'erreur d'acquisition
-                        Domos.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & valeur.ToString, 2)
+                        domos_cmd.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & valeur.ToString, 2)
                     End If
                 Else
                     'Domos.log("RFX : IGNORE : Etat recu il y a moins de 2 sec : " & adresse.ToString & " : " & valeur.ToString)
                 End If
             Else
                 'erreur d'adresse composant
-                tabletmp = Domos.table_composants_bannis.Select("composants_bannis_adresse = '" & adresse.ToString & "' AND composants_bannis_norme = 'RFX'")
+                tabletmp = domos_cmd.table_composants_bannis.Select("composants_bannis_adresse = '" & adresse.ToString & "' AND composants_bannis_norme = 'RFX'")
                 If tabletmp.GetUpperBound(0) >= 0 Then
                     'on ne logue pas car c'est une adresse bannie
                 Else
-                    Domos.log("RFX : Adresse composant : " & adresse.ToString & " : " & valeur.ToString, 2)
+                    domos_cmd.log("RFX : Adresse composant : " & adresse.ToString & " : " & valeur.ToString, 2)
                 End If
             End If
         Catch ex As Exception
-            Domos.log("RFX : Writeretour Exception : " & ex.Message, 2)
+            domos_cmd.log("RFX : Writeretour Exception : " & ex.Message, 2)
         End Try
         adresselast = adresse
         valeurlast = valeur
