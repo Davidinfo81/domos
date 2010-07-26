@@ -29,6 +29,7 @@ Public Class domos_svc
     Private mysql_ip, mysql_db, mysql_login, mysql_mdp As String
     Private Shared install_dir As String
     Private controller As New ServiceController
+    Private etape_startup As Integer = 0
 
     'Variables specifiques
     Private soleil = New Soleil
@@ -109,6 +110,7 @@ Public Class domos_svc
             Dim x As New DataColumn
 
             '---------- Récupération configuration Registry ----------
+            etape_startup = 1
             Dim regKey, regKey2 As RegistryKey
             regKey = Registry.LocalMachine.OpenSubKey("SOFTWARE")
             If regKey Is Nothing Then
@@ -141,6 +143,7 @@ Public Class domos_svc
             'mysql_mdp = My.Settings.mysql_mdp
 
             '---------- Connexion MySQL ----------
+            etape_startup = 2
             err = mysql.mysql_connect(mysql_ip, mysql_db, mysql_login, mysql_mdp)
             If err <> "" Then
                 log("", 1)
@@ -163,6 +166,7 @@ Public Class domos_svc
             log("", 0)
 
             '----- recupération de la config -----
+            etape_startup = 3
             log("SQL : Récupération de la configuration :", 0)
             log("SQL : Récupération de la configuration", -1)
             err = Table_maj(table_config, "SELECT config_nom,config_valeur FROM config")
@@ -208,6 +212,7 @@ Public Class domos_svc
             log("", 0)
 
             '---------- Initialisation de la clé USB 1-wire -------
+            etape_startup = 4
             If Serv_WIR Then
                 err = onewire.initialisation(WIR_adaptername, Port_WIR)
                 If STRGS.Left(err, 4) = "ERR:" Then
@@ -220,6 +225,7 @@ Public Class domos_svc
                 log("WIR : " & err, -1)
             End If
             '---------- Initialisation de la clé USB 1-wire 2 -------
+            etape_startup = 5
             If Serv_WI2 Then
                 err = onewire2.initialisation(WIR_adaptername, Port_WI2)
                 If STRGS.Left(err, 4) = "ERR:" Then
@@ -232,6 +238,7 @@ Public Class domos_svc
                 log("WI2 : " & err, -1)
             End If
             '---------- Initialisation du RFXCOM -------
+            etape_startup = 6
             If Serv_RFX Then
                 err = rfxcom.ouvrir(Port_RFX)
                 If STRGS.Left(err, 4) = "ERR:" Then
@@ -244,6 +251,7 @@ Public Class domos_svc
                 log("RFX : " & err, -1)
             End If
             '---------- Initialisation du PLCBUS -------
+            etape_startup = 7
             If Serv_PLC Then
                 err = plcbus.ouvrir(Port_PLC)
                 If STRGS.Left(err, 4) = "ERR:" Then
@@ -258,6 +266,7 @@ Public Class domos_svc
             log("", 0)
 
             '----- recupération de la liste des composants actifs -----
+            etape_startup = 8
             log("SQL : Récupération de la liste des composants actifs :", 0)
             log("SQL : Récupération de la liste des composants actifs", -1)
             Dim Condition_service As String = ""
@@ -308,6 +317,7 @@ Public Class domos_svc
             End If
 
             '---------- Ajout d'un handler sur la modification de l'etat d'un composant -------
+            etape_startup = 9
             log("Lancement de l'handler sur l etat des composants", 0)
             AddHandler table_composants.ColumnChanged, New DataColumnChangeEventHandler(AddressOf table_composants_changed)
             log("", 0)
@@ -331,6 +341,7 @@ Public Class domos_svc
             log("", 0)
 
             '----- recupération de la liste des macros -----
+            etape_startup = 10
             log("SQL : Récupération de la liste des macros :", 0)
             log("SQL : Récupération de la liste des macros", -1)
             err = Table_maj(table_macros, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions NOT LIKE '%CT#%'")
@@ -353,6 +364,7 @@ Public Class domos_svc
             log("", 0)
 
             '----- recupération de la liste des timers -----
+            etape_startup = 11
             log("SQL : Récupération de la liste des timers :", 0)
             log("SQL : Récupération de la liste des timers", -1)
             err = Table_maj(table_timer, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions LIKE '%CT#%'")
@@ -379,6 +391,7 @@ Public Class domos_svc
             log("", 0)
 
             '---------- Initialisation des heures du soleil -------
+            etape_startup = 12
             log("Initialisation des heures du soleil", 0)
             soleil.City("Algrange")
             soleil.CalculateSun()
@@ -392,6 +405,7 @@ Public Class domos_svc
             log("Initialisation des heures du soleil : " & var_soleil_lever & " (" & var_soleil_lever2 & ") - " & var_soleil_coucher & " (" & var_soleil_coucher2 & ")", -1)
 
             '---------- RFXCOM : Lancement du Handler et paramétrage -------
+            etape_startup = 13
             If Serv_RFX Then
                 log("RFX : Lancement et paramétrage du RFXCOM", 0)
                 log("RFX : Lancement et paramétrage du RFXCOM", -1)
@@ -421,6 +435,7 @@ Public Class domos_svc
             log("", 0)
 
             '---------- Initialisation du Socket -------
+            etape_startup = 14
             If Serv_SOC Then
                 err = socket.ouvrir(socket_ip, socket_port)
                 If STRGS.Left(err, 4) = "ERR:" Then
@@ -435,6 +450,7 @@ Public Class domos_svc
             End If
 
             '---------- Lancement du pooling -------
+            etape_startup = 15
             log("Lancement du Pool", 0)
             log("Lancement du Pool", -1)
             timer_pool = New System.Timers.Timer
@@ -442,6 +458,7 @@ Public Class domos_svc
             timer_pool.Interval = 1000
             timer_pool.Start()
             '---------- Lancement du timer -------
+            etape_startup = 16
             log("Lancement du Timer", 0)
             log("Lancement du Timer", -1)
             timer_timer = New System.Timers.Timer
@@ -450,6 +467,7 @@ Public Class domos_svc
             timer_timer.Start()
 
             'le service est démarré
+            etape_startup = 99
             Serv_DOMOS = True
             log("", 0)
             log("--- Service démarré ---", 0)
@@ -473,30 +491,37 @@ Public Class domos_svc
             log("--- Arret du Service ---", -1)
             log("", 0)
 
-            '---------- arret du pool -------
-            log("Arret du Pool :", 0)
-            log("Arret du Pool", -1)
-            timer_pool.Stop()
-            timer_pool.Dispose()
-            log("     -> Arrété", 0)
             '---------- arret du timer -------
-            log("Arret du Timer :", 0)
-            log("Arret du Timer", -1)
-            timer_timer.Stop()
-            timer_timer.Dispose()
-            log("     -> Arrété", 0)
+            If etape_startup > 16 Then
+                log("Arret du Timer :", 0)
+                log("Arret du Timer", -1)
+                timer_timer.Stop()
+                timer_timer.Dispose()
+                log("     -> Arrété", 0)
+            End If
+            '---------- arret du pool -------
+            If etape_startup > 15 Then
+                log("Arret du Pool :", 0)
+                log("Arret du Pool", -1)
+                timer_pool.Stop()
+                timer_pool.Dispose()
+                log("     -> Arrété", 0)
+            End If
 
             '---------- liberation du Socket -------
-            If Serv_SOC Then
-                log("SOC : Fermeture de la connexion : ", 0)
-                err = socket.fermer()
-                If STRGS.Left(err, 4) = "ERR:" Then
-                    log(" -> SOC Fermeture : " & err, 2)
-                Else
-                    log(" -> SOC Fermeture : " & err, 0)
+            If etape_startup > 14 Then
+                If Serv_SOC Then
+                    log("SOC : Fermeture de la connexion : ", 0)
+                    err = socket.fermer()
+                    If STRGS.Left(err, 4) = "ERR:" Then
+                        log(" -> SOC Fermeture : " & err, 2)
+                    Else
+                        log(" -> SOC Fermeture : " & err, 0)
+                    End If
+                    log("SOCKET Fermeture : " & err, -1)
                 End If
-                log("SOCKET Fermeture : " & err, -1)
             End If
+
 
             '---------- attente fin des threads : 5 secondes -------
             log("Attente fin des threads :", 0)
@@ -517,66 +542,77 @@ Public Class domos_svc
             End If
 
             '---------- liberation du 1-wire -------
-            If Serv_WIR Then
-                log("WIR : Fermeture de la clé USB : ", 0)
-                err = onewire.close()
-                If STRGS.Left(err, 4) = "ERR:" Then
-                    log(" -> WIR Fermeture : " & err, 2)
-                Else
-                    log(" -> WIR Fermeture : " & err, 0)
+            If etape_startup > 4 Then
+                If Serv_WIR Then
+                    log("WIR : Fermeture de la clé USB : ", 0)
+                    err = onewire.close()
+                    If STRGS.Left(err, 4) = "ERR:" Then
+                        log(" -> WIR Fermeture : " & err, 2)
+                    Else
+                        log(" -> WIR Fermeture : " & err, 0)
+                    End If
+                    log("WIR Fermeture : " & err, -1)
                 End If
-                log("WIR Fermeture : " & err, -1)
             End If
 
             '---------- liberation du 1-wire 2 -------
-            If Serv_WI2 Then
-                log("WI2 : Fermeture de la clé USB : ", 0)
-                err = onewire2.close()
-                If STRGS.Left(err, 4) = "ERR:" Then
-                    log(" -> WI2 Fermeture : " & err, 2)
-                Else
-                    log(" -> WI2 Fermeture : " & err, 0)
+            If etape_startup > 5 Then
+                If Serv_WI2 Then
+                    log("WI2 : Fermeture de la clé USB : ", 0)
+                    err = onewire2.close()
+                    If STRGS.Left(err, 4) = "ERR:" Then
+                        log(" -> WI2 Fermeture : " & err, 2)
+                    Else
+                        log(" -> WI2 Fermeture : " & err, 0)
+                    End If
+                    log("WI2 Fermeture : " & err, -1)
                 End If
-                log("WI2 Fermeture : " & err, -1)
             End If
 
             '---------- liberation du RFXCOM -------
-            If Serv_RFX Then
-                log("RFX : Fermeture de la connexion : ", 0)
-                err = rfxcom.fermer()
-                If STRGS.Left(err, 4) = "ERR:" Then
-                    log(" -> RFX Fermeture : " & err, 2)
-                Else
-                    log(" -> RFX Fermeture : " & err, 0)
+            If etape_startup > 6 Then
+                If Serv_RFX Then
+                    log("RFX : Fermeture de la connexion : ", 0)
+                    err = rfxcom.fermer()
+                    If STRGS.Left(err, 4) = "ERR:" Then
+                        log(" -> RFX Fermeture : " & err, 2)
+                    Else
+                        log(" -> RFX Fermeture : " & err, 0)
+                    End If
+                    log("RFX Fermeture : " & err, -1)
                 End If
-                log("RFX Fermeture : " & err, -1)
             End If
 
             '---------- liberation du PLCBUS -------
-            If Serv_PLC Then
-                log("PLC : Fermeture de la connexion : ", 0)
-                err = plcbus.fermer()
-                If STRGS.Left(err, 4) = "ERR:" Then
-                    log(" -> PLC Fermeture : " & err, 2)
-                Else
-                    log(" -> PLC Fermeture : " & err, 0)
+            If etape_startup > 7 Then
+                If Serv_PLC Then
+                    log("PLC : Fermeture de la connexion : ", 0)
+                    err = plcbus.fermer()
+                    If STRGS.Left(err, 4) = "ERR:" Then
+                        log(" -> PLC Fermeture : " & err, 2)
+                    Else
+                        log(" -> PLC Fermeture : " & err, 0)
+                    End If
+                    log("PLC Fermeture : " & err, -1)
                 End If
-                log("PLC Fermeture : " & err, -1)
             End If
 
             '---------- deconnexion mysql -------
-            log("SQL : Déconnexion du serveur", 0)
-            log("", 0)
-            err = mysql.mysql_close()
-            log("SQL : Déconnexion du serveur " & err, -1)
-            If err <> "" Then
-                log("     -> " & err, 2)
-                Exit Sub
+            If etape_startup > 2 Then
+                log("SQL : Déconnexion du serveur", 0)
+                log("", 0)
+                err = mysql.mysql_close()
+                log("SQL : Déconnexion du serveur " & err, -1)
+                If err <> "" Then
+                    log("     -> " & err, 2)
+                    Exit Sub
+                End If
+                log("     -> Déconnecté", 0)
             End If
-            log("     -> Déconnecté", 0)
 
             'le service est arreté
             Serv_DOMOS = False
+            etape_startup = 0
             log("", 0)
             log("--- Service arrété ---", 0)
             log("--- Service arrété ---", -1)
@@ -1530,6 +1566,10 @@ Public Class domos_svc
             _id = composant_id
         End Sub
         Public Sub Execute()
+            'Forcer le . 
+            Thread.CurrentThread.CurrentCulture = New CultureInfo("en-US")
+            My.Application.ChangeCulture("en-US")
+
             Dim valeur As String
             Dim valeur2 As Double
             Dim wir1_2 As Boolean = False '= true si sur le deuxieme bus 1-wire
@@ -1617,6 +1657,10 @@ Public Class domos_svc
             _id = composant_id
         End Sub
         Public Sub Execute()
+            'Forcer le . 
+            Thread.CurrentThread.CurrentCulture = New CultureInfo("en-US")
+            My.Application.ChangeCulture("en-US")
+
             Dim valeur, valeur_etat, valeur_activite As String
             Dim tabletmp() As DataRow
             Try
@@ -1652,6 +1696,10 @@ Public Class domos_svc
             _AorB = AorB
         End Sub
         Public Sub Execute()
+            'Forcer le . 
+            Thread.CurrentThread.CurrentCulture = New CultureInfo("en-US")
+            My.Application.ChangeCulture("en-US")
+
             Dim valeur As String
             Dim tabletmp() As DataRow
             Try

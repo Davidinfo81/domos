@@ -85,3 +85,6 @@ R:\Perso\Domotique\Projects\Domos_project\Domos_cmd\obj\Release\Domos.Resources.
 R:\Perso\Domotique\Projects\Domos_project\Domos_cmd\obj\Release\Domos_cmd.vbproj.GenerateResource.Cache
 R:\Perso\Domotique\Projects\Domos_project\Domos_cmd\obj\Release\Domos.exe.manifest
 R:\Perso\Domotique\Projects\Domos_project\Domos_cmd\obj\Release\Domos.application
+D:\Domotique\Project\Domos_project\Domos_cmd\bin\Release\MySql.Data.dll
+D:\Domotique\Project\Domos_project\Domos_cmd\bin\Release\NCrontab.dll
+D:\Domotique\Project\Domos_project\Domos_cmd\bin\Release\OneWireAPI.NET.dll
