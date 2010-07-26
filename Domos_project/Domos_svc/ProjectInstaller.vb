@@ -25,19 +25,13 @@ Public Class ProjectInstaller
         Dim db As String = Me.Context.Parameters.Item("db")
         Dim password As String = Me.Context.Parameters.Item("password")
         Dim targ As String = Me.Context.Parameters.Item("targ")
-        MsgBox("ouverture clé domos")
         Dim regKey, regKey2 As RegistryKey
         regKey = Registry.LocalMachine.OpenSubKey("SOFTWARE", True)
         regKey2 = regKey.OpenSubKey("Domos", True)
-        MsgBox("clé domos ouverte test")
-        If regKey Is Nothing Then
-            MsgBox("cre domos")
+        If regKey2 Is Nothing Then
             regKey.CreateSubKey("Domos")
-            regKey.Close()
             regKey2 = regKey.OpenSubKey("Domos", True)
-            MsgBox("clé domos not exist : creation")
         End If
-        MsgBox("ecriture valeur")
         regKey2.SetValue("mysql_ip", ip)
         regKey2.SetValue("mysql_db", db)
         regKey2.SetValue("mysql_login", login)
@@ -45,7 +39,6 @@ Public Class ProjectInstaller
         regKey2.SetValue("install_dir", targ)
         regKey2.Close()
         regKey.Close()
-        MsgBox("FIN")
     End Sub
 
 

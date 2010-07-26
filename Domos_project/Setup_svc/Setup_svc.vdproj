@@ -15,26 +15,26 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_5655FB545CE05116334BC567CC67F105"
+        "MsmKey" = "8:_05FC316E2D7FB4F13E92E344CF8A8842"
+        "OwnerKey" = "8:_E3B2AE2880CD4B549D3991B9FBEB6371"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_4FBB419B7554200E67B76D41F43719E9"
         "OwnerKey" = "8:_E3B2AE2880CD4B549D3991B9FBEB6371"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_5655FB545CE05116334BC567CC67F105"
-        "OwnerKey" = "8:_F9B473174A4A5CEAB0607B2C9C9BB4C1"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_5A021FE61199A502D4474C3E9D48C2B0"
         "OwnerKey" = "8:_E3B2AE2880CD4B549D3991B9FBEB6371"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_7D41DC220399DA9BBB5CCA4CDDAD5C16"
-        "OwnerKey" = "8:_E3B2AE2880CD4B549D3991B9FBEB6371"
+        "MsmKey" = "8:_5655FB545CE05116334BC567CC67F105"
+        "OwnerKey" = "8:_4FBB419B7554200E67B76D41F43719E9"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -46,7 +46,7 @@
         "Entry"
         {
         "MsmKey" = "8:_9965F9E7170FBB2259382FA173B8A312"
-        "OwnerKey" = "8:_F9B473174A4A5CEAB0607B2C9C9BB4C1"
+        "OwnerKey" = "8:_4FBB419B7554200E67B76D41F43719E9"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -81,44 +81,38 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_F80CB55848A3821DF9677D358BCD8EBF"
+        "OwnerKey" = "8:_E3B2AE2880CD4B549D3991B9FBEB6371"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_F8FD4105957935F2064940CBB3BCE036"
         "OwnerKey" = "8:_5655FB545CE05116334BC567CC67F105"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_F9B473174A4A5CEAB0607B2C9C9BB4C1"
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_4FBB419B7554200E67B76D41F43719E9"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_05FC316E2D7FB4F13E92E344CF8A8842"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_F80CB55848A3821DF9677D358BCD8EBF"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_E3B2AE2880CD4B549D3991B9FBEB6371"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_9965F9E7170FBB2259382FA173B8A312"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_E3B2AE2880CD4B549D3991B9FBEB6371"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_F9B473174A4A5CEAB0607B2C9C9BB4C1"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_7D41DC220399DA9BBB5CCA4CDDAD5C16"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_5A021FE61199A502D4474C3E9D48C2B0"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -139,6 +133,12 @@
         "OwnerKey" = "8:_E5F9ECE2E1DC0AF6D6ACBD635DDD575A"
         "MsmSig" = "8:_UNDEFINED"
         }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_9965F9E7170FBB2259382FA173B8A312"
+        "MsmSig" = "8:_UNDEFINED"
+        }
     }
     "Configurations"
     {
@@ -157,6 +157,14 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
         "Release"
         {
@@ -173,6 +181,27 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Net.Framework.3.5"
+                    {
+                    "Name" = "8:.NET Framework 3.5"
+                    "ProductCode" = "8:Microsoft.Net.Framework.3.5"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Windows.Installer.3.1"
+                    {
+                    "Name" = "8:Windows Installer 3.1"
+                    "ProductCode" = "8:Microsoft.Windows.Installer.3.1"
+                    }
+                }
+            }
         }
     }
     "Deployable"
@@ -258,6 +287,68 @@
         }
         "File"
         {
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_05FC316E2D7FB4F13E92E344CF8A8842"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:NCrontab, Version=0.2.10124.0, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_05FC316E2D7FB4F13E92E344CF8A8842"
+                    {
+                    "Name" = "8:NCrontab.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:NCrontab.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_E04FC9D29B034090AA473B7D1C01AB0A"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_4FBB419B7554200E67B76D41F43719E9"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:OneWireAPI.NET, Version=4.0.2.0, Culture=neutral, PublicKeyToken=9d3abe1382c69a37, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_4FBB419B7554200E67B76D41F43719E9"
+                    {
+                    "Name" = "8:OneWireAPI.NET.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:OneWireAPI.NET.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_E04FC9D29B034090AA473B7D1C01AB0A"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_5655FB545CE05116334BC567CC67F105"
             {
             "AssemblyRegister" = "3:1"
@@ -272,68 +363,6 @@
                     }
                 }
             "SourcePath" = "8:vjslib.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_E04FC9D29B034090AA473B7D1C01AB0A"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_5A021FE61199A502D4474C3E9D48C2B0"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:MySql.Data, Version=5.2.5.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_5A021FE61199A502D4474C3E9D48C2B0"
-                    {
-                    "Name" = "8:MySql.Data.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:MySql.Data.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_E04FC9D29B034090AA473B7D1C01AB0A"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_7D41DC220399DA9BBB5CCA4CDDAD5C16"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:NCrontab, Version=0.2.10124.0, Culture=neutral, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_7D41DC220399DA9BBB5CCA4CDDAD5C16"
-                    {
-                    "Name" = "8:NCrontab.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:NCrontab.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_E04FC9D29B034090AA473B7D1C01AB0A"
@@ -453,20 +482,20 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_F8FD4105957935F2064940CBB3BCE036"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_F80CB55848A3821DF9677D358BCD8EBF"
             {
             "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:TRUE"
-            "AssemblyAsmDisplayName" = "8:vjsvwaux, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:MySql.Data, Version=5.2.5.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_F8FD4105957935F2064940CBB3BCE036"
+                    "_F80CB55848A3821DF9677D358BCD8EBF"
                     {
-                    "Name" = "8:vjsvwaux.dll"
+                    "Name" = "8:MySql.Data.dll"
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:vjsvwaux.dll"
+            "SourcePath" = "8:MySql.Data.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_E04FC9D29B034090AA473B7D1C01AB0A"
@@ -484,20 +513,20 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_F9B473174A4A5CEAB0607B2C9C9BB4C1"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_F8FD4105957935F2064940CBB3BCE036"
             {
             "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:OneWireAPI.NET, Version=4.0.2.0, Culture=neutral, PublicKeyToken=9d3abe1382c69a37, processorArchitecture=MSIL"
+            "AssemblyIsInGAC" = "11:TRUE"
+            "AssemblyAsmDisplayName" = "8:vjsvwaux, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_F9B473174A4A5CEAB0607B2C9C9BB4C1"
+                    "_F8FD4105957935F2064940CBB3BCE036"
                     {
-                    "Name" = "8:OneWireAPI.NET.dll"
+                    "Name" = "8:vjsvwaux.dll"
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:OneWireAPI.NET.dll"
+            "SourcePath" = "8:vjsvwaux.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_E04FC9D29B034090AA473B7D1C01AB0A"
@@ -545,7 +574,7 @@
             }
             "{3C67513D-01DD-4637-8A68-80971EB9504F}:_E04FC9D29B034090AA473B7D1C01AB0A"
             {
-            "DefaultLocation" = "8:[ProgramFiles64Folder][ProductName]"
+            "DefaultLocation" = "8:[ProgramFilesFolder][ProductName]"
             "Name" = "8:#1925"
             "AlwaysCreate" = "11:FALSE"
             "Condition" = "8:"
@@ -572,7 +601,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Domos"
         "ProductCode" = "8:{390FEF6D-0188-42AE-B2C0-3DF69DBF7452}"
-        "PackageCode" = "8:{32467D82-DCCD-497A-B0C6-7028BFC3E215}"
+        "PackageCode" = "8:{67F1C744-60B5-47C8-9492-78FA1F00BE77}"
         "UpgradeCode" = "8:{A38D82A6-E5E0-49DC-8275-FC1DD4DFA04F}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
@@ -592,7 +621,7 @@
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
-        "TargetPlatform" = "3:1"
+        "TargetPlatform" = "3:0"
         "PreBuildEvent" = "8:"
         "PostBuildEvent" = "8:"
         "RunPostBuildEvent" = "3:0"

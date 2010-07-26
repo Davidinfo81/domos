@@ -72,3 +72,16 @@ D:\Domotique\Project\Domos_project\Domos_cmd\obj\Release\Domos.application
 D:\Domotique\Project\Domos_project\Domos_cmd\obj\Release\Domos.exe
 D:\Domotique\Project\Domos_project\Domos_cmd\obj\Release\Domos.xml
 D:\Domotique\Project\Domos_project\Domos_cmd\obj\Release\Domos.pdb
+R:\Perso\Domotique\Projects\Domos_project\Domos_cmd\bin\Release\icone.ico
+R:\Perso\Domotique\Projects\Domos_project\Domos_cmd\bin\Release\Domos.exe.manifest
+R:\Perso\Domotique\Projects\Domos_project\Domos_cmd\bin\Release\Domos.application
+R:\Perso\Domotique\Projects\Domos_project\Domos_cmd\bin\Release\Domos.exe
+R:\Perso\Domotique\Projects\Domos_project\Domos_cmd\bin\Release\Domos.pdb
+R:\Perso\Domotique\Projects\Domos_project\Domos_cmd\bin\Release\Domos.xml
+R:\Perso\Domotique\Projects\Domos_project\Domos_cmd\obj\Release\ResolveAssemblyReference.cache
+R:\Perso\Domotique\Projects\Domos_project\Domos_cmd\obj\Release\Domos.g.resources
+R:\Perso\Domotique\Projects\Domos_project\Domos_cmd\obj\Release\Domos.domos_cmd.resources
+R:\Perso\Domotique\Projects\Domos_project\Domos_cmd\obj\Release\Domos.Resources.resources
+R:\Perso\Domotique\Projects\Domos_project\Domos_cmd\obj\Release\Domos_cmd.vbproj.GenerateResource.Cache
+R:\Perso\Domotique\Projects\Domos_project\Domos_cmd\obj\Release\Domos.exe.manifest
+R:\Perso\Domotique\Projects\Domos_project\Domos_cmd\obj\Release\Domos.application

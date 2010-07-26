@@ -108,29 +108,39 @@ Public Class domos_svc
             log("-------------------------------------------------------------------------------", 0)
             Dim x As New DataColumn
 
+            '---------- Récupération configuration Registry ----------
+            Dim regKey, regKey2 As RegistryKey
+            regKey = Registry.LocalMachine.OpenSubKey("SOFTWARE")
+            If regKey Is Nothing Then
+                log("Service arreté car erreur lecture registre ", 1)
+                controller.MachineName = "."
+                controller.ServiceName = "DOMOS"
+                controller.Stop()
+                Exit Sub
+            Else
+                regKey2 = regKey.OpenSubKey("Domos")
+                If regKey2 Is Nothing Then
+                    log("Service arreté car erreur lecture registre ", 1)
+                    controller.MachineName = "."
+                    controller.ServiceName = "DOMOS"
+                    controller.Stop()
+                    Exit Sub
+                End If
+            End If
+            mysql_ip = regKey2.GetValue("mysql_ip", "127.0.0.1")
+            mysql_db = regKey2.GetValue("mysql_db", "domos")
+            mysql_login = regKey2.GetValue("mysql_login", "domos")
+            mysql_mdp = regKey2.GetValue("mysql_mdp", "domos")
+            install_dir = regKey2.GetValue("install_dir", "C:\Domos\")
+            regKey2.Close()
+            regKey.Close()
+
+            'mysql_ip = My.Settings.mysql_ip
+            'mysql_db = My.Settings.mysql_db
+            'mysql_login = My.Settings.mysql_login
+            'mysql_mdp = My.Settings.mysql_mdp
+
             '---------- Connexion MySQL ----------
-            'Dim regKey As RegistryKey
-            'regKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\Domos")
-            'If regKey Is Nothing Then
-            '    log("Service arreté car erreur lecture registre ", 1)
-            '    controller.MachineName = "."
-            '    controller.ServiceName = "DOMOS"
-            '    controller.Stop()
-            '    Exit Sub
-            'End If
-            'mysql_ip = regKey.GetValue("mysql_ip", "127.0.0.1")
-            'mysql_db = regKey.GetValue("mysql_db", "domos")
-            'mysql_login = regKey.GetValue("mysql_login", "domos")
-            'mysql_mdp = regKey.GetValue("mysql_mdp", "domos")
-            'install_dir = regKey.GetValue("install_dir", "c:\domos")
-            'regKey.Close()
-
-            mysql_ip = My.Settings.mysql_ip
-            mysql_db = My.Settings.mysql_db
-            mysql_login = My.Settings.mysql_login
-            mysql_mdp = My.Settings.mysql_mdp
-
-            'err = mysql.mysql_connect(My.Settings.mysql_ip, My.Settings.mysql_db, My.Settings.mysql_login, My.Settings.mysql_mdp)
             err = mysql.mysql_connect(mysql_ip, mysql_db, mysql_login, mysql_mdp)
             If err <> "" Then
                 log("", 1)

@@ -10,3 +10,15 @@ D:\Domotique\Project\Domos_project\Domos_svc\obj\Release\Domos_svc.vbproj.Genera
 D:\Domotique\Project\Domos_project\Domos_svc\obj\Release\Domos_svc.exe
 D:\Domotique\Project\Domos_project\Domos_svc\obj\Release\Domos_svc.xml
 D:\Domotique\Project\Domos_project\Domos_svc\obj\Release\Domos_svc.pdb
+R:\Perso\Domotique\Projects\Domos_project\Domos_svc\bin\Release\Domos_svc.exe.config
+R:\Perso\Domotique\Projects\Domos_project\Domos_svc\bin\Release\Domos_svc.exe
+R:\Perso\Domotique\Projects\Domos_project\Domos_svc\bin\Release\Domos_svc.pdb
+R:\Perso\Domotique\Projects\Domos_project\Domos_svc\bin\Release\Domos_svc.xml
+R:\Perso\Domotique\Projects\Domos_project\Domos_svc\obj\Release\ResolveAssemblyReference.cache
+R:\Perso\Domotique\Projects\Domos_project\Domos_svc\obj\Release\Domos_svc.g.resources
+R:\Perso\Domotique\Projects\Domos_project\Domos_svc\obj\Release\Domos_svc.Resources.resources
+R:\Perso\Domotique\Projects\Domos_project\Domos_svc\obj\Release\Domos_svc.ProjectInstaller.resources
+R:\Perso\Domotique\Projects\Domos_project\Domos_svc\obj\Release\Domos_svc.vbproj.GenerateResource.Cache
+R:\Perso\Domotique\Projects\Domos_project\Domos_svc\obj\Release\Domos_svc.exe
+R:\Perso\Domotique\Projects\Domos_project\Domos_svc\obj\Release\Domos_svc.xml
+R:\Perso\Domotique\Projects\Domos_project\Domos_svc\obj\Release\Domos_svc.pdb
