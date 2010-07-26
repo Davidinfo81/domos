@@ -1,0 +1,10 @@
+R:\Perso\Domotique\Projects\Domos_project\Domos_cli\bin\Release\Domos_cli.exe
+R:\Perso\Domotique\Projects\Domos_project\Domos_cli\bin\Release\Domos_cli.pdb
+R:\Perso\Domotique\Projects\Domos_project\Domos_cli\bin\Release\Domos_cli.xml
+R:\Perso\Domotique\Projects\Domos_project\Domos_cli\obj\Release\ResolveAssemblyReference.cache
+R:\Perso\Domotique\Projects\Domos_project\Domos_cli\obj\Release\Domos_cli.notify.resources
+R:\Perso\Domotique\Projects\Domos_project\Domos_cli\obj\Release\Domos_cli.Resources.resources
+R:\Perso\Domotique\Projects\Domos_project\Domos_cli\obj\Release\Domos_cli.vbproj.GenerateResource.Cache
+R:\Perso\Domotique\Projects\Domos_project\Domos_cli\obj\Release\Domos_cli.exe
+R:\Perso\Domotique\Projects\Domos_project\Domos_cli\obj\Release\Domos_cli.xml
+R:\Perso\Domotique\Projects\Domos_project\Domos_cli\obj\Release\Domos_cli.pdb
