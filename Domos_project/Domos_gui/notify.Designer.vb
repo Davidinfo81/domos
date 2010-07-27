@@ -31,6 +31,7 @@ Partial Class notify
         Me.StartToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
         Me.StopToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
         Me.RestartToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
+        Me.EtatToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
         Me.ActionsToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
         Me.SQLToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
         Me.OptimiseToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
@@ -44,15 +45,19 @@ Partial Class notify
         Me.Domosnotify = New System.Windows.Forms.NotifyIcon(Me.components)
         Me.BTN_minimize = New System.Windows.Forms.Button
         Me.BTN_exit = New System.Windows.Forms.Button
-        Me.EtatToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
+        Me.TestsToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
+        Me.Isnumeric182ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
+        Me.Isnumeric182ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem
+        Me.Isnumeric18ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
+        Me.Isnumeric18cdToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
         Me.Domosmenu.SuspendLayout()
         Me.SuspendLayout()
         '
         'Domosmenu
         '
-        Me.Domosmenu.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.AboutToolStripMenuItem, Me.ConfigurationToolStripMenuItem, Me.StartServiceToolStripMenuItem, Me.ActionsToolStripMenuItem, Me.LogsToolStripMenuItem, Me.ExitToolStripMenuItem})
+        Me.Domosmenu.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.AboutToolStripMenuItem, Me.ConfigurationToolStripMenuItem, Me.StartServiceToolStripMenuItem, Me.ActionsToolStripMenuItem, Me.LogsToolStripMenuItem, Me.ExitToolStripMenuItem, Me.TestsToolStripMenuItem})
         Me.Domosmenu.Name = "ContextMenuStrip1"
-        Me.Domosmenu.Size = New System.Drawing.Size(153, 158)
+        Me.Domosmenu.Size = New System.Drawing.Size(153, 180)
         '
         'AboutToolStripMenuItem
         '
@@ -80,22 +85,28 @@ Partial Class notify
         '
         Me.StartToolStripMenuItem.Image = CType(resources.GetObject("StartToolStripMenuItem.Image"), System.Drawing.Image)
         Me.StartToolStripMenuItem.Name = "StartToolStripMenuItem"
-        Me.StartToolStripMenuItem.Size = New System.Drawing.Size(152, 22)
+        Me.StartToolStripMenuItem.Size = New System.Drawing.Size(110, 22)
         Me.StartToolStripMenuItem.Text = "Start"
         '
         'StopToolStripMenuItem
         '
         Me.StopToolStripMenuItem.Image = CType(resources.GetObject("StopToolStripMenuItem.Image"), System.Drawing.Image)
         Me.StopToolStripMenuItem.Name = "StopToolStripMenuItem"
-        Me.StopToolStripMenuItem.Size = New System.Drawing.Size(152, 22)
+        Me.StopToolStripMenuItem.Size = New System.Drawing.Size(110, 22)
         Me.StopToolStripMenuItem.Text = "Stop"
         '
         'RestartToolStripMenuItem
         '
         Me.RestartToolStripMenuItem.Image = CType(resources.GetObject("RestartToolStripMenuItem.Image"), System.Drawing.Image)
         Me.RestartToolStripMenuItem.Name = "RestartToolStripMenuItem"
-        Me.RestartToolStripMenuItem.Size = New System.Drawing.Size(152, 22)
+        Me.RestartToolStripMenuItem.Size = New System.Drawing.Size(110, 22)
         Me.RestartToolStripMenuItem.Text = "Restart"
+        '
+        'EtatToolStripMenuItem
+        '
+        Me.EtatToolStripMenuItem.Name = "EtatToolStripMenuItem"
+        Me.EtatToolStripMenuItem.Size = New System.Drawing.Size(110, 22)
+        Me.EtatToolStripMenuItem.Text = "Etat : "
         '
         'ActionsToolStripMenuItem
         '
@@ -110,25 +121,25 @@ Partial Class notify
         Me.SQLToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.OptimiseToolStripMenuItem, Me.PurgeDesLogsToolStripMenuItem, Me.ReconnectToolStripMenuItem})
         Me.SQLToolStripMenuItem.Image = CType(resources.GetObject("SQLToolStripMenuItem.Image"), System.Drawing.Image)
         Me.SQLToolStripMenuItem.Name = "SQLToolStripMenuItem"
-        Me.SQLToolStripMenuItem.Size = New System.Drawing.Size(122, 22)
+        Me.SQLToolStripMenuItem.Size = New System.Drawing.Size(118, 22)
         Me.SQLToolStripMenuItem.Text = "MY-SQL"
         '
         'OptimiseToolStripMenuItem
         '
         Me.OptimiseToolStripMenuItem.Name = "OptimiseToolStripMenuItem"
-        Me.OptimiseToolStripMenuItem.Size = New System.Drawing.Size(155, 22)
+        Me.OptimiseToolStripMenuItem.Size = New System.Drawing.Size(151, 22)
         Me.OptimiseToolStripMenuItem.Text = "Optimise"
         '
         'PurgeDesLogsToolStripMenuItem
         '
         Me.PurgeDesLogsToolStripMenuItem.Name = "PurgeDesLogsToolStripMenuItem"
-        Me.PurgeDesLogsToolStripMenuItem.Size = New System.Drawing.Size(155, 22)
+        Me.PurgeDesLogsToolStripMenuItem.Size = New System.Drawing.Size(151, 22)
         Me.PurgeDesLogsToolStripMenuItem.Text = "Purge des logs"
         '
         'ReconnectToolStripMenuItem
         '
         Me.ReconnectToolStripMenuItem.Name = "ReconnectToolStripMenuItem"
-        Me.ReconnectToolStripMenuItem.Size = New System.Drawing.Size(155, 22)
+        Me.ReconnectToolStripMenuItem.Size = New System.Drawing.Size(151, 22)
         Me.ReconnectToolStripMenuItem.Text = "Reconnect"
         '
         'TablesToolStripMenuItem
@@ -136,19 +147,19 @@ Partial Class notify
         Me.TablesToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.MAJToolStripMenuItem, Me.AfficherToolStripMenuItem})
         Me.TablesToolStripMenuItem.Image = CType(resources.GetObject("TablesToolStripMenuItem.Image"), System.Drawing.Image)
         Me.TablesToolStripMenuItem.Name = "TablesToolStripMenuItem"
-        Me.TablesToolStripMenuItem.Size = New System.Drawing.Size(122, 22)
+        Me.TablesToolStripMenuItem.Size = New System.Drawing.Size(118, 22)
         Me.TablesToolStripMenuItem.Text = "Tables"
         '
         'MAJToolStripMenuItem
         '
         Me.MAJToolStripMenuItem.Name = "MAJToolStripMenuItem"
-        Me.MAJToolStripMenuItem.Size = New System.Drawing.Size(123, 22)
+        Me.MAJToolStripMenuItem.Size = New System.Drawing.Size(116, 22)
         Me.MAJToolStripMenuItem.Text = "MAJ"
         '
         'AfficherToolStripMenuItem
         '
         Me.AfficherToolStripMenuItem.Name = "AfficherToolStripMenuItem"
-        Me.AfficherToolStripMenuItem.Size = New System.Drawing.Size(123, 22)
+        Me.AfficherToolStripMenuItem.Size = New System.Drawing.Size(116, 22)
         Me.AfficherToolStripMenuItem.Text = "Afficher"
         '
         'LogsToolStripMenuItem
@@ -190,11 +201,36 @@ Partial Class notify
         Me.BTN_exit.Text = "Exit"
         Me.BTN_exit.UseVisualStyleBackColor = True
         '
-        'EtatToolStripMenuItem
+        'TestsToolStripMenuItem
         '
-        Me.EtatToolStripMenuItem.Name = "EtatToolStripMenuItem"
-        Me.EtatToolStripMenuItem.Size = New System.Drawing.Size(152, 22)
-        Me.EtatToolStripMenuItem.Text = "Etat : "
+        Me.TestsToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.Isnumeric182ToolStripMenuItem, Me.Isnumeric182ToolStripMenuItem1, Me.Isnumeric18ToolStripMenuItem, Me.Isnumeric18cdToolStripMenuItem})
+        Me.TestsToolStripMenuItem.Name = "TestsToolStripMenuItem"
+        Me.TestsToolStripMenuItem.Size = New System.Drawing.Size(152, 22)
+        Me.TestsToolStripMenuItem.Text = "tests"
+        '
+        'Isnumeric182ToolStripMenuItem
+        '
+        Me.Isnumeric182ToolStripMenuItem.Name = "Isnumeric182ToolStripMenuItem"
+        Me.Isnumeric182ToolStripMenuItem.Size = New System.Drawing.Size(154, 22)
+        Me.Isnumeric182ToolStripMenuItem.Text = "isnumeric 18.2"
+        '
+        'Isnumeric182ToolStripMenuItem1
+        '
+        Me.Isnumeric182ToolStripMenuItem1.Name = "Isnumeric182ToolStripMenuItem1"
+        Me.Isnumeric182ToolStripMenuItem1.Size = New System.Drawing.Size(154, 22)
+        Me.Isnumeric182ToolStripMenuItem1.Text = "isnumeric 18,2"
+        '
+        'Isnumeric18ToolStripMenuItem
+        '
+        Me.Isnumeric18ToolStripMenuItem.Name = "Isnumeric18ToolStripMenuItem"
+        Me.Isnumeric18ToolStripMenuItem.Size = New System.Drawing.Size(154, 22)
+        Me.Isnumeric18ToolStripMenuItem.Text = "isnumeric 18"
+        '
+        'Isnumeric18cdToolStripMenuItem
+        '
+        Me.Isnumeric18cdToolStripMenuItem.Name = "Isnumeric18cdToolStripMenuItem"
+        Me.Isnumeric18cdToolStripMenuItem.Size = New System.Drawing.Size(154, 22)
+        Me.Isnumeric18cdToolStripMenuItem.Text = "isnumeric 18cd"
         '
         'notify
         '
@@ -237,5 +273,10 @@ Partial Class notify
     Friend WithEvents MAJToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents AfficherToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents EtatToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents TestsToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents Isnumeric182ToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents Isnumeric182ToolStripMenuItem1 As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents Isnumeric18ToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents Isnumeric18cdToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
 
 End Class

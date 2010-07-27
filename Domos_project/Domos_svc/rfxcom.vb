@@ -3,6 +3,9 @@ Imports VB = Microsoft.VisualBasic
 Imports System.IO.Ports
 Imports System.Math
 Imports System.Net.Sockets
+Imports System.Threading
+Imports System.Globalization
+
 
 Public Class rfxcom
     ' Fournie une liste de fonction pour récupérer les valeurs lue par un RFXCOM USB
@@ -63,6 +66,10 @@ Public Class rfxcom
 #End Region
 
     Public Function ouvrir(ByVal numero As String) As String
+        'Forcer le . 
+        Thread.CurrentThread.CurrentCulture = New CultureInfo("en-US")
+        My.Application.ChangeCulture("en-US")
+
         Try
             If Not port_ouvert Then
                 port_name = numero 'pour se rapeller du nom du port
@@ -2324,6 +2331,10 @@ Public Class rfxcom
     End Sub
 
     Public Sub WriteRetour(ByVal adresse As String, ByVal valeur As String)
+        'Forcer le . 
+        Thread.CurrentThread.CurrentCulture = New CultureInfo("en-US")
+        My.Application.ChangeCulture("en-US")
+
         Dim tabletmp() As DataRow
         Dim dateheure, Err As String
         Try

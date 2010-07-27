@@ -1,6 +1,8 @@
 ﻿Imports STRGS = Microsoft.VisualBasic.Strings
 Imports System.ServiceProcess
 Imports Microsoft.Win32
+Imports System.Threading
+Imports System.Globalization
 
 Public Class notify
 
@@ -9,6 +11,10 @@ Public Class notify
     '----------------- FORM MANAGEMENT BUTTONS ----------------------
     'chargement du GUI
     Private Sub notify_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
+        'Forcer le . 
+        Thread.CurrentThread.CurrentCulture = New CultureInfo("en-US")
+        My.Application.ChangeCulture("en-US")
+
         Try
             Dim x = controller.ServiceName
         Catch ex As Exception
@@ -209,4 +215,18 @@ Public Class notify
         controller.ExecuteCommand(211)
     End Sub
 
+
+
+    Private Sub Isnumeric182ToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Isnumeric182ToolStripMenuItem.Click
+        If IsNumeric("18.2") Then MsgBox("true") Else MsgBox("false")
+    End Sub
+    Private Sub Isnumeric182ToolStripMenuItem1_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Isnumeric182ToolStripMenuItem1.Click
+        If IsNumeric("18,2") Then MsgBox("true") Else MsgBox("false")
+    End Sub
+    Private Sub Isnumeric18ToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Isnumeric18ToolStripMenuItem.Click
+        If IsNumeric("18") Then MsgBox("true") Else MsgBox("false")
+    End Sub
+    Private Sub Isnumeric18cdToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Isnumeric18cdToolStripMenuItem.Click
+        If IsNumeric("18ab") Then MsgBox("true") Else MsgBox("false")
+    End Sub
 End Class
