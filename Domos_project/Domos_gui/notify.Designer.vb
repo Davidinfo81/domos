@@ -25,50 +25,34 @@ Partial Class notify
         Me.components = New System.ComponentModel.Container
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(notify))
         Me.Domosmenu = New System.Windows.Forms.ContextMenuStrip(Me.components)
-        Me.Domosnotify = New System.Windows.Forms.NotifyIcon(Me.components)
-        Me.BTN_minimize = New System.Windows.Forms.Button
-        Me.BTN_exit = New System.Windows.Forms.Button
         Me.AboutToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
+        Me.ConfigurationToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
         Me.StartServiceToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
         Me.StartToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
         Me.StopToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
         Me.RestartToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
+        Me.ActionsToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
+        Me.SQLToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
+        Me.OptimiseToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
+        Me.PurgeDesLogsToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
+        Me.ReconnectToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
+        Me.TablesToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
+        Me.MAJToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
+        Me.AfficherToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
         Me.LogsToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
         Me.ExitToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
-        Me.ConfigurationToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
+        Me.Domosnotify = New System.Windows.Forms.NotifyIcon(Me.components)
+        Me.BTN_minimize = New System.Windows.Forms.Button
+        Me.BTN_exit = New System.Windows.Forms.Button
+        Me.EtatToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
         Me.Domosmenu.SuspendLayout()
         Me.SuspendLayout()
         '
         'Domosmenu
         '
-        Me.Domosmenu.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.AboutToolStripMenuItem, Me.ConfigurationToolStripMenuItem, Me.StartServiceToolStripMenuItem, Me.LogsToolStripMenuItem, Me.ExitToolStripMenuItem})
+        Me.Domosmenu.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.AboutToolStripMenuItem, Me.ConfigurationToolStripMenuItem, Me.StartServiceToolStripMenuItem, Me.ActionsToolStripMenuItem, Me.LogsToolStripMenuItem, Me.ExitToolStripMenuItem})
         Me.Domosmenu.Name = "ContextMenuStrip1"
-        Me.Domosmenu.Size = New System.Drawing.Size(153, 136)
-        '
-        'Domosnotify
-        '
-        Me.Domosnotify.ContextMenuStrip = Me.Domosmenu
-        Me.Domosnotify.Icon = CType(resources.GetObject("Domosnotify.Icon"), System.Drawing.Icon)
-        Me.Domosnotify.Text = "Domos"
-        Me.Domosnotify.Visible = True
-        '
-        'BTN_minimize
-        '
-        Me.BTN_minimize.Location = New System.Drawing.Point(12, 12)
-        Me.BTN_minimize.Name = "BTN_minimize"
-        Me.BTN_minimize.Size = New System.Drawing.Size(75, 23)
-        Me.BTN_minimize.TabIndex = 1
-        Me.BTN_minimize.Text = "Minimize"
-        Me.BTN_minimize.UseVisualStyleBackColor = True
-        '
-        'BTN_exit
-        '
-        Me.BTN_exit.Location = New System.Drawing.Point(98, 12)
-        Me.BTN_exit.Name = "BTN_exit"
-        Me.BTN_exit.Size = New System.Drawing.Size(75, 23)
-        Me.BTN_exit.TabIndex = 2
-        Me.BTN_exit.Text = "Exit"
-        Me.BTN_exit.UseVisualStyleBackColor = True
+        Me.Domosmenu.Size = New System.Drawing.Size(153, 158)
         '
         'AboutToolStripMenuItem
         '
@@ -77,9 +61,16 @@ Partial Class notify
         Me.AboutToolStripMenuItem.Size = New System.Drawing.Size(152, 22)
         Me.AboutToolStripMenuItem.Text = "About"
         '
+        'ConfigurationToolStripMenuItem
+        '
+        Me.ConfigurationToolStripMenuItem.Image = CType(resources.GetObject("ConfigurationToolStripMenuItem.Image"), System.Drawing.Image)
+        Me.ConfigurationToolStripMenuItem.Name = "ConfigurationToolStripMenuItem"
+        Me.ConfigurationToolStripMenuItem.Size = New System.Drawing.Size(152, 22)
+        Me.ConfigurationToolStripMenuItem.Text = "Configuration"
+        '
         'StartServiceToolStripMenuItem
         '
-        Me.StartServiceToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.StartToolStripMenuItem, Me.StopToolStripMenuItem, Me.RestartToolStripMenuItem})
+        Me.StartServiceToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.StartToolStripMenuItem, Me.StopToolStripMenuItem, Me.RestartToolStripMenuItem, Me.EtatToolStripMenuItem})
         Me.StartServiceToolStripMenuItem.Image = CType(resources.GetObject("StartServiceToolStripMenuItem.Image"), System.Drawing.Image)
         Me.StartServiceToolStripMenuItem.Name = "StartServiceToolStripMenuItem"
         Me.StartServiceToolStripMenuItem.Size = New System.Drawing.Size(152, 22)
@@ -106,6 +97,60 @@ Partial Class notify
         Me.RestartToolStripMenuItem.Size = New System.Drawing.Size(152, 22)
         Me.RestartToolStripMenuItem.Text = "Restart"
         '
+        'ActionsToolStripMenuItem
+        '
+        Me.ActionsToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.SQLToolStripMenuItem, Me.TablesToolStripMenuItem})
+        Me.ActionsToolStripMenuItem.Image = CType(resources.GetObject("ActionsToolStripMenuItem.Image"), System.Drawing.Image)
+        Me.ActionsToolStripMenuItem.Name = "ActionsToolStripMenuItem"
+        Me.ActionsToolStripMenuItem.Size = New System.Drawing.Size(152, 22)
+        Me.ActionsToolStripMenuItem.Text = "Actions"
+        '
+        'SQLToolStripMenuItem
+        '
+        Me.SQLToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.OptimiseToolStripMenuItem, Me.PurgeDesLogsToolStripMenuItem, Me.ReconnectToolStripMenuItem})
+        Me.SQLToolStripMenuItem.Image = CType(resources.GetObject("SQLToolStripMenuItem.Image"), System.Drawing.Image)
+        Me.SQLToolStripMenuItem.Name = "SQLToolStripMenuItem"
+        Me.SQLToolStripMenuItem.Size = New System.Drawing.Size(122, 22)
+        Me.SQLToolStripMenuItem.Text = "MY-SQL"
+        '
+        'OptimiseToolStripMenuItem
+        '
+        Me.OptimiseToolStripMenuItem.Name = "OptimiseToolStripMenuItem"
+        Me.OptimiseToolStripMenuItem.Size = New System.Drawing.Size(155, 22)
+        Me.OptimiseToolStripMenuItem.Text = "Optimise"
+        '
+        'PurgeDesLogsToolStripMenuItem
+        '
+        Me.PurgeDesLogsToolStripMenuItem.Name = "PurgeDesLogsToolStripMenuItem"
+        Me.PurgeDesLogsToolStripMenuItem.Size = New System.Drawing.Size(155, 22)
+        Me.PurgeDesLogsToolStripMenuItem.Text = "Purge des logs"
+        '
+        'ReconnectToolStripMenuItem
+        '
+        Me.ReconnectToolStripMenuItem.Name = "ReconnectToolStripMenuItem"
+        Me.ReconnectToolStripMenuItem.Size = New System.Drawing.Size(155, 22)
+        Me.ReconnectToolStripMenuItem.Text = "Reconnect"
+        '
+        'TablesToolStripMenuItem
+        '
+        Me.TablesToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.MAJToolStripMenuItem, Me.AfficherToolStripMenuItem})
+        Me.TablesToolStripMenuItem.Image = CType(resources.GetObject("TablesToolStripMenuItem.Image"), System.Drawing.Image)
+        Me.TablesToolStripMenuItem.Name = "TablesToolStripMenuItem"
+        Me.TablesToolStripMenuItem.Size = New System.Drawing.Size(122, 22)
+        Me.TablesToolStripMenuItem.Text = "Tables"
+        '
+        'MAJToolStripMenuItem
+        '
+        Me.MAJToolStripMenuItem.Name = "MAJToolStripMenuItem"
+        Me.MAJToolStripMenuItem.Size = New System.Drawing.Size(123, 22)
+        Me.MAJToolStripMenuItem.Text = "MAJ"
+        '
+        'AfficherToolStripMenuItem
+        '
+        Me.AfficherToolStripMenuItem.Name = "AfficherToolStripMenuItem"
+        Me.AfficherToolStripMenuItem.Size = New System.Drawing.Size(123, 22)
+        Me.AfficherToolStripMenuItem.Text = "Afficher"
+        '
         'LogsToolStripMenuItem
         '
         Me.LogsToolStripMenuItem.Image = CType(resources.GetObject("LogsToolStripMenuItem.Image"), System.Drawing.Image)
@@ -120,12 +165,36 @@ Partial Class notify
         Me.ExitToolStripMenuItem.Size = New System.Drawing.Size(152, 22)
         Me.ExitToolStripMenuItem.Text = "Exit"
         '
-        'ConfigurationToolStripMenuItem
+        'Domosnotify
         '
-        Me.ConfigurationToolStripMenuItem.Image = CType(resources.GetObject("ConfigurationToolStripMenuItem.Image"), System.Drawing.Image)
-        Me.ConfigurationToolStripMenuItem.Name = "ConfigurationToolStripMenuItem"
-        Me.ConfigurationToolStripMenuItem.Size = New System.Drawing.Size(152, 22)
-        Me.ConfigurationToolStripMenuItem.Text = "Configuration"
+        Me.Domosnotify.ContextMenuStrip = Me.Domosmenu
+        Me.Domosnotify.Icon = CType(resources.GetObject("Domosnotify.Icon"), System.Drawing.Icon)
+        Me.Domosnotify.Text = "Domos"
+        Me.Domosnotify.Visible = True
+        '
+        'BTN_minimize
+        '
+        Me.BTN_minimize.Location = New System.Drawing.Point(12, 12)
+        Me.BTN_minimize.Name = "BTN_minimize"
+        Me.BTN_minimize.Size = New System.Drawing.Size(75, 23)
+        Me.BTN_minimize.TabIndex = 1
+        Me.BTN_minimize.Text = "Minimize"
+        Me.BTN_minimize.UseVisualStyleBackColor = True
+        '
+        'BTN_exit
+        '
+        Me.BTN_exit.Location = New System.Drawing.Point(98, 12)
+        Me.BTN_exit.Name = "BTN_exit"
+        Me.BTN_exit.Size = New System.Drawing.Size(75, 23)
+        Me.BTN_exit.TabIndex = 2
+        Me.BTN_exit.Text = "Exit"
+        Me.BTN_exit.UseVisualStyleBackColor = True
+        '
+        'EtatToolStripMenuItem
+        '
+        Me.EtatToolStripMenuItem.Name = "EtatToolStripMenuItem"
+        Me.EtatToolStripMenuItem.Size = New System.Drawing.Size(152, 22)
+        Me.EtatToolStripMenuItem.Text = "Etat : "
         '
         'notify
         '
@@ -159,5 +228,14 @@ Partial Class notify
     Friend WithEvents LogsToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents AboutToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents ConfigurationToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents ActionsToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents SQLToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents OptimiseToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents PurgeDesLogsToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents ReconnectToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents TablesToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents MAJToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents AfficherToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents EtatToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
 
 End Class

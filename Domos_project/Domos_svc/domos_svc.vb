@@ -28,7 +28,7 @@ Public Class domos_svc
     Public Shared log_dest As Integer
     Private mysql_ip, mysql_db, mysql_login, mysql_mdp As String
     Private Shared install_dir As String
-    Private controller As New ServiceController
+    Private controller As New ServiceController("DOMOS", ".")
     Private etape_startup As Integer = 0
 
     'Variables specifiques
@@ -39,7 +39,6 @@ Public Class domos_svc
     Public Shared var_soleil_coucher2 As Date = DateAndTime.Now.ToString("yyyy-MM-dd") & " 21:00:00" 'heure de coucher du soleil par defaut
 
     Protected Overrides Sub OnStart(ByVal args() As String)
-
         'Forcer le . 
         Thread.CurrentThread.CurrentCulture = New CultureInfo("en-US")
         My.Application.ChangeCulture("en-US")
@@ -81,26 +80,29 @@ Public Class domos_svc
         heure_coucher_correction = 0
         heure_lever_correction = 0
 
-        'gestion des parametres
-        'parametrevb = My.Application.CommandLineArgs
-        'For Each param As String In parametrevb
-        'log("PARAM : & " & param, 0)
-        'If param = "start" Then svc_start()
-        'Next
-
         svc_start()
     End Sub
 
     Protected Overrides Sub OnStop()
-        ' Add code here to perform any tear-down necessary to stop your service.
         svc_stop()
     End Sub
 
     Protected Overrides Sub OnCustomCommand(ByVal command As Integer)
         If command = 200 Then
-            EventLog.WriteEntry("Custom Command 200 invoked")
+            EventLog.WriteEntry("Custom Command 200 : SQL-optimise")
+            action("[AN#SQL#optimise]")
+        ElseIf command = 201 Then
+            EventLog.WriteEntry("Custom Command 201 : SQL-purgelogs")
+            action("[AN#SQL#purgelogs]")
+        ElseIf command = 202 Then
+            EventLog.WriteEntry("Custom Command 202 : SQL-reconnect")
+            action("[AN#SQL#reconnect]")
         ElseIf command = 210 Then
-            EventLog.WriteEntry("Custom Command 210 invoked")
+            EventLog.WriteEntry("Custom Command 210 : MAJ-tables")
+            action("[AS#maj]")
+        ElseIf command = 211 Then
+            EventLog.WriteEntry("Custom Command 211 : AFFICHE-tables")
+            action("[AS#afftables]")
         End If
     End Sub
 
@@ -114,17 +116,13 @@ Public Class domos_svc
             Dim regKey, regKey2 As RegistryKey
             regKey = Registry.LocalMachine.OpenSubKey("SOFTWARE")
             If regKey Is Nothing Then
-                log("Service arreté car erreur lecture registre ", 1)
-                controller.MachineName = "."
-                controller.ServiceName = "DOMOS"
+                log("Service arreté car erreur lecture registre HKLM\SOFTWARE", 1)
                 controller.Stop()
                 Exit Sub
             Else
                 regKey2 = regKey.OpenSubKey("Domos")
                 If regKey2 Is Nothing Then
-                    log("Service arreté car erreur lecture registre ", 1)
-                    controller.MachineName = "."
-                    controller.ServiceName = "DOMOS"
+                    log("Service arreté car erreur lecture registre HKLM\SOFTWARE\Domos", 1)
                     controller.Stop()
                     Exit Sub
                 End If
@@ -151,8 +149,6 @@ Public Class domos_svc
                 log("SQL : Connexion au serveur " & mysql_ip & " :", 1)
                 log("     -> " & err, 1)
                 log("--- Service Arrété ---", 1)
-                controller.MachineName = "."
-                controller.ServiceName = "DOMOS"
                 controller.Stop()
                 Exit Sub
             End If
@@ -204,8 +200,6 @@ Public Class domos_svc
             Else
                 log("     -> ERR: pas de données récupérées : fermeture du programme", 1)
                 'svc_stop()
-                controller.MachineName = "."
-                controller.ServiceName = "DOMOS"
                 controller.Stop()
                 Exit Sub
             End If
@@ -281,8 +275,6 @@ Public Class domos_svc
                 log("SQL : " & err, 1)
                 log("Fermeture du programme", 1)
                 'svc_stop()
-                controller.MachineName = "."
-                controller.ServiceName = "DOMOS"
                 controller.Stop()
                 Exit Sub
             Else
@@ -309,8 +301,6 @@ Public Class domos_svc
                 Else
                     log("     -> Aucun composant trouvé : fermeture du programme", 1)
                     'svc_stop()
-                    controller.MachineName = "."
-                    controller.ServiceName = "DOMOS"
                     controller.Stop()
                     Exit Sub
                 End If
@@ -476,8 +466,6 @@ Public Class domos_svc
         Catch ex As Exception
             log("ERR: Init exception : Fermeture du programme : " & ex.ToString, 1)
             'svc_stop()
-            controller.MachineName = "."
-            controller.ServiceName = "DOMOS"
             controller.Stop()
             Exit Sub
         End Try
@@ -1434,7 +1422,7 @@ Public Class domos_svc
                     End If
 
                 ElseIf contenu(0) = "AN" Then 'Gestion des modules : [AN#module#action]
-                    If contenu(1) = "SQL" Then 'module SQL
+                    If contenu(1) = "SQL" Then 'module SQL [AN#SQL#optimise-purgelogs-reconnect]
                         If contenu(2) = "optimise" Then 'optimisation de la base mysql
                             log("MAC:  -> Optimisation de la base MySQL", 5)
                             err = mysql.mysql_nonquery("OPTIMIZE TABLE logs, releve, composants, macro, plan, users")
@@ -1449,7 +1437,7 @@ Public Class domos_svc
                             log("SQL:  Déco", 5)
                             err = mysql.mysql_close()
                             If err <> "" Then log("MAC: " & err, 2)
-                            err = mysql.mysql_connect(My.Settings.mysql_ip, My.Settings.mysql_db, My.Settings.mysql_login, My.Settings.mysql_mdp)
+                            err = mysql.mysql_connect(mysql_ip, mysql_db, mysql_login, mysql_mdp)
                             log("SQL:  Reco", 5)
                             If err <> "" Then log("MAC: " & err, 2)
                         End If
