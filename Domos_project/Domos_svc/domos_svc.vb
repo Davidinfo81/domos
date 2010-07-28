@@ -21,6 +21,7 @@ Public Class domos_svc
     Public Shared Port_PLC, Port_X10, Port_RFX, Port_WIR, Port_WI2, socket_ip, WIR_adaptername As String
     Public Shared PLC_timeout, Action_timeout, rfx_tpsentrereponse, socket_port, lastetat, WIR_res As Integer
     Public Shared heure_coucher_correction, heure_lever_correction As Integer
+    Public Shared gps_longitude, gps_latitude As String
     Dim WithEvents timer_pool, timer_timer As New System.Timers.Timer
     Dim err As String = ""
     Public Shared log_niveau As String
@@ -79,6 +80,8 @@ Public Class domos_svc
         WIR_adaptername = ""
         heure_coucher_correction = 0
         heure_lever_correction = 0
+        gps_longitude = 0
+        gps_latitude = 0
 
         svc_start()
     End Sub
@@ -191,10 +194,13 @@ Public Class domos_svc
                 WIR_adaptername = table_config.Select("config_nom = 'WIR_adaptername'")(0)("config_valeur")
                 heure_lever_correction = table_config.Select("config_nom = 'heure_lever_correction'")(0)("config_valeur")
                 heure_coucher_correction = table_config.Select("config_nom = 'heure_coucher_correction'")(0)("config_valeur")
+                gps_longitude = table_config.Select("config_nom = 'gps_longitude'")(0)("config_valeur")
+                gps_latitude = table_config.Select("config_nom = 'gps_latitude'")(0)("config_valeur")
                 log("     -> LOG_NIVEAU=" & log_niveau & " LOG_DESTINATION=" & log_dest, 0)
                 log("     -> WIR=" & Serv_WIR & " WI2=" & Serv_WI2 & " PLC=" & Serv_PLC & ":" & Port_PLC & " X10=" & Serv_X10 & ":" & Port_X10 & " RFX=" & Serv_RFX & ":" & Port_RFX, 0)
                 log("     -> Action_timeout=" & Action_timeout & " PLC_timeout=" & PLC_timeout & " RFX_tpsentrereponse=" & rfx_tpsentrereponse & " Lastetat=" & lastetat, 0)
                 log("     -> heure_lever_correction=" & heure_lever_correction & " heure_coucher_correction=" & heure_coucher_correction, 0)
+                log("     -> longitude=" & gps_longitude & " latitude=" & gps_latitude, 0)
                 log("     -> WIR_res=" & WIR_res & " WIR_adaptername=" & WIR_adaptername, 0)
                 log("     -> Socket Activé=" & Serv_SOC & " IP=" & socket_ip & " Port=" & socket_port, 0)
             Else
@@ -383,7 +389,8 @@ Public Class domos_svc
             '---------- Initialisation des heures du soleil -------
             etape_startup = 12
             log("Initialisation des heures du soleil", 0)
-            soleil.City("Algrange")
+            'soleil.City("Algrange")
+            soleil.City_gps(gps_longitude, gps_latitude)
             soleil.CalculateSun()
             var_soleil_lever = soleil.Sunrise
             var_soleil_coucher = soleil.Sunset
@@ -391,8 +398,34 @@ Public Class domos_svc
             var_soleil_lever2 = DateAdd(DateInterval.Minute, heure_lever_correction, var_soleil_lever)
             log("     -> Heure du lever : " & var_soleil_lever & " (" & var_soleil_lever2 & ")", 0)
             log("     -> Heure du coucher : " & var_soleil_coucher & " (" & var_soleil_coucher2 & ")", 0)
-            log("", 0)
             log("Initialisation des heures du soleil : " & var_soleil_lever & " (" & var_soleil_lever2 & ") - " & var_soleil_coucher & " (" & var_soleil_coucher2 & ")", -1)
+            '---------- Calcul pour savoir si on est de jour ou nuit -------
+            Dim tabletemp = table_composants.Select("composants_adresse = 'jour'")
+            If tabletemp.GetLength(0) = 1 Then
+                If DateAndTime.Now.ToString("HH:mm:ss") > var_soleil_lever And DateAndTime.Now.ToString("HH:mm:ss") < var_soleil_coucher Then
+                    tabletemp(0)("composants_etat") = "1" 'maj du composant virtuel JOUR à jour
+                    log("     -> Maj composant virtuel JOUR : JOUR (1)", 0)
+                Else
+                    tabletemp(0)("composants_etat") = "0" 'maj du composant virtuel JOUR à nuit
+                    log("     -> Maj composant virtuel JOUR : NUIT (0)", 0)
+                End If
+            Else
+                log("     -> ERR: Maj composant virtuel JOUR : Non trouvé", 1)
+            End If
+            '---------- Calcul pour savoir si on est de jour ou nuit avec heures corrigés-------
+            tabletemp = table_composants.Select("composants_adresse = 'jour2'")
+            If tabletemp.GetLength(0) = 1 Then
+                If DateAndTime.Now.ToString("HH:mm:ss") > var_soleil_lever2 And DateAndTime.Now.ToString("HH:mm:ss") < var_soleil_coucher2 Then
+                    tabletemp(0)("composants_etat") = "1" 'maj du composant virtuel JOUR à jour
+                    log("     -> Maj composant virtuel JOUR2 : JOUR (1)", 0)
+                Else
+                    tabletemp(0)("composants_etat") = "0" 'maj du composant virtuel JOUR à nuit
+                    log("     -> Maj composant virtuel JOUR2 : NUIT (0)", 0)
+                End If
+            Else
+                log("     -> ERR: Maj composant virtuel JOUR : Non trouvé", 1)
+            End If
+            log("", 0)
 
             '---------- RFXCOM : Lancement du Handler et paramétrage -------
             etape_startup = 13
@@ -1522,6 +1555,8 @@ Public Class domos_svc
                         Case "WIR"
                             '???
                         Case "WI2"
+                            '???
+                        Case "X10"
                             '???
                         Case Else
                             'log("ECR: norme non gérée : " & tabletmp(0)("composants_modele_norme").ToString & " comp: " & tabletmp(0)("composants_adresse").ToString)

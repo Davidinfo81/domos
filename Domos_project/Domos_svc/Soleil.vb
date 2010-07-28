@@ -96,45 +96,54 @@ Public Class Soleil
         End Get
     End Property
 
-    Public Sub City(ByVal name As String)
-        Dim nCity As Long 'Index numérique de la ville
-        Dim bFound As Boolean 'Variable de contrôle de la présence de la ville dans le tableau
+    'Public Sub City(ByVal name As String)
+    '    Dim nCity As Long 'Index numérique de la ville
+    '    Dim bFound As Boolean 'Variable de contrôle de la présence de la ville dans le tableau
 
-        For nCity = 0 To m_cNumberCities 'Recherche du nom de la ville dans le tableau
-            If Trim(LCase(name)) = Trim(LCase(m_Cities(nCity).Name)) Then
-                bFound = True 'Ville trouvée
-                Exit For 'Sortie de la boucle
-            End If
-        Next
-        If bFound Then 'Gestion de la ville non trouvée
-            Me.City(nCity)
-        End If
-    End Sub
+    '    For nCity = 0 To m_cNumberCities 'Recherche du nom de la ville dans le tableau
+    '        If Trim(LCase(name)) = Trim(LCase(m_Cities(nCity).Name)) Then
+    '            bFound = True 'Ville trouvée
+    '            Exit For 'Sortie de la boucle
+    '        End If
+    '    Next
+    '    If bFound Then 'Gestion de la ville non trouvée
+    '        Me.City(nCity)
+    '    End If
+    'End Sub
 
-    Public Sub City(ByVal value As Long)
+    'Public Sub City(ByVal value As Long)
+    '    'Propriété de sélection de la ville par nom ou par index
+
+    '    Dim nCity As Long 'Index numérique de la ville
+
+    '    nCity = value 'Affectation du paramètre à la variable d'index
+
+    '    If nCity < 0 Or nCity > m_cNumberCities Then 'Contrôle de l'index en dehors du tableau
+    '        m_nTimeZone = 0 'Valeur par erreur
+    '        m_bDaySavings = False 'Valeur par erreur
+    '        m_nLongitude = 0 'Valeur par erreur
+    '        m_nLatitude = 0 'Valeur par erreur
+    '        m_sContinent = "" 'Valeur par erreur AJOUT
+    '        m_sCountry = "" 'Valeur par erreur AJOUT
+    '    Else
+    '        m_nTimeZone = m_Cities(nCity).TimeZone 'Affectation de la valeur à la variable d'échange
+    '        m_bDaySavings = True 'Affectation de la valeur à la variable d'échange
+    '        m_nLongitude = m_Cities(nCity).Longitude 'Affectation de la valeur à la variable d'échange
+    '        m_nLatitude = m_Cities(nCity).Latitude 'Affectation de la valeur à la variable d'échange
+    '        m_sContinent = m_Cities(nCity).Continent 'Affectation de la valeur à la variable d'échange AJOUT
+    '        m_sCountry = m_Cities(nCity).Country 'Affectation de la valeur à la variable d'échange AJOUT
+    '    End If
+    'End Sub
+
+    Public Sub City_gps(ByVal lat As String, ByVal longit As String)
         'Propriété de sélection de la ville par nom ou par index
-
-        Dim nCity As Long 'Index numérique de la ville
-
-        nCity = value 'Affectation du paramètre à la variable d'index
-
-        If nCity < 0 Or nCity > m_cNumberCities Then 'Contrôle de l'index en dehors du tableau
-            m_nTimeZone = 0 'Valeur par erreur
-            m_bDaySavings = False 'Valeur par erreur
-            m_nLongitude = 0 'Valeur par erreur
-            m_nLatitude = 0 'Valeur par erreur
-            m_sContinent = "" 'Valeur par erreur AJOUT
-            m_sCountry = "" 'Valeur par erreur AJOUT
-        Else
-            m_nTimeZone = m_Cities(nCity).TimeZone 'Affectation de la valeur à la variable d'échange
-            m_bDaySavings = True 'Affectation de la valeur à la variable d'échange
-            m_nLongitude = m_Cities(nCity).Longitude 'Affectation de la valeur à la variable d'échange
-            m_nLatitude = m_Cities(nCity).Latitude 'Affectation de la valeur à la variable d'échange
-            m_sContinent = m_Cities(nCity).Continent 'Affectation de la valeur à la variable d'échange AJOUT
-            m_sCountry = m_Cities(nCity).Country 'Affectation de la valeur à la variable d'échange AJOUT
-        End If
+        m_nTimeZone = 1 'Affectation de la valeur à la variable d'échange
+        m_bDaySavings = True 'Affectation de la valeur à la variable d'échange
+        m_nLongitude = longit 'Affectation de la valeur à la variable d'échange
+        m_nLatitude = lat 'Affectation de la valeur à la variable d'échange
+        m_sContinent = "x" 'Affectation de la valeur à la variable d'échange AJOUT
+        m_sCountry = "x" 'Affectation de la valeur à la variable d'échange AJOUT
     End Sub
-
     Public Property TimeZone() As Long
         Get
             'Propriété de récupération du fuseau horaire
@@ -505,8 +514,10 @@ Public Class Soleil
         'Procédure d'initialisation du tableau des villes de référence
         m_cNumberCities = -1
         ReDim m_Cities(0)
-        AddCity("Europe", "France", "Metz", 49.116667, -6.183333, 1)
-        AddCity("Europe", "France", "Algrange", 49.3594, -6.04833, 1)
+        AddCity("Europe", "France", "Metz", 49.1166, -6.1833, 1)
+        AddCity("Europe", "France", "Algrange", 49.3637, -6.0529, 1)
+        AddCity("Europe", "France", "Paris", 48.8625, -2.3523, 1)
+        AddCity("Europe", "France", "Gap", 44.5651, -6.0743, 1)
     End Sub
 
     Public Sub New()
