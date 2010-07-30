@@ -3,70 +3,62 @@
 
 =General=
 
-Domos could start automatically (instead of clicking on "INIT" button)if you had start parameter : "domos.exe start"
+For CMD programm (no longer developped) : Domos could start automatically (instead of clicking on "INIT" button)if you had start parameter : "domos.exe start"
 
-Domos some basic parameters in _"domos.exe.config"_ file :
-    * IP Address, Login and password for SQL Server : Domos must have this information to connect to the database to retrieve the configuration, components.. and store logs and states.
+Domos has some basic parameters in _"domos.exe.config"_ file :
+    * IP Address, Login and password for SQL Server : Domos must have this information to connect to the database to retrieve the configuration, components.. and store logs and states. Now you can foudn this information in the registry : "HKLM\SOFTWARE\Domos" and manage it with the GUI.
 
 But most of parameters are managed on the web interface :
-    * Serv_X10 = 0 : Activer le protocole X10 via un CM11 - 0=désactive 1=activé
-    * Serv_WIR = 1 : Activer le 1-wire via une clé USB - 0=désactive 1=activé
-    * Serv_PLC = 1 : Activer le PLCBUS via le 11-41 - 0=désactive 1=activé
-    * Serv_RFX = 1 : Activer le RFXCOM via le RFX-receiver ethernet ou USB - 0=désactive 1=activé
-    * Serv_WI2 = 0 : Activer le 1-wire via une deuxieme clé USB - 0=désactive 1=activé (NON FONCTIONNEL)
-    * Serv_VIR = 1     0=désactive 1=activé
+    * Serv_X10 = 0 : Activate X10 with a CM11 - 0=inactive 1=active
+    * Serv_WIR = 1 : Activate 1-wire with and USB Key - 0=inactive 1=active
+    * Serv_PLC = 1 : Activate PLCBUS with one PLC-1141 - 0=inactive 1=active
+    * Serv_RFX = 1 : Activate RFXCOM with a RFX-receiver Ethernet or USB - 0=inactive 1=active
+    * Serv_WI2 = 0 : Activate a second 1-wire bus with a second USB Key - 0=inactive 1=active (Not used at this time)
+    * Serv_VIR = 1 : Activate virtual component (obligatory active at this time)   0=inactive 1=active
 
+    * Port_PLC = COM8 : COM port name for PLCBUS-1141
+    * Port_RFX = COM4 : IP Address or COM port Name
+    * Port_X10 = COM1 : COM port name for X10-CM11 : COM1
+    * Port_WIR = USB1 : COM port name for the first 1-wire USB Key
+    * Port_WI2 = USB2 : COM port name for the second 1-wire USB Key
 
-    * Port_PLC = COM8 : Nom du port COM du PLCBUS-1141
-    * Port_RFX = COM4 : Adresse IP ou nom du port COM
-    * Port_X10 = COM1 : Nom du port COM du X10-CM11 : COM1
-    * Port_WIR = USB1 : Nom du port de la première clé USB 1-Wire (obligatoire si on a précisé le nom de l'adaptateur)
-    * Port_WI2 = USB2 : Nom du port de la deuxième clé USB 1-Wire (obligatoire si on a précisé le nom de l'adaptateur)
-
-
-    * rfx_tpsentrereponse = 1500 : Temps en ms entre deux réceptions de valeurs à prendre en compte pour le même composant pour éviter les doublons (car les infos sont envoyé deux fois sur certains composants à qqs ms d'intervalles)
-    * PLC_timeout = 500 : Timeout en ms pour attendre que le port PLCBUS soit disponible avant de relancer une écriture
-    * socket_ip = 192.168.1.20 : Adresse IP du serveur Domos pour que le site puisse se connecter à Domos pour envoyer des ordres...
-    * socket_port = 3852 : Numéro du Port du serveur Domos pour l'attente des connexions par Sockets (3852)
-    * Serv_SOC = 1 : Activé la connexion par Socket
-    * lastetat = 1 : Ne pas prendre en compte les valeurs égale à N-1 (Pour eviter par ex : 18.9 - 19 - 18.9 - 19...) - 0=désactivé 1=activé
-    * WIR_res = 0.1 : résolution pour les composants DS18B20 température en 1-wire : 0.1 / 0.5
-
-    * WIR_adaptername = "" : nom de l'adaptateur onewire : par défaut laisser vide ou le positionner à {DS9490} et le port USB1 (si paramétrer il faut aussi mettre le nom du port)
-
+    * rfx_tpsentrereponse = 1500 : Time in ms between two value reception (other value will be ignored during this time, to avoid multiple identical message send by components) 
+    * PLC_timeout = 500 : Time-out in ms to wait for the PLCBUS disponibility before writing to it.
+    * socket_ip = 192.168.1.20 : IP address of Domos Service (for permitting the website to communicate with it)
+    * socket_port = 3852 : Socket Port Number of Domos Service (3852)
+    * Serv_SOC = 1 : Activate connexion by Socket
+    * lastetat = 1 : No save value equal to N-2 value (to avoid for ex : 18.9 - 19 - 18.9 - 19...) - 0=inactive 1=active
+    * WIR_res = 0.1 : resolution for DS18B20 1-wire component : 0.1 / 0.5
+    * WIR_adaptername = "{DS9490}" : Name of 1-wire adapter : By default : "{DS9490"}
 
     * log_niveau = 0-1-2-3-4-5-6-7-8-9-A...
-          o 0 : Programme : Lancement / Arrêt / redémarrage...
-          o 1 : Erreurs critiques : erreurs faisant ou pouvant planter le programme ou bloquant le fonctionnement
-          o 2 : Erreurs générales : erreurs de base : composant non trouvé...
-          o 3 : Messages reçues
-          o 4 : Lancement d'une macro/timer
-          o 5 : Actions d'une macro/timer
-          o 6 : Valeurs de composant ayant changé
-          o 7 : Valeurs de composant n'ayant pas changé
-          o 8 : Valeurs de composant ayant changé mais < à précision / lastetat
-          o 9 : Divers
-          o A :
-    * log_dest = 2 : Destination des logs : 0=txt, 1=sql, 2=txt+sql (le fichier TXT est situé dans un sous dossier Logs du répertoire Domos
-    * logs_nbparpage = 1000 : Nb de logs/Relevés à afficher par page sur le site web
-    * meteo_codeville = FRXX1222 : Code fr de la Ville pour les prévision weather.com (à Récupérer dans l'Url sur le site web weather.com)
-    * meteo_icone = 2 : Numéro du pack d'icônes météo
-    * meteo_codevillereleve = LUXX0003 : Code de la Ville pour les relevés en temsp réel (page accueil) weather.com
+          * 0 : Programme : start/ stop / restart...
+          * 1 : Critical error : error that could stop the programm
+          * 2 : Standard error : component not found, sql error, conversion...
+          * 3 : Messages received
+          * 4 : Macro/timer start
+          * 5 : macro/timer action
+          * 6 : Component value changed
+          * 7 : Component value not changed
+          * 8 : Component value changed but with no more precision / lastetat
+          * 9 : Divers
+    * log_dest = 2 : logs destination : 0=txt, 1=sql, 2=txt+sql
+    * logs_nbparpage = 1000 : Number of logs/Value to view by page on the web interface
+    * meteo_codeville = FRXX1222 : Town code from weather.com (take it on weather.com Url)
+    * meteo_icone = 2 : Number of weather meteo icon (1 / 4)
+    * meteo_codevillereleve = LUXX0003 : Town code from weather.com for real time value
 
-    * heure_lever_correction = 0 : Nombre de minutes à ajouter (+xx) ou à enlever (-xx) à l'heure de levé du soleil
-
-    * heure_coucher_correction = 0 : Nombre de minutes à ajouter (+xx) ou à enlever (-xx) à l'heure de couché du soleil
+    * heure_lever_correction = 0 : Number of minute to add (+xx) or soustract (-xx) to sunrise hours
+    * heure_coucher_correction = 0 : Number of minute to add (+xx) or soustract (-xx) to sunshine hours
 
 
-Macros
+=Macros=
 
-On distingue deux types de macros : macro et timer
+We have two macro type : macro and timer
+    * macro consists in conditions and actions list
+    * timer consist in a cron time and action list (a macro could contain a cron condition but a timer contain only one cron condition and is used to execute actions at a precise time : ([CT#....])
 
-    * Une macro consiste en une liste de conditions et d'actions
-    * Un timer consiste en un cron et une liste d'actions (Si c'est un timer, la condition doit contenir uniquement juste un atome CT : ([CT#....])
-
-
-Conditions :
+==Conditions :==
 
     * CC#id#=<>#valeur ou CI#id#=<>#valeur : Test d'un composant            id : id du composant,
 
@@ -107,107 +99,100 @@ Conditions :
             exemple : CT#=#*#0#12#*#1-15#* = du premier au 15 du mois à midi
             exemple : CT#=#*#0#0,9,15#*#*#* = tous les jours à 0h, 9h et 15h
 
-Actions:
+==Actions:==
 
     * AC#id#ordre#option1#option2 : Action sur un composant
-
             id : id du composant
             ordre : à envoyer au composant : ON
             option1 : valeur à joindre (ex : PLCBUS : PRESET_DIM 50 2)
             option2 : valeur à joindre (ex : PLCBUS : PRESET_DIM 50 2)
 
     * AE#id#etat : Modifier l'état d'un composant
-
             id : id du composant
             etat : état à positionner (ON, 15.7...)
-           
 
     * AL#texte : texte à loguer
 
-
     * AS#service : service à exécuter :
-
-    stop : arreter le service domos,
-    restart : redémarrer le service,
-    maj : maj des tables,
-    afftables : loguer le contenu des tables
+            stop : arreter le service domos,
+            restart : redémarrer le service,
+            maj_all : maj des tables,
+            maj_composants : maj de la table composant,
+            maj_composants_bannis : maj de la table composants_bannis,
+            maj_macro : maj de la table macro,
+            maj_timer : maj de la table timer,
+            afftables : log tables content
 
     * AM#macro_id : lance la macro macro_id (verif des conditions puis si OK actions)
 
-
     * AN#module#action : module à exécuter :
+                    sql#optimise : optimise la base mysql pour réduire sa taille
+                    sql#purgeglos : purges les logs plus vieux que 2 mois
+                    sql#reconnect : deconnect/connect to the mysql database
 
-                    sql / optimise : optimise la base mysql pour réduire sa taille
-                    sql / purgeglos : purges les logs plus vieux que 2 mois
-
-Liste des ordres possibles :
+=List of possible Order :=
 
     * PLCBUS :
-          o ON
-          o OFF
-          o ALL_LIGHTS_ON
-          o ALL_LIGHTS_OFF
-          o ALL_UNITS_OFF
-          o All_USER_LIGHTS_ON
-          o All_USER_UNITS_OFF
-          o All_USER_LIGHTS_OFF
-          o DIM : light will dim until FADE_STOP  is received / data1 = Fade rate
-          o BRIGHT : light will bright until FADE_STOP  is received / data1 = Fade rate
-          o BLINK : data1=interval
-          o FADE_STOP
-          o PRESET_DIM data1=level data2=delay
-          o STATUS_ON
-          o STATUS_OFF
-          o STATUS_REQUEST
-          o ReceiverMasterAddressSetup : data1=New user code, data2=new home+unitcode
-          o TransmitterMasterAddressSetup : data1=New user code, data2=new home+unitcode
-          o SceneAddressSetup
-          o SceneAddressErase
-          o AllSceneAddressErase
-          o GetSignalStrength : data1=signal strength
-          o GetNoiseStrength : data1=Noise strength
-          o ReportSignalStrength
-          o ReportNoiseStrength
-          o GetAllIdPulse
-          o GetOnlyOnIdPulse
-          o ReportAllIdPulse3Phase
-          o ReportOnlyOnIdPulse3Phase
-
+          * ON
+          * OFF
+          * ALL_LIGHTS_ON
+          * ALL_LIGHTS_OFF
+          * ALL_UNITS_OFF
+          * All_USER_LIGHTS_ON
+          * All_USER_UNITS_OFF
+          * All_USER_LIGHTS_OFF
+          * DIM : light will dim until FADE_STOP  is received / data1 = Fade rate
+          * BRIGHT : light will bright until FADE_STOP  is received / data1 = Fade rate
+          * BLINK : data1=interval
+          * FADE_STOP
+          * PRESET_DIM data1=level data2=delay
+          * STATUS_ON
+          * STATUS_OFF
+          * STATUS_REQUEST
+          * ReceiverMasterAddressSetup : data1=New user code, data2=new home+unitcode
+          * TransmitterMasterAddressSetup : data1=New user code, data2=new home+unitcode
+          * SceneAddressSetup
+          * SceneAddressErase
+          * AllSceneAddressErase
+          * GetSignalStrength : data1=signal strength
+          * GetNoiseStrength : data1=Noise strength
+          * ReportSignalStrength
+          * ReportNoiseStrength
+          * GetAllIdPulse
+          * GetOnlyOnIdPulse
+          * ReportAllIdPulse3Phase
+          * ReportOnlyOnIdPulse3Phase
 
     * RFX-COM:
-          o MODEB32 : Init Mode: 32 bit
-          o MODEVAR : Init Mode: Variable length mode
-          o MODEKOP : Init Mode: 24 bit KOPPLA
-          o MODEARC : Init Mode: Arc
-          o MODEHS : Init Mode: RFXCOM-HS plugin mode
-          o MODEVISONIC : Init Mode: Visonic only
-          o MODENOXLAT : Init Mode: Visonic & Variable mode
-          o MODEBD : Init Mode: Bd
-          o MODEVISAUX : Init Mode: Visionic AUX
-          o DISKOP : Disable Koppla
-          o DISX10 : Disable X10
-          o DISARC : Disable ARC
-          o DISOREGON : Disable Oregon
-          o DISATI : Disable ATI Wonder
-          o DISHE : Disable HomeEasy
-          o DISVIS : Disable Visonic
-          o ENALL : Enable ALL RF
-          o SWVERS : Version request to receiver
+          * MODEB32 : Init Mode: 32 bit
+          * MODEVAR : Init Mode: Variable length mode
+          * MODEKOP : Init Mode: 24 bit KOPPLA
+          * MODEARC : Init Mode: Arc
+          * MODEHS : Init Mode: RFXCOM-HS plugin mode
+          * MODEVISONIC : Init Mode: Visonic only
+          * MODENOXLAT : Init Mode: Visonic & Variable mode
+          * MODEBD : Init Mode: Bd
+          * MODEVISAUX : Init Mode: Visionic AUX
+          * DISKOP : Disable Koppla
+          * DISX10 : Disable X10
+          * DISARC : Disable ARC
+          * DISOREGON : Disable Oregon
+          * DISATI : Disable ATI Wonder
+          * DISHE : Disable HomeEasy
+          * DISVIS : Disable Visonic
+          * ENALL : Enable ALL RF
+          * SWVERS : Version request to receiver
 
+=Components=
 
-Composants
+==obligatory==
 
-Les composants obligatoires :
+    * Jour (address : jour, norme : virtual)
+    * Jour2 (address : jour2, norme : virtual)
 
-    * Jour (adresse : jour, norme : virtuel)
-    * Jour2 (adresse : jour2, norme : virtuel)
-
-
-
-Modèles
+==Modèles==
 
 
 
 
-Plans
-
+=Plans=
