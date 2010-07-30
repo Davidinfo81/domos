@@ -767,209 +767,234 @@ Public Class domos_svc
         Return ""
     End Function
 
-    Private Sub tables_masj()
+    Private Sub tables_masj(ByVal table As String)
+        'table = ALL / COMPOSANTS / COMPOSANTS_BANNIS / MACRO / TIMER
         Dim table_temp As New DataTable
         Dim result
         Dim x As New DataColumn
 
         'Maj de la table composant
-        log("MAJ: Maj de la table_composants", 0)
-        Dim Condition_service As String = ""
-        If Not Serv_PLC Then Condition_service &= " AND composants_modele_norme<>'PLC'"
-        If Not Serv_WIR Then Condition_service &= " AND composants_modele_norme<>'WIR'"
-        If Not Serv_WI2 Then Condition_service &= " AND composants_modele_norme<>'WI2'"
-        If Not Serv_X10 Then Condition_service &= " AND composants_modele_norme<>'X10'"
-        If Not Serv_RFX Then Condition_service &= " AND composants_modele_norme<>'RFX'"
-        If Not Serv_VIR Then Condition_service &= " AND composants_modele_norme<>'VIR'"
-        err = Table_maj(table_temp, "SELECT composants.*,composants_modele.* FROM composants,composants_modele WHERE composants_modele=composants_modele_id AND composants_actif='1'" & Condition_service)
-        If err <> "" Then
-            log("MAJ: SQL : ERR: " & err, 0)
-        Else
-            If table_temp.Rows.Count() > 0 Then 'on a récupéré la nouvelle liste des composants, on fait la maj
-                'Maj et suppression des composants
-                If table_composants.Rows.Count() > 0 Then
-                    For i = 0 To table_composants.Rows.Count() - 1
-                        result = table_temp.Select("composants_id = " & table_composants.Rows(i).Item("composants_id"))
-                        If result.GetLength(0) = 0 Then 'le composant n'existe plus --> DELETE
-                            'log("MAJ: Suppression du composant : " & table_composants.Rows(i).Item("composants_id"))
-                            table_composants.Rows.Remove(table_composants.Rows(i))
-                        ElseIf result.GetLength(0) = 1 Then 'le composant existe --> MAJ
-                            'log("MAJ: mise à jour du composant : " & table_composants.Rows(i).Item("composants_id"))
-                            For j = 0 To table_composants.Columns.Count - 1
-                                'si la colonne n'est pas l'etat, le dernier etat ou timer --> maj
-                                If table_composants.Columns(j).Caption <> "timer" And table_composants.Columns(j).Caption <> "lastetat" And table_composants.Columns(j).Caption <> "composants_etat" Then
-                                    table_composants.Rows(i).Item(j) = result(0)(j)
+        If table = "ALL" Or table = "COMPOSANTS" Then
+            Try
+                log("MAJ: Maj de la table_composants", 0)
+                Dim Condition_service As String = ""
+                If Not Serv_PLC Then Condition_service &= " AND composants_modele_norme<>'PLC'"
+                If Not Serv_WIR Then Condition_service &= " AND composants_modele_norme<>'WIR'"
+                If Not Serv_WI2 Then Condition_service &= " AND composants_modele_norme<>'WI2'"
+                If Not Serv_X10 Then Condition_service &= " AND composants_modele_norme<>'X10'"
+                If Not Serv_RFX Then Condition_service &= " AND composants_modele_norme<>'RFX'"
+                If Not Serv_VIR Then Condition_service &= " AND composants_modele_norme<>'VIR'"
+                err = Table_maj(table_temp, "SELECT composants.*,composants_modele.* FROM composants,composants_modele WHERE composants_modele=composants_modele_id AND composants_actif='1'" & Condition_service)
+                If err <> "" Then
+                    log("MAJ: SQL : ERR: " & err, 0)
+                Else
+                    If table_temp.Rows.Count() > 0 Then 'on a récupéré la nouvelle liste des composants, on fait la maj
+                        'Maj et suppression des composants
+                        If table_composants.Rows.Count() > 0 Then
+                            For i = 0 To table_composants.Rows.Count() - 1
+                                result = table_temp.Select("composants_id = " & table_composants.Rows(i).Item("composants_id"))
+                                If result.GetLength(0) = 0 Then 'le composant n'existe plus --> DELETE
+                                    'log("MAJ: Suppression du composant : " & table_composants.Rows(i).Item("composants_id"))
+                                    table_composants.Rows.Remove(table_composants.Rows(i))
+                                ElseIf result.GetLength(0) = 1 Then 'le composant existe --> MAJ
+                                    'log("MAJ: mise à jour du composant : " & table_composants.Rows(i).Item("composants_id"))
+                                    For j = 0 To table_composants.Columns.Count - 1
+                                        'si la colonne n'est pas l'etat, le dernier etat ou timer --> maj
+                                        If table_composants.Columns(j).Caption <> "timer" And table_composants.Columns(j).Caption <> "lastetat" And table_composants.Columns(j).Caption <> "composants_etat" Then
+                                            table_composants.Rows(i).Item(j) = result(0)(j)
+                                        End If
+                                    Next
                                 End If
                             Next
                         End If
-                    Next
-                End If
-                'ajout dune colonne pour le timer
-                x = New DataColumn
-                x.ColumnName = "timer"
-                table_temp.Columns.Add(x)
-                x = New DataColumn
-                x.ColumnName = "lastetat"
-                table_temp.Columns.Add(x)
-                'ajout des nouveaux composants
-                For i = 0 To table_temp.Rows.Count() - 1
-                    result = table_composants.Select("composants_id = " & table_temp.Rows(i).Item("composants_id"))
-                    If result.GetLength(0) = 0 Then 'le composant n'est pas dans la table_composants, on l'ajoute
-                        'log("MAJ: ajout du composant : " & table_temp.Rows(i).Item("composants_id"))
-                        'creation de la dateheure du timer
-                        Dim date_pooling As Date
-                        date_pooling = DateAndTime.Now.AddSeconds(5 + i) 'on initilise le timer à dans 5+i secondes
-                        table_temp.Rows(i).Item("composants_etat") = STRGS.Replace(table_temp.Rows(i).Item("composants_etat"), ",", ".")
-                        table_temp.Rows(i).Item("timer") = date_pooling.ToString("yyyy-MM-dd HH:mm:ss")
-                        table_temp.Rows(i).Item("lastetat") = table_temp.Rows(i).Item("composants_etat")
-                        'ajout
-                        table_composants.ImportRow(table_temp.Rows(i))
+                        'ajout dune colonne pour le timer
+                        x = New DataColumn
+                        x.ColumnName = "timer"
+                        table_temp.Columns.Add(x)
+                        x = New DataColumn
+                        x.ColumnName = "lastetat"
+                        table_temp.Columns.Add(x)
+                        'ajout des nouveaux composants
+                        For i = 0 To table_temp.Rows.Count() - 1
+                            result = table_composants.Select("composants_id = " & table_temp.Rows(i).Item("composants_id"))
+                            If result.GetLength(0) = 0 Then 'le composant n'est pas dans la table_composants, on l'ajoute
+                                'log("MAJ: ajout du composant : " & table_temp.Rows(i).Item("composants_id"))
+                                'creation de la dateheure du timer
+                                Dim date_pooling As Date
+                                date_pooling = DateAndTime.Now.AddSeconds(5 + i) 'on initilise le timer à dans 5+i secondes
+                                table_temp.Rows(i).Item("composants_etat") = STRGS.Replace(table_temp.Rows(i).Item("composants_etat"), ",", ".")
+                                table_temp.Rows(i).Item("timer") = date_pooling.ToString("yyyy-MM-dd HH:mm:ss")
+                                table_temp.Rows(i).Item("lastetat") = table_temp.Rows(i).Item("composants_etat")
+                                'ajout
+                                table_composants.ImportRow(table_temp.Rows(i))
+                            End If
+                        Next
+                        'affichage de la nouvelle liste
+                        For i = 0 To table_composants.Rows.Count() - 1
+                            log("     -> Id : " & table_composants.Rows(i).Item("composants_id") & " -- Nom : " & table_composants.Rows(i).Item("composants_nom") & " -- Adresse : " & table_composants.Rows(i).Item("composants_adresse") & " -- Valeur : " & table_composants.Rows(i).Item("composants_etat") & " -- Polling : " & table_composants.Rows(i).Item("composants_polling") & " -- Type : " & table_composants.Rows(i).Item("composants_modele_norme") & "-" & table_composants.Rows(i).Item("composants_modele_nom"), 0)
+                        Next
+                    Else
+                        log("MAJ: Pas de composant trouvé !", 0)
                     End If
-                Next
-                'affichage de la nouvelle liste
-                For i = 0 To table_composants.Rows.Count() - 1
-                    log("     -> Id : " & table_composants.Rows(i).Item("composants_id") & " -- Nom : " & table_composants.Rows(i).Item("composants_nom") & " -- Adresse : " & table_composants.Rows(i).Item("composants_adresse") & " -- Valeur : " & table_composants.Rows(i).Item("composants_etat") & " -- Polling : " & table_composants.Rows(i).Item("composants_polling") & " -- Type : " & table_composants.Rows(i).Item("composants_modele_norme") & "-" & table_composants.Rows(i).Item("composants_modele_nom"), 0)
-                Next
-            Else
-                log("MAJ: Pas de composant trouvé !", 0)
-            End If
+                End If
+            Catch ex As Exception
+                log("MAJ: composants error : " & ex.Message, 0)
+            End Try
         End If
 
         'Maj de la table composant bannis
-        log("MAJ: Maj de la table_composants bannis", 0)
-        err = Table_maj(table_temp, "SELECT * FROM composants_bannis")
-        If err <> "" Then
-            log("MAJ: SQL : ERR: " & err, 0)
-        Else
-            If table_temp.Rows.Count() > 0 Then 'on a récupéré la nouvelle liste des composants bannis, on fait la maj
-                'Maj et suppression des composants bannis
-                If table_composants_bannis.Rows.Count() > 0 Then
-                    For i = 0 To table_composants_bannis.Rows.Count() - 1
-                        result = table_temp.Select("composants_bannis_id = " & table_composants_bannis.Rows(i).Item("composants_bannis_id"))
-                        If result.GetLength(0) = 0 Then 'le composant n'existe plus --> DELETE
-                            'log("MAJ: Suppression du composant banni : " & table_composants_bannis.Rows(i).Item("composants_bannis_id"))
-                            table_composants_bannis.Rows.Remove(table_composants_bannis.Rows(i))
-                        ElseIf result.GetLength(0) = 1 Then 'le composant banni existe --> MAJ
-                            'log("MAJ: mise à jour du composant banni : " & table_composants_bannis.Rows(i).Item("composants_bannis_id"))
-                            For j = 0 To table_composants_bannis.Columns.Count - 1
-                                table_composants_bannis.Rows(i).Item(j) = result(0)(j)
+        If table = "ALL" Or table = "COMPOSANTS_BANNIS" Then
+            Try
+                log("MAJ: Maj de la table_composants bannis", 0)
+                err = Table_maj(table_temp, "SELECT * FROM composants_bannis")
+                If err <> "" Then
+                    log("MAJ: SQL : ERR: " & err, 0)
+                Else
+                    If table_temp.Rows.Count() > 0 Then 'on a récupéré la nouvelle liste des composants bannis, on fait la maj
+                        'Maj et suppression des composants bannis
+                        If table_composants_bannis.Rows.Count() > 0 Then
+                            For i = 0 To table_composants_bannis.Rows.Count() - 1
+                                result = table_temp.Select("composants_bannis_id = " & table_composants_bannis.Rows(i).Item("composants_bannis_id"))
+                                If result.GetLength(0) = 0 Then 'le composant n'existe plus --> DELETE
+                                    'log("MAJ: Suppression du composant banni : " & table_composants_bannis.Rows(i).Item("composants_bannis_id"))
+                                    table_composants_bannis.Rows.Remove(table_composants_bannis.Rows(i))
+                                ElseIf result.GetLength(0) = 1 Then 'le composant banni existe --> MAJ
+                                    'log("MAJ: mise à jour du composant banni : " & table_composants_bannis.Rows(i).Item("composants_bannis_id"))
+                                    For j = 0 To table_composants_bannis.Columns.Count - 1
+                                        table_composants_bannis.Rows(i).Item(j) = result(0)(j)
+                                    Next
+                                End If
                             Next
                         End If
-                    Next
-                End If
-                'ajout des nouveaux composants bannis
-                For i = 0 To table_temp.Rows.Count() - 1
-                    result = table_composants_bannis.Select("composants_bannis_id = " & table_temp.Rows(i).Item("composants_bannis_id"))
-                    If result.GetLength(0) = 0 Then 'le composant bannis n'est pas dans la table_composants_bannis, on l'ajoute
-                        table_composants_bannis.ImportRow(table_temp.Rows(i))
+                        'ajout des nouveaux composants bannis
+                        For i = 0 To table_temp.Rows.Count() - 1
+                            result = table_composants_bannis.Select("composants_bannis_id = " & table_temp.Rows(i).Item("composants_bannis_id"))
+                            If result.GetLength(0) = 0 Then 'le composant bannis n'est pas dans la table_composants_bannis, on l'ajoute
+                                table_composants_bannis.ImportRow(table_temp.Rows(i))
+                            End If
+                        Next
+                        'affichage de la nouvelle liste
+                        For i = 0 To table_composants_bannis.Rows.Count() - 1
+                            log("     -> Id : " & table_composants_bannis.Rows(i).Item("composants_bannis_id") & " -- Norme : " & table_composants_bannis.Rows(i).Item("composants_bannis_norme") & " -- Adresse : " & table_composants_bannis.Rows(i).Item("composants_bannis_adresse") & " -- Description : " & table_composants_bannis.Rows(i).Item("composants_bannis_description"), 0)
+                        Next
+                    Else
+                        log("MAJ: Pas de composant banni trouvé !", 0)
                     End If
-                Next
-                'affichage de la nouvelle liste
-                For i = 0 To table_composants_bannis.Rows.Count() - 1
-                    log("     -> Id : " & table_composants_bannis.Rows(i).Item("composants_bannis_id") & " -- Norme : " & table_composants_bannis.Rows(i).Item("composants_bannis_norme") & " -- Adresse : " & table_composants_bannis.Rows(i).Item("composants_bannis_adresse") & " -- Description : " & table_composants_bannis.Rows(i).Item("composants_bannis_description"), 0)
-                Next
-            Else
-                log("MAJ: Pas de composant banni trouvé !", 0)
-            End If
+                End If
+            Catch ex As Exception
+                log("MAJ: composants_bannis error : " & ex.Message, 0)
+            End Try
         End If
 
         'Maj de la table Macro
-        log("MAJ: Maj de la table_macros", 0)
-        table_temp = New DataTable
-        err = Table_maj(table_temp, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions NOT LIKE '%CT#%'")
-        If err <> "" Then
-            log("MAJ: SQL : ERR: " & err, 0)
-        Else
-            If table_temp.Rows.Count() > 0 Then 'on a récupéré la nouvelle liste des macros, on fait la maj
-                'Maj et suppression des macros existantes
-                If table_macros.Rows.Count() > 0 Then
-                    For i = 0 To table_macros.Rows.Count() - 1
-                        result = table_temp.Select("macro_id = " & table_macros.Rows(i).Item("macro_id"))
-                        If result.GetLength(0) = 0 Then 'la macro n'existe plus --> DELETE
-                            'log("MAJ: Suppression de la macro : " & table_macros.Rows(i).Item("macro_id"))
-                            table_macros.Rows.Remove(table_macros.Rows(i))
-                        ElseIf result.GetLength(0) = 1 Then 'la macro existe --> MAJ
-                            'log("MAJ: mise à jour de la macro : " & table_macros.Rows(i).Item("macro_id"))
-                            For j = 0 To table_macros.Columns.Count - 1
-                                'si la colonne n'est pas le verrou --> maj
-                                If table_macros.Columns(j).Caption <> "verrou" Then
-                                    table_macros.Rows(i).Item(j) = result(0)(j)
+        If table = "ALL" Or table = "MACRO" Then
+            Try
+                log("MAJ: Maj de la table_macros", 0)
+                table_temp = New DataTable
+                err = Table_maj(table_temp, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions NOT LIKE '%CT#%'")
+                If err <> "" Then
+                    log("MAJ: SQL : ERR: " & err, 0)
+                Else
+                    If table_temp.Rows.Count() > 0 Then 'on a récupéré la nouvelle liste des macros, on fait la maj
+                        'Maj et suppression des macros existantes
+                        If table_macros.Rows.Count() > 0 Then
+                            For i = 0 To table_macros.Rows.Count() - 1
+                                result = table_temp.Select("macro_id = " & table_macros.Rows(i).Item("macro_id"))
+                                If result.GetLength(0) = 0 Then 'la macro n'existe plus --> DELETE
+                                    'log("MAJ: Suppression de la macro : " & table_macros.Rows(i).Item("macro_id"))
+                                    table_macros.Rows.Remove(table_macros.Rows(i))
+                                ElseIf result.GetLength(0) = 1 Then 'la macro existe --> MAJ
+                                    'log("MAJ: mise à jour de la macro : " & table_macros.Rows(i).Item("macro_id"))
+                                    For j = 0 To table_macros.Columns.Count - 1
+                                        'si la colonne n'est pas le verrou --> maj
+                                        If table_macros.Columns(j).Caption <> "verrou" Then
+                                            table_macros.Rows(i).Item(j) = result(0)(j)
+                                        End If
+                                    Next
                                 End If
                             Next
                         End If
-                    Next
-                End If
-                'ajout dune colonne pour le verrou
-                x = New DataColumn
-                x.ColumnName = "verrou"
-                table_temp.Columns.Add(x)
-                'ajout des nouvelles macros
-                For i = 0 To table_temp.Rows.Count() - 1
-                    result = table_macros.Select("macro_id = " & table_temp.Rows(i).Item("macro_id"))
-                    If result.GetLength(0) = 0 Then 'la macro n'est pas dans la table_macros, on l'ajoute
-                        'log("MAJ: ajout de la macro : " & table_temp.Rows(i).Item("macro_id"))
-                        table_temp.Rows(i).Item("verrou") = False
-                        'ajout
-                        table_macros.ImportRow(table_temp.Rows(i))
+                        'ajout dune colonne pour le verrou
+                        x = New DataColumn
+                        x.ColumnName = "verrou"
+                        table_temp.Columns.Add(x)
+                        'ajout des nouvelles macros
+                        For i = 0 To table_temp.Rows.Count() - 1
+                            result = table_macros.Select("macro_id = " & table_temp.Rows(i).Item("macro_id"))
+                            If result.GetLength(0) = 0 Then 'la macro n'est pas dans la table_macros, on l'ajoute
+                                'log("MAJ: ajout de la macro : " & table_temp.Rows(i).Item("macro_id"))
+                                table_temp.Rows(i).Item("verrou") = False
+                                'ajout
+                                table_macros.ImportRow(table_temp.Rows(i))
+                            End If
+                        Next
+                        'affichage de la nouvelle liste
+                        For i = 0 To table_macros.Rows.Count() - 1
+                            log("     -> Id : " & table_macros.Rows(i).Item("macro_id") & " -- Nom : " & table_macros.Rows(i).Item("macro_nom") & " -- Condition : " & table_macros.Rows(i).Item("macro_conditions") & " -- Action : " & table_macros.Rows(i).Item("macro_actions"), 0)
+                        Next
+                    Else
+                        log("MAJ: Pas de macro trouvée !", 0)
                     End If
-                Next
-                'affichage de la nouvelle liste
-                For i = 0 To table_macros.Rows.Count() - 1
-                    log("     -> Id : " & table_macros.Rows(i).Item("macro_id") & " -- Nom : " & table_macros.Rows(i).Item("macro_nom") & " -- Condition : " & table_macros.Rows(i).Item("macro_conditions") & " -- Action : " & table_macros.Rows(i).Item("macro_actions"), 0)
-                Next
-            Else
-                log("MAJ: Pas de macro trouvée !", 0)
-            End If
+                End If
+            Catch ex As Exception
+                log("MAJ: macro error : " & ex.Message, 0)
+            End Try
         End If
 
         'Maj de la table Timer
-        log("MAJ: Maj de la table_timer", 0)
-        table_temp = New DataTable
-        err = Table_maj(table_temp, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions LIKE '%CT#%'")
-        If err <> "" Then
-            log("MAJ: SQL : ERR: " & err, 0)
-        Else
-            If table_temp.Rows.Count() > 0 Then 'on a récupéré la nouvelle liste des timers, on fait la maj
-                'Maj et suppression des timers existants
-                If table_timer.Rows.Count() > 0 Then
-                    For i = 0 To table_timer.Rows.Count() - 1
-                        result = table_temp.Select("macro_id = " & table_timer.Rows(i).Item("macro_id"))
-                        If result.GetLength(0) = 0 Then 'le timer n'existe plus --> DELETE
-                            'log("MAJ: Suppression du timer : " & table_timer.Rows(i).Item("macro_id"))
-                            table_timer.Rows.Remove(table_timer.Rows(i))
-                        ElseIf result.GetLength(0) = 1 Then 'le timer existe --> MAJ
-                            'log("MAJ: mise à jour du timer : " & table_timer.Rows(i).Item("macro_id"))
-                            For j = 0 To table_timer.Columns.Count - 1
-                                'si la colonne n'est pas le verrou --> maj
-                                If table_timer.Columns(j).Caption <> "timer" Then
-                                    table_timer.Rows(i).Item(j) = result(0)(j)
+        If table = "ALL" Or table = "TIMER" Then
+            Try
+                log("MAJ: Maj de la table_timer", 0)
+                table_temp = New DataTable
+                err = Table_maj(table_temp, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions LIKE '%CT#%'")
+                If err <> "" Then
+                    log("MAJ: SQL : ERR: " & err, 0)
+                Else
+                    If table_temp.Rows.Count() > 0 Then 'on a récupéré la nouvelle liste des timers, on fait la maj
+                        'Maj et suppression des timers existants
+                        If table_timer.Rows.Count() > 0 Then
+                            For i = 0 To table_timer.Rows.Count() - 1
+                                result = table_temp.Select("macro_id = " & table_timer.Rows(i).Item("macro_id"))
+                                If result.GetLength(0) = 0 Then 'le timer n'existe plus --> DELETE
+                                    'log("MAJ: Suppression du timer : " & table_timer.Rows(i).Item("macro_id"))
+                                    table_timer.Rows.Remove(table_timer.Rows(i))
+                                ElseIf result.GetLength(0) = 1 Then 'le timer existe --> MAJ
+                                    'log("MAJ: mise à jour du timer : " & table_timer.Rows(i).Item("macro_id"))
+                                    For j = 0 To table_timer.Columns.Count - 1
+                                        'si la colonne n'est pas le verrou --> maj
+                                        If table_timer.Columns(j).Caption <> "timer" Then
+                                            table_timer.Rows(i).Item(j) = result(0)(j)
+                                        End If
+                                    Next
                                 End If
                             Next
                         End If
-                    Next
-                End If
-                'ajout dune colonne pour le timer
-                x = New DataColumn
-                x.ColumnName = "timer"
-                table_temp.Columns.Add(x)
-                'ajout des nouveaux timers
-                For i = 0 To table_temp.Rows.Count() - 1
-                    result = table_timer.Select("macro_id = " & table_temp.Rows(i).Item("macro_id"))
-                    If result.GetLength(0) = 0 Then 'le timer n'est pas dans la table_timer, on l'ajoute
-                        'log("MAJ: ajout du timer : " & table_temp.Rows(i).Item("macro_id"))
-                        table_temp.Rows(i).Item("timer") = timer_convertendate(table_temp.Rows(i).Item("macro_conditions"))
-                        'ajout
-                        table_timer.ImportRow(table_temp.Rows(i))
+                        'ajout dune colonne pour le timer
+                        x = New DataColumn
+                        x.ColumnName = "timer"
+                        table_temp.Columns.Add(x)
+                        'ajout des nouveaux timers
+                        For i = 0 To table_temp.Rows.Count() - 1
+                            result = table_timer.Select("macro_id = " & table_temp.Rows(i).Item("macro_id"))
+                            If result.GetLength(0) = 0 Then 'le timer n'est pas dans la table_timer, on l'ajoute
+                                'log("MAJ: ajout du timer : " & table_temp.Rows(i).Item("macro_id"))
+                                table_temp.Rows(i).Item("timer") = timer_convertendate(table_temp.Rows(i).Item("macro_conditions"))
+                                'ajout
+                                table_timer.ImportRow(table_temp.Rows(i))
+                            End If
+                        Next
+                        'affichage de la nouvelle liste
+                        For i = 0 To table_timer.Rows.Count() - 1
+                            table_timer.Rows(i).Item("timer") = timer_convertendate(table_timer.Rows(i).Item("macro_conditions"))
+                            log("     -> Id : " & table_timer.Rows(i).Item("macro_id") & " -- Nom : " & table_timer.Rows(i).Item("macro_nom") & " -- Condition : " & table_timer.Rows(i).Item("macro_conditions") & " -- Action : " & table_timer.Rows(i).Item("macro_actions") & " -- Timer : " & table_timer.Rows(i).Item("timer"), 0)
+                        Next
+                    Else
+                        log("MAJ: Pas de Timer trouvé !", 0)
                     End If
-                Next
-                'affichage de la nouvelle liste
-                For i = 0 To table_timer.Rows.Count() - 1
-                    table_timer.Rows(i).Item("timer") = timer_convertendate(table_timer.Rows(i).Item("macro_conditions"))
-                    log("     -> Id : " & table_timer.Rows(i).Item("macro_id") & " -- Nom : " & table_timer.Rows(i).Item("macro_nom") & " -- Condition : " & table_timer.Rows(i).Item("macro_conditions") & " -- Action : " & table_timer.Rows(i).Item("macro_actions") & " -- Timer : " & table_timer.Rows(i).Item("timer"), 0)
-                Next
-            Else
-                log("MAJ: Pas de Timer trouvé !", 0)
-            End If
+                End If
+            Catch ex As Exception
+                log("MAJ: timer error : " & ex.Message, 0)
+            End Try
         End If
 
     End Sub
@@ -1384,6 +1409,7 @@ Public Class domos_svc
                 posfin = STRGS.InStr(posdebut, liste, "]")
                 contenu = STRGS.Split(STRGS.Mid(liste, posdebut, posfin - posdebut), "#")
 
+                '--------------------------- AC = Action sur un composant -------------------------
                 If contenu(0) = "AC" Then 'c'est un composant :  : [AC#compid#Valeur] ou [AC#compid#Valeur#Valeur2]
                     'recherche du composant
                     Dim tabletemp = table_composants.Select("composants_id = '" & contenu(1) & "'")
@@ -1425,6 +1451,7 @@ Public Class domos_svc
                     End If
                     wait(100)
 
+                    '--------------------------- AE = Etat d'un composant -------------------------
                 ElseIf contenu(0) = "AE" Then 'c'est un composant à modifier :  : [AE#compid#Valeur]
                     'recherche du composant
                     Dim tabletemp = table_composants.Select("composants_id = '" & contenu(1) & "'")
@@ -1435,9 +1462,11 @@ Public Class domos_svc
                         log("MAC:  -> Action: Composant ID:" & contenu(1) & " non trouvé", 2)
                     End If
 
+                    '---------------------------------- AL = LOG ----------------------------------
                 ElseIf contenu(0) = "AL" Then 'on doit juste loguer : [AL#texte]
                     log("MAC:  -> " & contenu(1), 5)
 
+                    '-------------------------- AS = action sur le SERVICE ------------------------
                 ElseIf contenu(0) = "AS" Then 'on execute une action sur le service  : [AS#action]
                     log("MAC:  -> " & contenu(1), 5)
                     If contenu(1) = "stop" Then 'arret du service
@@ -1448,12 +1477,21 @@ Public Class domos_svc
                         Else
                             svc_start()
                         End If
-                    ElseIf contenu(1) = "maj" Then 'maj des tables
-                        If Serv_DOMOS Then tables_masj()
+                    ElseIf contenu(1) = "maj" Or contenu(1) = "maj_all" Then 'maj des tables
+                        If Serv_DOMOS Then tables_masj("ALL")
+                    ElseIf contenu(1) = "maj_composants" Then 'maj de la table COMPOSANTS
+                        If Serv_DOMOS Then tables_masj("COMPOSANTS")
+                    ElseIf contenu(1) = "maj_composants_bannis" Then 'maj de la table COMPOSANTS_BANNIS
+                        If Serv_DOMOS Then tables_masj("COMPOSANTS_BANNIS")
+                    ElseIf contenu(1) = "maj_macro" Then 'maj de la table MACRO
+                        If Serv_DOMOS Then tables_masj("MACRO")
+                    ElseIf contenu(1) = "maj_timer" Then 'maj de la table TIMER
+                        If Serv_DOMOS Then tables_masj("TIMER")
                     ElseIf contenu(1) = "afftables" Then 'Affiche les tables en memoires
                         tables_aff()
                     End If
 
+                    '------------------------------- AN = Modules  -------------------------------
                 ElseIf contenu(0) = "AN" Then 'Gestion des modules : [AN#module#action]
                     If contenu(1) = "SQL" Then 'module SQL [AN#SQL#optimise-purgelogs-reconnect]
                         If contenu(2) = "optimise" Then 'optimisation de la base mysql
@@ -1476,6 +1514,7 @@ Public Class domos_svc
                         End If
                     End If
 
+                    '---------------------------- AM = Lancer une macro ------------------------
                 ElseIf contenu(0) = "AM" Then 'execution d'une macro : [AM#macros_id]
                     Dim tabletemp = table_macros.Select("macros_id = '" & contenu(1) & "'")
                     If tabletemp.GetLength(0) = 1 Then 'macro trouvé
