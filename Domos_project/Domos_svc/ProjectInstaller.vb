@@ -34,6 +34,7 @@ Public Class ProjectInstaller
         regKey2.SetValue("mysql_login", login)
         regKey2.SetValue("mysql_mdp", password)
         regKey2.SetValue("install_dir", targ)
+        regKey2.Flush()
         regKey2.Close()
         regKey.Close()
     End Sub

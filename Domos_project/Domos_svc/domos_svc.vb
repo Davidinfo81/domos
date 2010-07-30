@@ -312,82 +312,8 @@ Public Class domos_svc
                 End If
             End If
 
-            '---------- Ajout d'un handler sur la modification de l'etat d'un composant -------
-            etape_startup = 9
-            log("Lancement de l'handler sur l etat des composants", 0)
-            AddHandler table_composants.ColumnChanged, New DataColumnChangeEventHandler(AddressOf table_composants_changed)
-            log("", 0)
-
-            '----- recupération de la liste des composants bannis -----
-            log("SQL : Récupération de la liste des composants bannis :", 0)
-            log("SQL : Récupération de la liste des composants bannis", -1)
-            err = Table_maj(table_composants_bannis, "SELECT * FROM composants_bannis")
-            If err <> "" Then
-                log("SQL : " & err, 2)
-            Else
-                If table_composants_bannis.Rows.Count() > 0 Then
-                    'affichage de la liste des composants bannis
-                    For i = 0 To table_composants_bannis.Rows.Count() - 1
-                        log("     -> Id : " & table_composants_bannis.Rows(i).Item("composants_bannis_id") & " -- Norme : " & table_composants_bannis.Rows(i).Item("composants_bannis_norme") & " -- Adresse : " & table_composants_bannis.Rows(i).Item("composants_bannis_adresse") & " -- Description : " & table_composants_bannis.Rows(i).Item("composants_bannis_description"), 0)
-                    Next
-                Else
-                    log("     -> Aucun composant banni trouvé", 0)
-                End If
-            End If
-            log("", 0)
-
-            '----- recupération de la liste des macros -----
-            etape_startup = 10
-            log("SQL : Récupération de la liste des macros :", 0)
-            log("SQL : Récupération de la liste des macros", -1)
-            err = Table_maj(table_macros, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions NOT LIKE '%CT#%'")
-            If err <> "" Then
-                log("SQL : " & err, 2)
-            Else
-                x = New DataColumn
-                x.ColumnName = "verrou"
-                table_macros.Columns.Add(x)
-                If table_macros.Rows.Count() > 0 Then
-                    'affichage de la liste des macros
-                    For i = 0 To table_macros.Rows.Count() - 1
-                        table_macros.Rows(i).Item("verrou") = False
-                        log("     -> Id : " & table_macros.Rows(i).Item("macro_id") & " -- Nom : " & table_macros.Rows(i).Item("macro_nom") & " -- Condition : " & table_macros.Rows(i).Item("macro_conditions") & " -- Action : " & table_macros.Rows(i).Item("macro_actions"), 0)
-                    Next
-                Else
-                    log("     -> Aucune macro trouvée", 0)
-                End If
-            End If
-            log("", 0)
-
-            '----- recupération de la liste des timers -----
-            etape_startup = 11
-            log("SQL : Récupération de la liste des timers :", 0)
-            log("SQL : Récupération de la liste des timers", -1)
-            err = Table_maj(table_timer, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions LIKE '%CT#%'")
-            If err <> "" Then
-                log("SQL : " & err, 2)
-            Else
-                x = New DataColumn
-                x.ColumnName = "timer"
-                table_timer.Columns.Add(x)
-                If table_timer.Rows.Count() > 0 Then
-                    'affichage de la liste des timers
-                    If table_timer.Rows.Count() > 0 Then
-                        For i = 0 To table_timer.Rows.Count() - 1
-                            table_timer.Rows(i).Item("timer") = timer_convertendate(table_timer.Rows(i).Item("macro_conditions"))
-                            log("     -> Id : " & table_timer.Rows(i).Item("macro_id") & " -- Nom : " & table_timer.Rows(i).Item("macro_nom") & " -- Condition : " & table_timer.Rows(i).Item("macro_conditions") & " -- Action : " & table_timer.Rows(i).Item("macro_actions") & " -- Timer : " & table_timer.Rows(i).Item("timer"), 0)
-                        Next
-                    Else
-                        log("     -> Aucun timer trouvé", 0)
-                    End If
-                Else
-                    log("     -> Aucun timer trouvé", 0)
-                End If
-            End If
-            log("", 0)
-
             '---------- Initialisation des heures du soleil -------
-            etape_startup = 12
+            etape_startup = 9
             log("Initialisation des heures du soleil", 0)
             'soleil.City("Algrange")
             soleil.City_gps(gps_longitude, gps_latitude)
@@ -424,6 +350,81 @@ Public Class domos_svc
                 End If
             Else
                 log("     -> ERR: Maj composant virtuel JOUR : Non trouvé", 1)
+            End If
+            log("", 0)
+
+
+            '---------- Ajout d'un handler sur la modification de l'etat d'un composant -------
+            etape_startup = 10
+            log("Lancement de l'handler sur l etat des composants", 0)
+            AddHandler table_composants.ColumnChanged, New DataColumnChangeEventHandler(AddressOf table_composants_changed)
+            log("", 0)
+
+            '----- recupération de la liste des composants bannis -----
+            log("SQL : Récupération de la liste des composants bannis :", 0)
+            log("SQL : Récupération de la liste des composants bannis", -1)
+            err = Table_maj(table_composants_bannis, "SELECT * FROM composants_bannis")
+            If err <> "" Then
+                log("SQL : " & err, 2)
+            Else
+                If table_composants_bannis.Rows.Count() > 0 Then
+                    'affichage de la liste des composants bannis
+                    For i = 0 To table_composants_bannis.Rows.Count() - 1
+                        log("     -> Id : " & table_composants_bannis.Rows(i).Item("composants_bannis_id") & " -- Norme : " & table_composants_bannis.Rows(i).Item("composants_bannis_norme") & " -- Adresse : " & table_composants_bannis.Rows(i).Item("composants_bannis_adresse") & " -- Description : " & table_composants_bannis.Rows(i).Item("composants_bannis_description"), 0)
+                    Next
+                Else
+                    log("     -> Aucun composant banni trouvé", 0)
+                End If
+            End If
+            log("", 0)
+
+            '----- recupération de la liste des macros -----
+            etape_startup = 11
+            log("SQL : Récupération de la liste des macros :", 0)
+            log("SQL : Récupération de la liste des macros", -1)
+            err = Table_maj(table_macros, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions NOT LIKE '%CT#%'")
+            If err <> "" Then
+                log("SQL : " & err, 2)
+            Else
+                x = New DataColumn
+                x.ColumnName = "verrou"
+                table_macros.Columns.Add(x)
+                If table_macros.Rows.Count() > 0 Then
+                    'affichage de la liste des macros
+                    For i = 0 To table_macros.Rows.Count() - 1
+                        table_macros.Rows(i).Item("verrou") = False
+                        log("     -> Id : " & table_macros.Rows(i).Item("macro_id") & " -- Nom : " & table_macros.Rows(i).Item("macro_nom") & " -- Condition : " & table_macros.Rows(i).Item("macro_conditions") & " -- Action : " & table_macros.Rows(i).Item("macro_actions"), 0)
+                    Next
+                Else
+                    log("     -> Aucune macro trouvée", 0)
+                End If
+            End If
+            log("", 0)
+
+            '----- recupération de la liste des timers -----
+            etape_startup = 12
+            log("SQL : Récupération de la liste des timers :", 0)
+            log("SQL : Récupération de la liste des timers", -1)
+            err = Table_maj(table_timer, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions LIKE '%CT#%'")
+            If err <> "" Then
+                log("SQL : " & err, 2)
+            Else
+                x = New DataColumn
+                x.ColumnName = "timer"
+                table_timer.Columns.Add(x)
+                If table_timer.Rows.Count() > 0 Then
+                    'affichage de la liste des timers
+                    If table_timer.Rows.Count() > 0 Then
+                        For i = 0 To table_timer.Rows.Count() - 1
+                            table_timer.Rows(i).Item("timer") = timer_convertendate(table_timer.Rows(i).Item("macro_conditions"))
+                            log("     -> Id : " & table_timer.Rows(i).Item("macro_id") & " -- Nom : " & table_timer.Rows(i).Item("macro_nom") & " -- Condition : " & table_timer.Rows(i).Item("macro_conditions") & " -- Action : " & table_timer.Rows(i).Item("macro_actions") & " -- Timer : " & table_timer.Rows(i).Item("timer"), 0)
+                        Next
+                    Else
+                        log("     -> Aucun timer trouvé", 0)
+                    End If
+                Else
+                    log("     -> Aucun timer trouvé", 0)
+                End If
             End If
             log("", 0)
 
