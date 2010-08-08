@@ -60,75 +60,71 @@ We have two macro type : macro and timer
 
 ==Conditions :==
 
-    * CC#id#=<>#valeur ou CI#id#=<>#valeur : Test d'un composant            id : id du composant,
+    * CC#id#=<>#valeur ou CI#id#=<>#valeur : Test of one component
+            * id : component id,
+            * =<> : test : <, >, =, <=, >=, <>
+            * valeur : value to test : 19.5, ON... (use dot "." and not ",")
+            * CC : the macro will be executed on the component state change
+            * CI : test one component value (CC#1#ON & CI#2#OFF : macro executes when 1 change to ON and if 2 are at OFF state but not if 2 passed to OFF)
 
-            =<> : signe de test : <, >, =, <=, >=, <>
-            valeur : valeur à tester : 19.5, ON... (mettre des points dans les valeurs et non des virgules)
-            CC : la macro réagit sur la modification de l'état de ce composant
-            CI : sert juste à tester (CC#1#ON & CI#2#OFF : la macro va s'exécuter quand 1 passera à ON et 2 sera à OFF mais la macro ne sera pas lancé quand 2 passera a OFF)
-
-
-    * CH#=<>#ss#mm#hh#jj#MMM#JJJ : test suivant l'heure / date (ne sert pas a programmer mais à tester l'heure lorsqu'une macro est lancée)
-
-            =<> : signe de test : <, >, =, <=, >=, <>
-            ss : Secondes : 0-59 (* pour n'importe)
-            mm : Minute : 0-59 (* pour n'importe)
-            hh: Heure : 0-23 (* pour n'importe)
-            jj: Jour du mois : 1-31 (* pour n'importe)
-            MMM: Numero du mois : 1-12 (* pour n'importe)
-            JJJ : Numéro du jour de la semaine : 1-7 (* pour n'importe)
-            exemple : CH#=#0#0#0#1#*#* = si on est le 1er du mois et minuit
-            exemple : CH#>#0#0#22#*#*#* = Si il est plus que 22h (et < à minuit)
-            exemple : CH#=#*#*#22#*#*#1 = Si on est Lundi entre 22h00 et 22h59
+    * CH#=<>#ss#mm#hh#jj#MMM#JJJ : test with date or time (not used to plan but to test a date/time when a macro will be executed)
+           *  =<> : signe de test : <, >, =, <=, >=, <>
+           * ss : Secondes : 0-59 (* for any)
+           * mm : Minute : 0-59 (* for any)
+           * hh: Heure : 0-23 (* pfor any)
+           * jj: Jour du mois : 1-31 (* for any)
+           * MMM: Numero du mois : 1-12 (* for any)
+           * JJJ : Numéro du jour de la semaine : 1-7 (* for any)
+           * exemple : CH#=#0#0#0#1#*#* = si on est le 1er du mois et minuit
+           * exemple : CH#>#0#0#22#*#*#* = Si il est plus que 22h (et < à minuit)
+           * exemple : CH#=#*#*#22#*#*#1 = Si on est Lundi entre 22h00 et 22h59
         
 
     * CT#=#ss#mm#hh#jj#MM#JJ : Timer (sert à programmer des actions)
-
-            =#* : non utilisé
-            ss: Seconde: 0-59 (* pour n'importe)
-            mm : Minute : 0-59 (* pour n'importe)
-              hh: Heure : 0-23 (* pour n'importe)
-            jj: Jour du mois : 1-31 (* pour n'importe)
-            MM: Numero du mois : 1-12 (* pour n'importe)
-            JJ : Numéro du jour de la semaine : 1-7 (* pour n'importe)
-            exemple : CT#=#*#0#0#1#*#* = tous les 1er du mois à minuit
-            exemple : CT#=#*#0#12#*#*#* = tous les jours à 12h00
-            exemple : CT#=#*#*#*#*#*#* = toutes les minutes
-            exemple : CT#=#*#5#2#*#*#2 = toutes les mardis à 2h05
-            exemple : CT#=#*#*#/1#*#*#2 = toutes les mardis toutes les heures
-            exemple : CT#=#*#0#12#*#1-15#* = du premier au 15 du mois à midi
-            exemple : CT#=#*#0#0,9,15#*#*#* = tous les jours à 0h, 9h et 15h
+           * ss: Seconde: 0-59 (* for any)
+           * mm : Minute : 0-59 (* for any)
+           * hh: Heure : 0-23 (* for any)
+           * jj: Jour du mois : 1-31 (* for any)
+           * MM: Numero du mois : 1-12 (* for any)
+           * JJ : Numéro du jour de la semaine : 1-7 (* for any)
+           * exemple : CT#=#*#0#0#1#*#* = tous les 1er du mois à minuit
+           * exemple : CT#=#*#0#12#*#*#* = tous les jours à 12h00
+           * exemple : CT#=#*#*#*#*#*#* = toutes les minutes
+           * exemple : CT#=#10#5#2#*#*#2 = toutes les mardis à 2h05m10s
+           * exemple : CT#=#*#*#/1#*#*#2 = toutes les mardis toutes les heures
+           * exemple : CT#=#*#0#12#*#1-15#* = du premier au 15 du mois à midi
+           * exemple : CT#=#*#0#0,9,15#*#*#* = tous les jours à 0h, 9h et 15h
 
 ==Actions:==
 
-    * AC#id#ordre#option1#option2 : Action sur un composant
-            id : id du composant
-            ordre : à envoyer au composant : ON
-            option1 : valeur à joindre (ex : PLCBUS : PRESET_DIM 50 2)
-            option2 : valeur à joindre (ex : PLCBUS : PRESET_DIM 50 2)
+    * AC#id#ordre#option1#option2 : Action on a component
+           * id : component id
+           * ordre : à envoyer au composant : ON
+           * option1 : valeur à joindre (ex : PLCBUS : PRESET_DIM 50 2)
+           * option2 : valeur à joindre (ex : PLCBUS : PRESET_DIM 50 2)
 
     * AE#id#etat : Modifier l'état d'un composant
-            id : id du composant
-            etat : état à positionner (ON, 15.7...)
+           * id : id du composant
+           * etat : état à positionner (ON, 15.7...)
 
     * AL#texte : texte à loguer
 
     * AS#service : service à exécuter :
-            stop : arreter le service domos,
-            restart : redémarrer le service,
-            maj_all : maj des tables,
-            maj_composants : maj de la table composant,
-            maj_composants_bannis : maj de la table composants_bannis,
-            maj_macro : maj de la table macro,
-            maj_timer : maj de la table timer,
-            afftables : log tables content
+           * stop : arreter le service domos,
+           * restart : redémarrer le service,
+           * maj_all : maj des tables,
+           * maj_composants : maj de la table composant,
+           * maj_composants_bannis : maj de la table composants_bannis,
+           * maj_macro : maj de la table macro,
+           * maj_timer : maj de la table timer,
+           * afftables : log tables content
 
     * AM#macro_id : lance la macro macro_id (verif des conditions puis si OK actions)
 
     * AN#module#action : module à exécuter :
-                    sql#optimise : optimise la base mysql pour réduire sa taille
-                    sql#purgeglos : purges les logs plus vieux que 2 mois
-                    sql#reconnect : deconnect/connect to the mysql database
+           * sql#optimise : optimise la base mysql pour réduire sa taille
+           * sql#purgeglos : purges les logs plus vieux que 2 mois
+           * sql#reconnect : deconnect/connect to the mysql database
 
 =List of possible Order :=
 
@@ -196,3 +192,4 @@ We have two macro type : macro and timer
 
 
 =Plans=
+
