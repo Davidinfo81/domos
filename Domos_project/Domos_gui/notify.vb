@@ -103,17 +103,7 @@ Public Class notify
     End Sub
 
     '------------------- DOMOS service  -----------------------
-    'On focus menu notidy : refresh domos service state
-    'Private Sub Domosmenu_GotFocus(ByVal sender As Object, ByVal e As System.EventArgs) Handles Domosmenu.GotFocus
-    '    controller.Refresh()
-    '    EtatToolStripMenuItem.Text = "Etat : " & controller.Status.ToString
-    'End Sub
-    'On mouse over SQL : refresh domos service state
-    'Private Sub SQLToolStripMenuItem_MouseHover(ByVal sender As Object, ByVal e As System.EventArgs) Handles SQLToolStripMenuItem.MouseHover
-    '    controller.Refresh()
-    '    EtatToolStripMenuItem.Text = "Etat : " & controller.Status.ToString
-    'End Sub
-    'On menu opening : refresh domos service state
+    'On menu opening : Enable menus depending on service state
     Private Sub Domosmenu_Opening(ByVal sender As System.Object, ByVal e As System.ComponentModel.CancelEventArgs) Handles Domosmenu.Opening
         controller.Refresh()
         EtatToolStripMenuItem.Text = "Etat : " & controller.Status.ToString
@@ -148,7 +138,6 @@ Public Class notify
         End If
 
     End Sub
-
     'Start domos service
     Private Sub StartToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles StartToolStripMenuItem.Click
         'START Service
@@ -263,7 +252,7 @@ Public Class notify
         controller.ExecuteCommand(210)
     End Sub
 
-
+    '---------------------- TESTS ---------------------------
     Private Sub Isnumeric182ToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Isnumeric182ToolStripMenuItem.Click
         If IsNumeric("18.2") Then MsgBox("true") Else MsgBox("false")
     End Sub
