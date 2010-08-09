@@ -104,15 +104,51 @@ Public Class notify
 
     '------------------- DOMOS service  -----------------------
     'On focus menu notidy : refresh domos service state
-    Private Sub Domosmenu_GotFocus(ByVal sender As Object, ByVal e As System.EventArgs) Handles Domosmenu.GotFocus
-        controller.Refresh()
-        EtatToolStripMenuItem.Text = "Etat : " & controller.Status.ToString
-    End Sub
+    'Private Sub Domosmenu_GotFocus(ByVal sender As Object, ByVal e As System.EventArgs) Handles Domosmenu.GotFocus
+    '    controller.Refresh()
+    '    EtatToolStripMenuItem.Text = "Etat : " & controller.Status.ToString
+    'End Sub
     'On mouse over SQL : refresh domos service state
-    Private Sub SQLToolStripMenuItem_MouseHover(ByVal sender As Object, ByVal e As System.EventArgs) Handles SQLToolStripMenuItem.MouseHover
+    'Private Sub SQLToolStripMenuItem_MouseHover(ByVal sender As Object, ByVal e As System.EventArgs) Handles SQLToolStripMenuItem.MouseHover
+    '    controller.Refresh()
+    '    EtatToolStripMenuItem.Text = "Etat : " & controller.Status.ToString
+    'End Sub
+    'On menu opening : refresh domos service state
+    Private Sub Domosmenu_Opening(ByVal sender As System.Object, ByVal e As System.ComponentModel.CancelEventArgs) Handles Domosmenu.Opening
         controller.Refresh()
         EtatToolStripMenuItem.Text = "Etat : " & controller.Status.ToString
+        If controller.Status.Equals(ServiceControllerStatus.Running) Then
+            StartToolStripMenuItem.Enabled = False
+            StopToolStripMenuItem.Enabled = True
+            RestartToolStripMenuItem.Enabled = True
+            ActionsToolStripMenuItem.Enabled = True
+            SQLToolStripMenuItem.Visible = True
+            TablesToolStripMenuItem.Visible = True
+        ElseIf controller.Status.Equals(ServiceControllerStatus.Stopped) Then
+            StartToolStripMenuItem.Enabled = True
+            StopToolStripMenuItem.Enabled = False
+            RestartToolStripMenuItem.Enabled = False
+            ActionsToolStripMenuItem.Enabled = False
+            SQLToolStripMenuItem.Visible = False
+            TablesToolStripMenuItem.Visible = False
+        ElseIf controller.Status.Equals(ServiceControllerStatus.Paused) Then
+            StartToolStripMenuItem.Enabled = True
+            StopToolStripMenuItem.Enabled = True
+            RestartToolStripMenuItem.Enabled = True
+            ActionsToolStripMenuItem.Enabled = False
+            SQLToolStripMenuItem.Visible = False
+            TablesToolStripMenuItem.Visible = False
+        ElseIf controller.Status.Equals(ServiceControllerStatus.StopPending) Or controller.Status.Equals(ServiceControllerStatus.PausePending) Or controller.Status.Equals(ServiceControllerStatus.StartPending) Or controller.Status.Equals(ServiceControllerStatus.ContinuePending) Then
+            StartToolStripMenuItem.Enabled = False
+            StopToolStripMenuItem.Enabled = False
+            RestartToolStripMenuItem.Enabled = False
+            ActionsToolStripMenuItem.Enabled = False
+            SQLToolStripMenuItem.Visible = False
+            TablesToolStripMenuItem.Visible = False
+        End If
+
     End Sub
+
     'Start domos service
     Private Sub StartToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles StartToolStripMenuItem.Click
         'START Service
@@ -127,7 +163,7 @@ Public Class notify
             ElseIf controller.Status.Equals(ServiceControllerStatus.Stopped) Then
                 controller.Start()
             End If
-            controller.Refresh()
+            'controller.Refresh()
         Catch ex As Exception
             MsgBox("Error while starting Domos service" & Chr(10) & Chr(10) & ex.ToString, MsgBoxStyle.Critical, "Start Domos Service")
         End Try
@@ -144,7 +180,7 @@ Public Class notify
             ElseIf controller.Status.Equals(ServiceControllerStatus.Running) Or controller.Status.Equals(ServiceControllerStatus.Paused) Then
                 controller.Stop()
             End If
-            controller.Refresh()
+            'controller.Refresh()
         Catch ex As Exception
             MsgBox("Error while stoping Domos service" & Chr(10) & Chr(10) & ex.ToString, MsgBoxStyle.Critical, "Stop Domos Service")
         End Try
@@ -167,7 +203,7 @@ Public Class notify
             ElseIf controller.Status.Equals(ServiceControllerStatus.Stopped) Then
                 controller.Start()
             End If
-            controller.Refresh()
+            'controller.Refresh()
         Catch ex As Exception
             MsgBox("Error while restarting Domos service" & Chr(10) & Chr(10) & ex.ToString, MsgBoxStyle.Critical, "Restart Domos Service")
         End Try
@@ -188,7 +224,7 @@ Public Class notify
     End Sub
 
     '----------------------- Divers ---------------------------
-    'About DOMOSS
+    'About DOMOS
     Private Sub AboutToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles AboutToolStripMenuItem.Click
         About.Show()
     End Sub
@@ -208,13 +244,24 @@ Public Class notify
     '---------------------- TABLES ---------------------------
     'Maj tables
     Private Sub MAJToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MAJToolStripMenuItem.Click
-        controller.ExecuteCommand(210)
+        controller.ExecuteCommand(211)
+    End Sub
+    Private Sub MAJComposantsToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MAJComposantsToolStripMenuItem.Click
+        controller.ExecuteCommand(212)
+    End Sub
+    Private Sub MAJCmpBannisToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MAJCmpBannisToolStripMenuItem.Click
+        controller.ExecuteCommand(213)
+    End Sub
+    Private Sub MAJMacrosToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MAJMacrosToolStripMenuItem.Click
+        controller.ExecuteCommand(214)
+    End Sub
+    Private Sub MAJTimersToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MAJTimersToolStripMenuItem.Click
+        controller.ExecuteCommand(215)
     End Sub
     'View tables in logs
     Private Sub AfficherToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles AfficherToolStripMenuItem.Click
-        controller.ExecuteCommand(211)
+        controller.ExecuteCommand(210)
     End Sub
-
 
 
     Private Sub Isnumeric182ToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Isnumeric182ToolStripMenuItem.Click

@@ -144,6 +144,7 @@ Public Class Soleil
         m_sContinent = "x" 'Affectation de la valeur à la variable d'échange AJOUT
         m_sCountry = "x" 'Affectation de la valeur à la variable d'échange AJOUT
     End Sub
+
     Public Property TimeZone() As Long
         Get
             'Propriété de récupération du fuseau horaire
@@ -411,14 +412,14 @@ Public Class Soleil
         gamma = CalcGamma(nJulianDay) 'Calcul de la "fraction annuelle"
         eqTime = CalcEqOfTime(gamma) 'Calcul décalage horaire
         solarDec = CalcSolarDec(gamma) 'Calcul de la déclinaison
-        hourAngle = CalcHourAngle(nLatitude, solarDec, True) 'Calcul de l'angle horaire
+        hourAngle = CalcHourAngle(nLatitude, solarDec, False) 'Calcul de l'angle horaire
         delta = nLongitude - RadToDeg(hourAngle) 'Calcul de la longitude corrigée
         timeDiff = 4 * delta '???
         timeGMT = 720 + timeDiff - eqTime 'Calcul de l'heure GMT
         gamma_sunrise = CalcGamma2(nJulianDay, timeGMT / 60) 'Calcul de la fraction annuelle pour le levé
         eqTime = CalcEqOfTime(gamma_sunrise) 'Calcul du décalage horaire pour le levé
         solarDec = CalcSolarDec(gamma_sunrise) 'Calcul de la déclinaison pour le levé
-        hourAngle = CalcHourAngle(nLatitude, solarDec, True) 'Calcul de l'angle horaire pour le levé
+        hourAngle = CalcHourAngle(nLatitude, solarDec, False) 'Calcul de l'angle horaire pour le levé
         delta = nLongitude - RadToDeg(hourAngle) 'Calcul de la longitude corrigée pour le levé
         timeDiff = 4 * delta '???
         timeGMT = 720 + timeDiff - eqTime 'Calcul de l'heure GMT du levé
@@ -510,20 +511,20 @@ Public Class Soleil
         m_Cities(m_cNumberCities).TimeZone = nZone 'Définition de la zone horaire
     End Sub
 
-    Private Sub InitCities()
-        'Procédure d'initialisation du tableau des villes de référence
-        m_cNumberCities = -1
-        ReDim m_Cities(0)
-        AddCity("Europe", "France", "Metz", 49.1166, -6.1833, 1)
-        AddCity("Europe", "France", "Algrange", 49.3637, -6.0529, 1)
-        AddCity("Europe", "France", "Paris", 48.8625, -2.3523, 1)
-        AddCity("Europe", "France", "Gap", 44.5651, -6.0743, 1)
-    End Sub
+    'Private Sub InitCities()
+    '    'Procédure d'initialisation du tableau des villes de référence
+    '    m_cNumberCities = -1
+    '    ReDim m_Cities(0)
+    '    AddCity("Europe", "France", "Metz", 49.1166, -6.1833, 1)
+    '    AddCity("Europe", "France", "Algrange", 49.3637, -6.0529, 1)
+    '    AddCity("Europe", "France", "Paris", 48.8625, -2.3523, 1)
+    '    AddCity("Europe", "France", "Gap", 44.5651, -6.0743, 1)
+    'End Sub
 
     Public Sub New()
         'Procédure d'initialisation de la classe
         InitMonths() 'Initialisation des mois
-        InitCities() 'Initialisation des villes
+        'InitCities() 'Initialisation des villes
         m_dateSel = Now 'Initialisation de la date à celle du jour
     End Sub
 End Class

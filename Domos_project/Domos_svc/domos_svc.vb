@@ -101,11 +101,23 @@ Public Class domos_svc
             EventLog.WriteEntry("Custom Command 202 : SQL-reconnect")
             action("[AN#SQL#reconnect]")
         ElseIf command = 210 Then
-            EventLog.WriteEntry("Custom Command 210 : MAJ-tables")
-            action("[AS#maj]")
-        ElseIf command = 211 Then
-            EventLog.WriteEntry("Custom Command 211 : AFFICHE-tables")
+            EventLog.WriteEntry("Custom Command 210 : AFFICHE-tables")
             action("[AS#afftables]")
+        ElseIf command = 211 Then
+            EventLog.WriteEntry("Custom Command 211 : MAJ-tables")
+            action("[AS#maj_all]")
+        ElseIf command = 212 Then
+            EventLog.WriteEntry("Custom Command 212 : MAJ-table_composants")
+            action("[AS#maj_composants]")
+        ElseIf command = 213 Then
+            EventLog.WriteEntry("Custom Command 213 : MAJ-table_composants_bannis")
+            action("[AS#maj_composants_bannis]")
+        ElseIf command = 214 Then
+            EventLog.WriteEntry("Custom Command 214 : MAJ-table_macros")
+            action("[AS#maj_macro]")
+        ElseIf command = 215 Then
+            EventLog.WriteEntry("Custom Command 215 : MAJ-table_timer")
+            action("[AS#maj_timer]")
         End If
     End Sub
 
@@ -120,13 +132,14 @@ Public Class domos_svc
             regKey = Registry.LocalMachine.OpenSubKey("SOFTWARE")
             If regKey Is Nothing Then
                 log("Service arreté car erreur lecture registre HKLM\SOFTWARE", 1)
-                controller.Stop()
+                [Stop]()
+                'controller.Stop()
                 Exit Sub
             Else
                 regKey2 = regKey.OpenSubKey("Domos")
                 If regKey2 Is Nothing Then
                     log("Service arreté car erreur lecture registre HKLM\SOFTWARE\Domos", 1)
-                    controller.Stop()
+                    [Stop]()
                     Exit Sub
                 End If
             End If
@@ -152,7 +165,7 @@ Public Class domos_svc
                 log("SQL : Connexion au serveur " & mysql_ip & " :", 1)
                 log("     -> " & err, 1)
                 log("--- Service Arrété ---", 1)
-                controller.Stop()
+                [Stop]()
                 Exit Sub
             End If
             log("", 0)
@@ -206,7 +219,7 @@ Public Class domos_svc
             Else
                 log("     -> ERR: pas de données récupérées : fermeture du programme", 1)
                 'svc_stop()
-                controller.Stop()
+                [Stop]()
                 Exit Sub
             End If
             log("", 0)
@@ -281,7 +294,7 @@ Public Class domos_svc
                 log("SQL : " & err, 1)
                 log("Fermeture du programme", 1)
                 'svc_stop()
-                controller.Stop()
+                [Stop]()
                 Exit Sub
             Else
                 If table_composants.Rows.Count() > 0 Then
@@ -307,7 +320,7 @@ Public Class domos_svc
                 Else
                     log("     -> Aucun composant trouvé : fermeture du programme", 1)
                     'svc_stop()
-                    controller.Stop()
+                    [Stop]()
                     Exit Sub
                 End If
             End If
@@ -500,7 +513,7 @@ Public Class domos_svc
         Catch ex As Exception
             log("ERR: Init exception : Fermeture du programme : " & ex.ToString, 1)
             'svc_stop()
-            controller.Stop()
+            [Stop]()
             Exit Sub
         End Try
     End Sub
@@ -646,7 +659,7 @@ Public Class domos_svc
 
     Private Sub svc_restart()
         svc_stop()
-        wait(300)
+        wait(500)
         svc_start()
     End Sub
 
