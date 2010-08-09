@@ -93,31 +93,31 @@ Public Class domos_svc
     Protected Overrides Sub OnCustomCommand(ByVal command As Integer)
         If command = 200 Then
             EventLog.WriteEntry("Custom Command 200 : SQL-optimise")
-            action("[AN#SQL#optimise]")
+            action("([AN#SQL#optimise])")
         ElseIf command = 201 Then
             EventLog.WriteEntry("Custom Command 201 : SQL-purgelogs")
-            action("[AN#SQL#purgelogs]")
+            action("([AN#SQL#purgelogs])")
         ElseIf command = 202 Then
             EventLog.WriteEntry("Custom Command 202 : SQL-reconnect")
-            action("[AN#SQL#reconnect]")
+            action("([AN#SQL#reconnect])")
         ElseIf command = 210 Then
             EventLog.WriteEntry("Custom Command 210 : AFFICHE-tables")
-            action("[AS#afftables]")
+            action("([AS#afftables])")
         ElseIf command = 211 Then
             EventLog.WriteEntry("Custom Command 211 : MAJ-tables")
-            action("[AS#maj_all]")
+            action("([AS#maj_all])")
         ElseIf command = 212 Then
             EventLog.WriteEntry("Custom Command 212 : MAJ-table_composants")
-            action("[AS#maj_composants]")
+            action("([AS#maj_composants])")
         ElseIf command = 213 Then
             EventLog.WriteEntry("Custom Command 213 : MAJ-table_composants_bannis")
-            action("[AS#maj_composants_bannis]")
+            action("([AS#maj_composants_bannis])")
         ElseIf command = 214 Then
             EventLog.WriteEntry("Custom Command 214 : MAJ-table_macros")
-            action("[AS#maj_macro]")
+            action("([AS#maj_macro])")
         ElseIf command = 215 Then
             EventLog.WriteEntry("Custom Command 215 : MAJ-table_timer")
-            action("[AS#maj_timer]")
+            action("([AS#maj_timer])")
         End If
     End Sub
 

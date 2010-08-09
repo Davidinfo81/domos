@@ -139,7 +139,7 @@ Public Class Soleil
         'Propriété de sélection de la ville par nom ou par index
         m_nTimeZone = 1 'Affectation de la valeur à la variable d'échange
         m_bDaySavings = True 'Affectation de la valeur à la variable d'échange
-        m_nLongitude = longit 'Affectation de la valeur à la variable d'échange
+        m_nLongitude = -longit 'Affectation de la valeur à la variable d'échange
         m_nLatitude = lat 'Affectation de la valeur à la variable d'échange
         m_sContinent = "x" 'Affectation de la valeur à la variable d'échange AJOUT
         m_sCountry = "x" 'Affectation de la valeur à la variable d'échange AJOUT
@@ -412,14 +412,14 @@ Public Class Soleil
         gamma = CalcGamma(nJulianDay) 'Calcul de la "fraction annuelle"
         eqTime = CalcEqOfTime(gamma) 'Calcul décalage horaire
         solarDec = CalcSolarDec(gamma) 'Calcul de la déclinaison
-        hourAngle = CalcHourAngle(nLatitude, solarDec, False) 'Calcul de l'angle horaire
+        hourAngle = CalcHourAngle(nLatitude, solarDec, True) 'Calcul de l'angle horaire
         delta = nLongitude - RadToDeg(hourAngle) 'Calcul de la longitude corrigée
         timeDiff = 4 * delta '???
         timeGMT = 720 + timeDiff - eqTime 'Calcul de l'heure GMT
         gamma_sunrise = CalcGamma2(nJulianDay, timeGMT / 60) 'Calcul de la fraction annuelle pour le levé
         eqTime = CalcEqOfTime(gamma_sunrise) 'Calcul du décalage horaire pour le levé
         solarDec = CalcSolarDec(gamma_sunrise) 'Calcul de la déclinaison pour le levé
-        hourAngle = CalcHourAngle(nLatitude, solarDec, False) 'Calcul de l'angle horaire pour le levé
+        hourAngle = CalcHourAngle(nLatitude, solarDec, True) 'Calcul de l'angle horaire pour le levé
         delta = nLongitude - RadToDeg(hourAngle) 'Calcul de la longitude corrigée pour le levé
         timeDiff = 4 * delta '???
         timeGMT = 720 + timeDiff - eqTime 'Calcul de l'heure GMT du levé
