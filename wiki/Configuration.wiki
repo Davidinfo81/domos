@@ -111,6 +111,11 @@ We have two macro type : macro and timer
            * id : component ID
            * adresse: Adress to modify (2456, 452_THE, M1...)
 
+    * MM#id#conditions#actions : Modify condition/actions of a macro
+           * id : macro ID
+           * conditions: conditions to use
+           * actions: actions to use
+
     * AL#texte : texte à loguer
 
     * AS#service : service à exécuter :
