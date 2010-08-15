@@ -103,9 +103,13 @@ We have two macro type : macro and timer
            * option1 : valeur à joindre (ex : PLCBUS : PRESET_DIM 50 2)
            * option2 : valeur à joindre (ex : PLCBUS : PRESET_DIM 50 2)
 
-    * AE#id#etat : Modifier l'état d'un composant
-           * id : id du composant
-           * etat : état à positionner (ON, 15.7...)
+    * ME#id#etat : Modify component state
+           * id : component ID
+           * etat : Value to write (ON, 15.7...)
+
+    * MA#id#adresse : Modify component adress
+           * id : component ID
+           * adresse: Adress to modify (2456, 452_THE, M1...)
 
     * AL#texte : texte à loguer
 
@@ -192,4 +196,3 @@ We have two macro type : macro and timer
 
 
 =Plans=
-
