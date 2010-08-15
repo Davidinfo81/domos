@@ -323,18 +323,41 @@ Function affiche_ouinon($nom,$dom) {
 //                    SOCKET                   *
 //******************************************************
 Function socket($message,$adresse,$port) {
-	//$adresse = "192.168.1.20";
+	//$adresse = "192.168.0.1";
    	//$port=3852;
 	//$message = "([AL#testdesocket][AC#1#ON])";
 	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-	if ($socket < 0) {echo "socket_create() a échoué : raison :  " . socket_strerror ($socket) . "<br />";}
-	else {
+	if ($socket < 0) {
+		echo "socket_create() a échoué : raison :  " . socket_strerror ($socket) . "<br />";
+	} else {
 		$resultat = socket_connect($socket, $adresse, $port);
-		if ($resultat < 0) {echo "socket_connect() a échoué : raison : ($result) " . socket_strerror($result) . "<br />";}
-		else {
+		if ($resultat < 0) {
+			echo "socket_connect() a échoué : raison : ($result) " . socket_strerror($result) . "<br />";
+		} else {
 			socket_write($socket, $message, strlen($message));
 			$reception = '';
 			while ($reception = socket_read($socket, 2048)) echo $reception;
+			socket_close($socket);
+		}
+	}
+}
+Function socket_simple($message,$adresse,$port) {
+	//$adresse = "192.168.0.1";
+   	//$port=3852;
+	//$message = "([AL#testdesocket][AC#1#ON])";
+	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+	if ($socket < 0) {
+		// echo "socket_create() a échoué : raison :  " . socket_strerror ($socket) . "<br />";
+	} else {
+		$resultat = socket_connect($socket, $adresse, $port);
+		if ($resultat < 0) {
+			// echo "socket_connect() a échoué : raison : ($result) " . socket_strerror($result) . "<br />";
+		} else {
+			socket_write($socket, $message, strlen($message));
+			$reception = '';
+			while ($reception = socket_read($socket, 2048)) {
+				//echo $reception;
+			}
 			socket_close($socket);
 		}
 	}

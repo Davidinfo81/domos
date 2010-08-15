@@ -16,7 +16,7 @@ function update_row(){
 		macro_nom='".quote($_GET["c2"])."',macro_description='".$_GET["c3"]."',macro_actif='".$_GET["c1"]."'
 		WHERE macro_id=".$_GET["gr_id"];
 	$res = mysql_query($sql);
-	return "update";	
+	return "update";
 }
 
 function delete_row(){

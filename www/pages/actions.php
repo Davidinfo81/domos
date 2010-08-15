@@ -30,13 +30,13 @@ case "releve" :
 
 case "socket" :
 	$message=!empty($_REQUEST["message"])?$_REQUEST["message"]:"([AL#Erreurtransmission])";
-	$adresse=!empty($_REQUEST["adresse"])?$_REQUEST["adresse"]:"192.168.1.20";
+	$adresse=!empty($_REQUEST["adresse"])?$_REQUEST["adresse"]:"192.168.0.1";
 	$port=!empty($_REQUEST["port"])?$_REQUEST["port"]:"3852";
 	socket($message,$adresse,$port);
 	break;
 
 case "sql" :
-	$message=!empty($_REQUEST["message"])?$_REQUEST["message"]:"([AL#Erreurtransmission])";
+	$message=!empty($_REQUEST["message"])?$_REQUEST["message"]:"";
 	mysql_query($message);
 	echo "OK";
 	break;

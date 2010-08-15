@@ -24,6 +24,10 @@
 <?php
 
 include("./include_php/config.php");
+$resultat = mysql_query("select config_valeur from config where config_nom='socket_ip'");
+$adresse = mysql_result($resultat,0,"config_valeur");
+$resultat = mysql_query("select config_valeur from config where config_nom='socket_port'");
+$port = mysql_result($resultat,0,"config_valeur");
 
 $action=isset($_GET["action"])?$_GET["action"]:(isset($_POST["action"])?$_POST["action"]:"gerer");
 $composants_id=isset($_GET["composants_id"])?$_GET["composants_id"]:(isset($_POST["composants_id"])?$_POST["composants_id"]:"");
@@ -67,11 +71,23 @@ case "gerer" :
 					x = mygrid.getSelectedId();
 					window.location.href='composants_bannis.html'
 				}
+				function sendsocket(message) {
+					var XHR = new XHRConnection();
+					XHR.appendData('tache', \"socket\");
+					XHR.appendData('message', message);
+					XHR.appendData('adresse', \"$adresse\");
+					XHR.appendData('port', \"$port\");
+					XHR.sendAndLoad('pages/actions.php', 'POST', afficherResultats_socket);
+				}
+				function afficherResultats_socket(obj) {
+					alert(obj.responseText);
+				}
 			</script>
 			<input type=\"button\" name=\"a1\" value=\"Ajouter\" onClick=\"mygrid.addRow((new Date()).valueOf(),['','','nom',1,'','',0,0,'','2000-01-01 00:00:00','','0','','0'],0)\" class=\"formsubmit\">
 			<input type=\"button\" name=\"a1\" value=\"Supprimer\" onClick=\"deletee()\" class=\"formsubmit\">
 			<input type=\"button\" name=\"a1\" value=\"Grapher\" onClick=\"grapher()\" class=\"formsubmit\">
 			<input type=\"button\" name=\"a1\" value=\"Bannis\" onClick=\"bannis()\" class=\"formsubmit\">
+			<input type=\"button\" name=\"a1\" value=\"Maj SVC\" onClick='sendsocket(\"([AS#maj_composants])\")' class=\"formsubmit\">
 		</div></td></tr>
 	";
 	break;

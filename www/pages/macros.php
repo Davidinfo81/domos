@@ -24,6 +24,10 @@
 <?php
 
 include("./include_php/config.php");
+$resultat = mysql_query("select config_valeur from config where config_nom='socket_ip'");
+$adresse = mysql_result($resultat,0,"config_valeur");
+$resultat = mysql_query("select config_valeur from config where config_nom='socket_port'");
+$port = mysql_result($resultat,0,"config_valeur");
 
 $action=isset($_GET["action"])?$_GET["action"]:(isset($_POST["action"])?$_POST["action"]:"gerer");
 $macro_id=isset($_GET["macro_id"])?$_GET["macro_id"]:(isset($_POST["macro_id"])?$_POST["macro_id"]:"");
@@ -56,12 +60,24 @@ case "gerer" :
 					var span_conditions = document.getElementById('conditions');
 					var span_actions = document.getElementById('actions');
 					span_conditions.innerHTML = \"Conditions :  \" + mygrid.cells(rowID,4).cell.innerHTML;
-    				span_actions.innerHTML = \"Actions : \" + mygrid.cells(rowID,5).cell.innerHTML;
-    			}
+					span_actions.innerHTML = \"Actions : \" + mygrid.cells(rowID,5).cell.innerHTML;
+				}
+				function sendsocket(message) {
+					var XHR = new XHRConnection();
+					XHR.appendData('tache', \"socket\");
+					XHR.appendData('message', message);
+					XHR.appendData('adresse', \"$adresse\");
+					XHR.appendData('port', \"$port\");
+					XHR.sendAndLoad('pages/actions.php', 'POST', afficherResultats_socket);
+				}
+				function afficherResultats_socket(obj) {
+					alert(obj.responseText);
+				}
 				mygrid.attachEvent('onRowSelect',doOnRowSelected);
 			</script>
 			<input type=\"button\" name=\"a1\" value=\"Ajouter\" onClick=\"mygrid.addRow((new Date()).valueOf(),['','0','nom','description'],0)\" class=\"formsubmit\">
-			<input type=\"button\" name=\"a1\" value=\"Supprimer\" onClick=\"deletee()\" class=\"formsubmit\"><br />
+			<input type=\"button\" name=\"a1\" value=\"Supprimer\" onClick=\"deletee()\" class=\"formsubmit\">
+			<input type=\"button\" name=\"a1\" value=\"Maj SVC\" onClick='sendsocket(\"([AS#maj_macro][AS#maj_timer])\")' class=\"formsubmit\">
 			<span id='conditions'> </span><br />
 			<span id='actions'> </span><br /><br />
 			composant : CC#id#=<>#etat, Timer : CT#ss#mm#hh#j#jj#mm#yy, Heure : CH#=<>#j#hh:mm:ss
@@ -122,6 +138,17 @@ case "modifiersave" :
 	$macro_conditions = $_POST["macro_conditions"];
 	$macro_actions = $_POST["macro_actions"];
 	$resultat = mysql_query("update macro set macro_conditions='$macro_conditions', macro_actions='$macro_actions' where macro_id='$macro_id'");
+	//envoi par socket de la nouvelle condition/action
+	$resultat = mysql_query("select config_valeur from config where config_nom='socket_ip'");
+	$adresse = mysql_result($resultat,0,"config_valeur");
+	$resultat = mysql_query("select config_valeur from config where config_nom='socket_port'");
+	$port = mysql_result($resultat,0,"config_valeur");
+	$search  = array('(', '[', '#', ']', ')');
+	$replace = array('_1', '_2', '_3', '_4', '_5');
+	$macro_conditions2=str_replace($search,$replace,$macro_conditions);
+	$macro_actions2=str_replace($search,$replace,$macro_actions);
+	socket_simple("([MM#".$macro_id."#".$macro_conditions2."#".$macro_actions2."])",$adresse,$port);
+
 	echo "<tr height=\"23\" bgcolor=\"#5680CB\">
 			<td align=left class=\"titrecolonne\"> &nbsp;..:: Modifier les conditions/actions d'une MACRO ::..</td>
 			<td align=right class=\"titrecolonne\"><a href=\"macros.html\"><img src=\"./images/plus.gif\" border=\"0\"> Liste</a>&nbsp;&nbsp;&nbsp;</td>
