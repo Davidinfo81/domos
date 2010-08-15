@@ -29,8 +29,6 @@
         <li id="macros"><img src="images/menu/macro.png" width=28 /> Macros</li>
         <li id="users"><img src="images/menu/users.png" width=28 /> Users</li>
         <li id="configuration"><img src="images/menu/config.png" width=28 /> Configuration</li>
-        <li id="logs"><img src="images/menu/logs.png" width=28 /> Logs</li>
-        <li id="divers"><img src="images/menu/display.png" width=28 /> Divers</li>
         <li id="phpinfo"><img src="images/menu/info.png" width=28 /> phpinfo</li>
       </ul>
     </div>
@@ -47,9 +45,7 @@
 							'macros': function(t) {window.location.href='macros.html';},
 							'users': function(t) {window.location.href='users.html';},
 							'configuration': function(t) {window.location.href='config.html';},
-							'logs': function(t) {window.location.href='logs.html';},
-							'divers': function(t) {window.location.href='divers.html';},
-							'phpinfo': function(t) {window.location.href='phpinfo.html';},
+							'phpinfo': function(t) {window.location.href='phpinfo.html';}
 						}
 					});
 			});
@@ -69,7 +65,7 @@
 					<a href="meteo.html" class="fisheyeItem"><img src="images/menu/meteo.gif" /><span>Météo</span></a>
 					<a href="calendrier.html" class="fisheyeItem"><img src="images/menu/calendrier.png" /><span>Calendrier</span></a>
 					<a href="logs.html" class="fisheyeItem"><img src="images/menu/logs.png" /><span>Logs</span></a>
-					<a href="admin.html" class="fisheyeItem"><img src="images/menu/admin.gif" /><span>Configuration</span></a>
+					<a href="divers.html" class="fisheyeItem"><img src="images/menu/display.png" /><span>Divers</span></a>
 				</div>
 		</div>
 	</td>
@@ -85,7 +81,7 @@
 					itemsText: 'span',
 					container: '.fisheyeContainter',
 					itemWidth: 40,
-					proximity: 90,
+					proximity: 30,
 					halign : 'center'
 				}
 			)
