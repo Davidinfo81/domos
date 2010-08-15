@@ -340,12 +340,17 @@ Public Class domos_svc
             log("Initialisation des heures du soleil : " & var_soleil_lever & " (" & var_soleil_lever2 & ") - " & var_soleil_coucher & " (" & var_soleil_coucher2 & ")", -1)
             '---------- Calcul pour savoir si on est de jour ou nuit -------
             Dim tabletemp = table_composants.Select("composants_adresse = 'jour'")
+            Dim dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
             If tabletemp.GetLength(0) = 1 Then
                 If DateAndTime.Now.ToString("HH:mm:ss") > var_soleil_lever And DateAndTime.Now.ToString("HH:mm:ss") < var_soleil_coucher Then
                     tabletemp(0)("composants_etat") = "1" 'maj du composant virtuel JOUR à jour
+                    err = mysql.mysql_nonquery("UPDATE composants SET composants_etat='1',composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletemp(0)("composants_id") & "'")
+                    If err <> "" Then log("SQL: Start Maj Jour " & err, 2)
                     log("     -> Maj composant virtuel JOUR : JOUR (1)", 0)
                 Else
                     tabletemp(0)("composants_etat") = "0" 'maj du composant virtuel JOUR à nuit
+                    err = mysql.mysql_nonquery("UPDATE composants SET composants_etat='0',composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletemp(0)("composants_id") & "'")
+                    If err <> "" Then log("SQL: Start Maj Jour " & err, 2)
                     log("     -> Maj composant virtuel JOUR : NUIT (0)", 0)
                 End If
             Else
@@ -356,9 +361,13 @@ Public Class domos_svc
             If tabletemp.GetLength(0) = 1 Then
                 If DateAndTime.Now.ToString("HH:mm:ss") > var_soleil_lever2 And DateAndTime.Now.ToString("HH:mm:ss") < var_soleil_coucher2 Then
                     tabletemp(0)("composants_etat") = "1" 'maj du composant virtuel JOUR à jour
+                    err = mysql.mysql_nonquery("UPDATE composants SET composants_etat='1',composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletemp(0)("composants_id") & "'")
+                    If err <> "" Then log("SQL: Start Maj Jour " & err, 2)
                     log("     -> Maj composant virtuel JOUR2 : JOUR (1)", 0)
                 Else
                     tabletemp(0)("composants_etat") = "0" 'maj du composant virtuel JOUR à nuit
+                    err = mysql.mysql_nonquery("UPDATE composants SET composants_etat='0',composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletemp(0)("composants_id") & "'")
+                    If err <> "" Then log("SQL: Start Maj Jour " & err, 2)
                     log("     -> Maj composant virtuel JOUR2 : NUIT (0)", 0)
                 End If
             Else
@@ -1313,7 +1322,7 @@ Public Class domos_svc
             End While
         Catch ex As Exception
             resultat = False
-            log("MACRO: ERR: analyse_cond:exception : " & ex.ToString, 2)
+            log("MACRO: ERR: analyse_cond:exception : " & ex.ToString & " --> " & liste, 2)
         End Try
         Return resultat
     End Function
@@ -1406,7 +1415,7 @@ Public Class domos_svc
                 resultat = True
             End If
         Catch ex As Exception
-            log("MACRO: ERR: test-cond:exception : " & ex.ToString, 2)
+            log("MACRO: ERR: test-cond:exception : " & ex.ToString & " --> " & text, 2)
         End Try
         Return resultat
     End Function
@@ -1551,7 +1560,7 @@ Public Class domos_svc
                 End If
             End While
         Catch ex As Exception
-            log("MACRO: ERR: Action:exception : " & ex.ToString, 2)
+            log("MACRO: ERR: Action:exception : " & ex.ToString & " --> " & liste, 2)
         End Try
     End Sub
 
