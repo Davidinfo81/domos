@@ -1496,14 +1496,36 @@ Public Class domos_svc
                     End If
 
                     '--------------------------- MM = condition/action macro -------------------------
-                ElseIf contenu(0) = "MM" Then 'c'est la condition/action d'une macro à modifier :  : [MC#macroid#Condition#action]
+                ElseIf contenu(0) = "MM" Then 'c'est la condition/action d'une macro à modifier :  : [MM#macroid#Condition#action]
                     Dim tabletemp = table_macros.Select("macro_id = '" & contenu(1) & "'")
+                    'decodage des infos
+                    Dim macro_cond As String = contenu(2)
+                    Dim macro_act As String = contenu(3)
+                    macro_cond = macro_cond.Replace("_1", "(")
+                    macro_cond = macro_cond.Replace("_2", "[")
+                    macro_cond = macro_cond.Replace("_3", "#")
+                    macro_cond = macro_cond.Replace("_4", "]")
+                    macro_cond = macro_cond.Replace("_5", ")")
+                    macro_act = macro_act.Replace("_1", "(")
+                    macro_act = macro_act.Replace("_2", "[")
+                    macro_act = macro_act.Replace("_3", "#")
+                    macro_act = macro_act.Replace("_4", "]")
+                    macro_act = macro_act.Replace("_5", ")")
                     If tabletemp.GetLength(0) = 1 Then
-                        tabletemp(0)("macro_conditions") = contenu(2) 'maj de la condition
-                        tabletemp(0)("macro_actions") = contenu(3) 'maj de l'action
-                        log("MAC:  -> Modif Macro :" & tabletemp(0)("macro_nom") & " Cond=" & contenu(2) & " Action=" & contenu(3), 6)
+                        'maj des champs en memoire
+                        tabletemp(0)("macro_conditions") = macro_cond 'maj de la condition
+                        tabletemp(0)("macro_actions") = macro_act 'maj de l'action
+                        log("MAC:  -> Modif Macro :" & tabletemp(0)("macro_nom") & " Cond=" & macro_cond & " Action=" & macro_act, 6)
                     Else
-                        log("MAC:  -> Modif Macro :" & tabletemp(0)("macro_nom") & " Cond=" & contenu(2) & " Action=" & contenu(3), 2)
+                        tabletemp = table_timer.Select("macro_id = '" & contenu(1) & "'")
+                        If tabletemp.GetLength(0) = 1 Then
+                            'maj des champs en memoire
+                            tabletemp(0)("macro_conditions") = macro_cond 'maj de la condition
+                            tabletemp(0)("macro_actions") = macro_act 'maj de l'action
+                            log("MAC:  -> Modif Timer :" & tabletemp(0)("macro_nom") & " Cond=" & macro_cond & " Action=" & macro_act, 6)
+                        Else
+                            log("MAC:  -> Modif Macro/Timer :" & tabletemp(0)("macro_nom") & "non trouvé : liste=" & liste, 2)
+                        End If
                     End If
 
                     '---------------------------------- AL = LOG ----------------------------------
@@ -1560,7 +1582,7 @@ Public Class domos_svc
 
                     '---------------------------- AM = Lancer une macro ------------------------
                 ElseIf contenu(0) = "AM" Then 'execution d'une macro : [AM#macros_id]
-                    Dim tabletemp = table_macros.Select("macros_id = '" & contenu(1) & "'")
+                    Dim tabletemp = table_macros.Select("macro_id = '" & contenu(1) & "'")
                     If tabletemp.GetLength(0) = 1 Then 'macro trouvé
                         log("MAC:  -> Analyse Macro : " & tabletemp(0)("macro_nom"), 5)
                         If analyse_cond(tabletemp(0)("macro_conditions")) Then 'verification des conditions
