@@ -181,7 +181,7 @@ Public Class domos_svc
             etape_startup = 3
             log("SQL : Récupération de la configuration :", 0)
             log("SQL : Récupération de la configuration", -1)
-            err = Table_maj(table_config, "SELECT config_nom,config_valeur FROM config")
+            err = Table_maj_sql(table_config, "SELECT config_nom,config_valeur FROM config")
             If table_config.Rows.Count() > 0 Then
                 log_niveau = table_config.Select("config_nom = 'log_niveau'")(0)("config_valeur")
                 log_dest = table_config.Select("config_nom = 'log_dest'")(0)("config_valeur")
@@ -229,7 +229,7 @@ Public Class domos_svc
             If Serv_WIR Then
                 err = onewire.initialisation(WIR_adaptername, Port_WIR)
                 If STRGS.Left(err, 4) = "ERR:" Then
-                    Serv_WIR = False 'desactivation du onvewire car la clé USB n'est pas dispo
+                    Serv_WIR = False 'desactivation du onewire car la clé USB n'est pas dispo
                     log("WIR : " & err, 2)
                     log("     -> Désactivation du servive OneWire", 0)
                 Else
@@ -242,7 +242,7 @@ Public Class domos_svc
             If Serv_WI2 Then
                 err = onewire2.initialisation(WIR_adaptername, Port_WI2)
                 If STRGS.Left(err, 4) = "ERR:" Then
-                    Serv_WI2 = False 'desactivation du onvewire car la clé USB n'est pas dispo
+                    Serv_WI2 = False 'desactivation du onewire car la clé USB n'est pas dispo
                     log("WI2 : " & err, 2)
                     log("     -> Désactivation du servive OneWire", 0)
                 Else
@@ -289,7 +289,7 @@ Public Class domos_svc
             If Not Serv_X10 Then Condition_service &= " AND composants_modele_norme<>'X10'"
             If Not Serv_RFX Then Condition_service &= " AND composants_modele_norme<>'RFX'"
             If Not Serv_VIR Then Condition_service &= " AND composants_modele_norme<>'VIR'"
-            err = Table_maj(table_composants, "SELECT composants.*,composants_modele.* FROM composants,composants_modele WHERE composants_modele=composants_modele_id AND composants_actif='1'" & Condition_service)
+            err = Table_maj_sql(table_composants, "SELECT composants.*,composants_modele.* FROM composants,composants_modele WHERE composants_modele=composants_modele_id AND composants_actif='1'" & Condition_service)
             If err <> "" Then
                 log("SQL : " & err, 1)
                 log("Fermeture du programme", 1)
@@ -385,7 +385,7 @@ Public Class domos_svc
             '----- recupération de la liste des composants bannis -----
             log("SQL : Récupération de la liste des composants bannis :", 0)
             log("SQL : Récupération de la liste des composants bannis", -1)
-            err = Table_maj(table_composants_bannis, "SELECT * FROM composants_bannis")
+            err = Table_maj_sql(table_composants_bannis, "SELECT * FROM composants_bannis")
             If err <> "" Then
                 log("SQL : " & err, 2)
             Else
@@ -404,7 +404,7 @@ Public Class domos_svc
             etape_startup = 11
             log("SQL : Récupération de la liste des macros :", 0)
             log("SQL : Récupération de la liste des macros", -1)
-            err = Table_maj(table_macros, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions NOT LIKE '%CT#%'")
+            err = Table_maj_sql(table_macros, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions NOT LIKE '%CT#%'")
             If err <> "" Then
                 log("SQL : " & err, 2)
             Else
@@ -427,7 +427,7 @@ Public Class domos_svc
             etape_startup = 12
             log("SQL : Récupération de la liste des timers :", 0)
             log("SQL : Récupération de la liste des timers", -1)
-            err = Table_maj(table_timer, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions LIKE '%CT#%'")
+            err = Table_maj_sql(table_timer, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions LIKE '%CT#%'")
             If err <> "" Then
                 log("SQL : " & err, 2)
             Else
@@ -707,25 +707,25 @@ Public Class domos_svc
             End If
             'Log dans les events logs
             Select Case niveau
-                Case "-1" : ecrireevtlog(texte, 3)
-                Case "1" : ecrireevtlog(texte, 1)
-                Case "3" : ecrireevtlog(texte, 3)
-                Case "4" : ecrireevtlog(texte, 3)
+                Case "-1" : ecrireevtlog(texte, 3, 100)
+                Case "1" : ecrireevtlog(texte, 1, 101)
+                Case "3" : ecrireevtlog(texte, 3, 103)
+                Case "4" : ecrireevtlog(texte, 3, 104)
             End Select
 
         Catch ex As Exception
         End Try
     End Sub
 
-    Private Shared Sub ecrireevtlog(ByVal message As String, ByVal type As Integer)
+    Private Shared Sub ecrireevtlog(ByVal message As String, ByVal type As Integer, ByVal evtid As Integer)
         'message = text to write to event log
         'type = 1:error, 2:warning, 3:information 
         Dim myEventLog = New EventLog()
         myEventLog.Source = "Domos"
         Select Case type
-            Case 1 : myEventLog.WriteEntry(message, EventLogEntryType.Error, 0)
-            Case 2 : myEventLog.WriteEntry(message, EventLogEntryType.Warning, 0)
-            Case 3 : myEventLog.WriteEntry(message, EventLogEntryType.Information, 0)
+            Case 1 : myEventLog.WriteEntry(message, EventLogEntryType.Error, evtid)
+            Case 2 : myEventLog.WriteEntry(message, EventLogEntryType.Warning, evtid)
+            Case 3 : myEventLog.WriteEntry(message, EventLogEntryType.Information, evtid)
         End Select
         'Diagnostics.EventLog.WriteEntry("Domos", message)
     End Sub
@@ -757,13 +757,13 @@ Public Class domos_svc
         End Try
     End Sub
 
-    Private Function Table_maj(ByRef table As DataTable, ByVal requete As String) As String
+    Private Function Table_maj_sql(ByRef table As DataTable, ByVal requete As String) As String
         'maj d une table avec les resultats de la requete
         Try
             table.Clear()
-            Table_maj = mysql.mysql_query(table, requete)
+            Table_maj_sql = mysql.mysql_query(table, requete)
         Catch ex As Exception
-            Table_maj = Nothing
+            Table_maj_sql = Nothing
             log("ERR: table_maj exception : " & ex.ToString, 2)
         End Try
     End Function
@@ -790,7 +790,7 @@ Public Class domos_svc
         Return ""
     End Function
 
-    Private Sub tables_masj(ByVal table As String)
+    Private Sub tables_maj(ByVal table As String)
         'table = ALL / COMPOSANTS / COMPOSANTS_BANNIS / MACRO / TIMER
         Dim table_temp As New DataTable
         Dim result
@@ -807,7 +807,7 @@ Public Class domos_svc
                 If Not Serv_X10 Then Condition_service &= " AND composants_modele_norme<>'X10'"
                 If Not Serv_RFX Then Condition_service &= " AND composants_modele_norme<>'RFX'"
                 If Not Serv_VIR Then Condition_service &= " AND composants_modele_norme<>'VIR'"
-                err = Table_maj(table_temp, "SELECT composants.*,composants_modele.* FROM composants,composants_modele WHERE composants_modele=composants_modele_id AND composants_actif='1'" & Condition_service)
+                err = Table_maj_sql(table_temp, "SELECT composants.*,composants_modele.* FROM composants,composants_modele WHERE composants_modele=composants_modele_id AND composants_actif='1'" & Condition_service)
                 If err <> "" Then
                     log("MAJ: SQL : ERR: " & err, 0)
                 Else
@@ -869,7 +869,7 @@ Public Class domos_svc
         If table = "ALL" Or table = "COMPOSANTS_BANNIS" Then
             Try
                 log("MAJ: Maj de la table_composants bannis", 0)
-                err = Table_maj(table_temp, "SELECT * FROM composants_bannis")
+                err = Table_maj_sql(table_temp, "SELECT * FROM composants_bannis")
                 If err <> "" Then
                     log("MAJ: SQL : ERR: " & err, 0)
                 Else
@@ -914,7 +914,7 @@ Public Class domos_svc
             Try
                 log("MAJ: Maj de la table_macros", 0)
                 table_temp = New DataTable
-                err = Table_maj(table_temp, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions NOT LIKE '%CT#%'")
+                err = Table_maj_sql(table_temp, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions NOT LIKE '%CT#%'")
                 If err <> "" Then
                     log("MAJ: SQL : ERR: " & err, 0)
                 Else
@@ -969,7 +969,7 @@ Public Class domos_svc
             Try
                 log("MAJ: Maj de la table_timer", 0)
                 table_temp = New DataTable
-                err = Table_maj(table_temp, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions LIKE '%CT#%'")
+                err = Table_maj_sql(table_temp, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions LIKE '%CT#%'")
                 If err <> "" Then
                     log("MAJ: SQL : ERR: " & err, 0)
                 Else
@@ -1474,15 +1474,36 @@ Public Class domos_svc
                     End If
                     wait(100)
 
-                    '--------------------------- AE = Etat d'un composant -------------------------
-                ElseIf contenu(0) = "AE" Then 'c'est un composant à modifier :  : [AE#compid#Valeur]
+                    '--------------------------- ME = Etat d'un composant -------------------------
+                ElseIf contenu(0) = "ME" Then 'c'est l'etat d'un composant à modifier :  : [ME#compid#Etat]
                     'recherche du composant
                     Dim tabletemp = table_composants.Select("composants_id = '" & contenu(1) & "'")
                     If tabletemp.GetLength(0) = 1 Then
                         tabletemp(0)("composants_etat") = contenu(2) 'maj du composant en memoire
-                        log("MAC:  -> Action: Composant :" & tabletemp(0)("composants_nom") & " Etat=" & contenu(2), 6)
+                        log("MAC:  -> Modif Etat: Composant :" & tabletemp(0)("composants_nom") & " Etat=" & contenu(2), 6)
                     Else
-                        log("MAC:  -> Action: Composant ID:" & contenu(1) & " non trouvé", 2)
+                        log("MAC:  -> Modif Etat: Composant ID:" & contenu(1) & " non trouvé", 2)
+                    End If
+
+                    '--------------------------- MA = Adresse d'un composant -------------------------
+                ElseIf contenu(0) = "MA" Then 'c'est l'adresse d'un composant à modifier :  : [MA#compid#Adresse]
+                    Dim tabletemp = table_composants.Select("composants_id = '" & contenu(1) & "'")
+                    If tabletemp.GetLength(0) = 1 Then
+                        tabletemp(0)("composants_adresse") = contenu(2) 'maj du composant en memoire
+                        log("MAC:  -> Modif Adresse :" & tabletemp(0)("composants_nom") & " Adresse=" & contenu(2), 6)
+                    Else
+                        log("MAC:  -> Modif Adresse: Composant ID:" & contenu(1) & " non trouvé", 2)
+                    End If
+
+                    '--------------------------- MM = condition/action macro -------------------------
+                ElseIf contenu(0) = "MM" Then 'c'est la condition/action d'une macro à modifier :  : [MC#macroid#Condition#action]
+                    Dim tabletemp = table_macros.Select("macro_id = '" & contenu(1) & "'")
+                    If tabletemp.GetLength(0) = 1 Then
+                        tabletemp(0)("macro_conditions") = contenu(2) 'maj de la condition
+                        tabletemp(0)("macro_actions") = contenu(3) 'maj de l'action
+                        log("MAC:  -> Modif Macro :" & tabletemp(0)("macro_nom") & " Cond=" & contenu(2) & " Action=" & contenu(3), 6)
+                    Else
+                        log("MAC:  -> Modif Macro :" & tabletemp(0)("macro_nom") & " Cond=" & contenu(2) & " Action=" & contenu(3), 2)
                     End If
 
                     '---------------------------------- AL = LOG ----------------------------------
@@ -1490,7 +1511,7 @@ Public Class domos_svc
                     log("MAC:  -> " & contenu(1), 5)
 
                     '-------------------------- AS = action sur le SERVICE ------------------------
-                ElseIf contenu(0) = "AS" Then 'on execute une action sur le service  : [AS#action]
+                ElseIf contenu(0) = "AS" Then 'on execute une action sur le service  : [AS#action(#divers)]
                     log("MAC:  -> " & contenu(1), 5)
                     If contenu(1) = "stop" Then 'arret du service
                         If Serv_DOMOS Then svc_stop()
@@ -1501,15 +1522,15 @@ Public Class domos_svc
                             svc_start()
                         End If
                     ElseIf contenu(1) = "maj" Or contenu(1) = "maj_all" Then 'maj des tables
-                        If Serv_DOMOS Then tables_masj("ALL")
+                        If Serv_DOMOS Then tables_maj("ALL")
                     ElseIf contenu(1) = "maj_composants" Then 'maj de la table COMPOSANTS
-                        If Serv_DOMOS Then tables_masj("COMPOSANTS")
+                        If Serv_DOMOS Then tables_maj("COMPOSANTS")
                     ElseIf contenu(1) = "maj_composants_bannis" Then 'maj de la table COMPOSANTS_BANNIS
-                        If Serv_DOMOS Then tables_masj("COMPOSANTS_BANNIS")
+                        If Serv_DOMOS Then tables_maj("COMPOSANTS_BANNIS")
                     ElseIf contenu(1) = "maj_macro" Then 'maj de la table MACRO
-                        If Serv_DOMOS Then tables_masj("MACRO")
+                        If Serv_DOMOS Then tables_maj("MACRO")
                     ElseIf contenu(1) = "maj_timer" Then 'maj de la table TIMER
-                        If Serv_DOMOS Then tables_masj("TIMER")
+                        If Serv_DOMOS Then tables_maj("TIMER")
                     ElseIf contenu(1) = "afftables" Then 'Affiche les tables en memoires
                         tables_aff()
                     End If

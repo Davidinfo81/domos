@@ -22,10 +22,10 @@ Public Class mysql
                 Return ""
             Catch Ex As Exception
                 connected = False
-                Return "ERR: SQL_Connect : " & Ex.Message
+                Return "ERR: SQL_Connect : " & Ex.Message & " : " & serveur & "/" & base & " : " & user & "/" & pass
             End Try
         Else
-            Return "ERR: SQL_Connect : Déjà Connecté au serveur"
+            Return "ERR: SQL_Connect : Déjà Connecté au serveur : " & serveur & "/" & base & " : " & user & "/" & pass
         End If
 
     End Function
@@ -60,10 +60,10 @@ Public Class mysql
                 table = data
                 Return ""
             Catch ex As Exception
-                Return "ERR: SQL_Query : " & ex.Message
+                Return "ERR: SQL_Query : " & ex.Message & " : " & table.TableName & " -- " & query
             End Try
         Else
-            Return "ERR: SQL_Query : Non connecté au serveur"
+            Return "ERR: SQL_Query : Non connecté au serveur : " & table.TableName & " -- " & query
         End If
     End Function
 
@@ -76,10 +76,10 @@ Public Class mysql
                 commande.ExecuteNonQuery()
                 Return ""
             Catch ex As Exception
-                Return "ERR: SQL_NonQuery : " & ex.Message
+                Return "ERR: SQL_NonQuery : " & ex.Message & " : " & query
             End Try
         Else
-            Return "ERR: SQL_NonQuery : Non connecté au serveur"
+            Return "ERR: SQL_NonQuery : Non connecté au serveur : " & query
         End If
     End Function
 
