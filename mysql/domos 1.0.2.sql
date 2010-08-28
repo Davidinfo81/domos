@@ -133,6 +133,13 @@ CREATE TABLE `macro` (
   PRIMARY KEY (`macro_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
+CREATE TABLE `menu` (
+`menu_id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+`menu_ordre` int(11) NOT NULL ,
+`menu_nom` tinytext NOT NULL ,
+`menu_lien` tinytext NOT NULL
+) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
 CREATE TABLE `plan` (
   `plan_id` bigint(20) NOT NULL AUTO_INCREMENT,
   `plan_composant` bigint(20) NOT NULL,
