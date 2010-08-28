@@ -14,7 +14,7 @@
 	<link rel="SHORTCUT ICON" href="favicon.ico" />
     <link rel="icon" type="image/ico" href="favicon.ico" />
 	<script language="javascript" type="text/javascript" src="./include_cssjs/script_XHRConnection.js"></script>
-	<script language="javascript" type="text/javascript" src="./include_cssjs/jquery-1.3.2.min.js"></script>
+	<script language="javascript" type="text/javascript" src="./include_cssjs/jquery-1.4.2.min.js"></script>
 	<script language="javascript" type="text/javascript" src="./include_cssjs/interface.js"></script>
 	<script language="javascript" type="text/javascript" src="./include_cssjs/contextmenu.js"></script>
 </head>
@@ -27,6 +27,7 @@
         <li id="modeles"><img src="images/_modele.png" width=28/> Modéles</li>
         <li id="plans"><img src="images/menu/plans.gif" width=28 /> Plans</li>
         <li id="macros"><img src="images/menu/macro.png" width=28 /> Macros</li>
+        <li id="menu"><img src="images/menu/menu.png" width=28 /> Menu</li>
         <li id="users"><img src="images/menu/users.png" width=28 /> Users</li>
         <li id="configuration"><img src="images/menu/config.png" width=28 /> Configuration</li>
         <li id="phpinfo"><img src="images/menu/info.png" width=28 /> phpinfo</li>
@@ -43,6 +44,7 @@
 							'modeles': function(t) {window.location.href='modeles.html';},
 							'plans': function(t) {window.location.href='plans.html';},
 							'macros': function(t) {window.location.href='macros.html';},
+							'menu': function(t) {window.location.href='menu.html';},
 							'users': function(t) {window.location.href='users.html';},
 							'configuration': function(t) {window.location.href='config.html';},
 							'phpinfo': function(t) {window.location.href='phpinfo.html';}
@@ -56,12 +58,14 @@
 		<div id="fisheye" class="fisheye">
 				<div class="fisheyeContainter">
 					<a href="domos.html" class="fisheyeItem"><img src="images/menu/domos.png" /><span>Accueil</span></a>
-					<a href="plan-cav.html" class="fisheyeItem"><img src="images/menu/maison_0.png" /><span>Cave</span></a>
-					<a href="plan-rdc.html" class="fisheyeItem"><img src="images/menu/maison_1.png" /><span>RDC</span></a>
-					<a href="plan-unn.html" class="fisheyeItem"><img src="images/menu/maison_2.png" /><span>Premier</span></a>
-					<a href="plan-deu.html" class="fisheyeItem"><img src="images/menu/maison_3.png" /><span>Deuxième</span></a>
-					<a href="plan-ex1.html" class="fisheyeItem"><img src="images/menu/maison_4.png" /><span>Ext. Terasse</span></a>
-					<a href="plan-ex2.html" class="fisheyeItem"><img src="images/menu/maison_5.png" /><span>Ext. Rue</span></a>
+					<?php
+					$resultat = mysql_query("select * from menu order by menu_ordre");
+					if($resultat){
+						while($row=mysql_fetch_array($resultat)){
+							echo "<a href=\"plan-".$row['menu_lien'].".html\" class=\"fisheyeItem\"><img src=\"images/plans/menu_".$row['menu_lien'].".png\" /><span>".$row['menu_nom']."</span></a>";
+						}
+					}
+					?>
 					<a href="meteo.html" class="fisheyeItem"><img src="images/menu/meteo.gif" /><span>Météo</span></a>
 					<a href="calendrier.html" class="fisheyeItem"><img src="images/menu/calendrier.png" /><span>Calendrier</span></a>
 					<a href="logs.html" class="fisheyeItem"><img src="images/menu/logs.png" /><span>Logs</span></a>

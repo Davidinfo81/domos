@@ -58,6 +58,22 @@ case "composants_bannis" :
 	}else{echo mysql_errno().": ".mysql_error()." at ".__LINE__." line in ".__FILE__." file<br>";}
 	break;
 
+case "menu" :
+	$sql = "SELECT * from menu";
+	$res = mysql_query ($sql);
+	if($res){
+		while($row=mysql_fetch_array($res)){
+			//create xml tag for grid's row
+			echo ("<row id='".$row['menu_id']."'>");
+			print("<cell><![CDATA[".$row['menu_id']."]]></cell>");
+			print("<cell><![CDATA[".dequote($row['menu_nom'])."]]></cell>");
+			print("<cell><![CDATA[".$row['menu_lien']."]]></cell>");
+			print("<cell><![CDATA[".dequote($row['menu_ordre'])."]]></cell>");
+			print("</row>");
+		}
+	}else{echo mysql_errno().": ".mysql_error()." at ".__LINE__." line in ".__FILE__." file<br>";}
+	break;
+
 case "macros" :
 	$sql = "SELECT * from macro order by macro_nom";
 	$res = mysql_query ($sql);
