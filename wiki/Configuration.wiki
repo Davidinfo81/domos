@@ -135,6 +135,15 @@ We have two macro type : macro and timer
            * sql#purgeglos : purges les logs plus vieux que 2 mois
            * sql#reconnect : deconnect/connect to the mysql database
 
+=Menu=
+
+You could personnalize the general menu.
+Indeed you can had, remove and change order for plan.
+Each item consist in 3 parameters :
+    * nom : this is the name of the plan which appear in the menu
+    * lien : this is the name used in the image menu "www\images\plans\menu_xxx.png" and the plan name : "www\images\plans\xxx.jpg" which is used in the plan page to localise the captors.
+    * ordre : this is the order oh the menu which could be change by clicking on "Changer l'ordre"
+
 =List of possible Order :=
 
     * PLCBUS :
