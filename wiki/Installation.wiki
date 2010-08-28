@@ -35,6 +35,8 @@ Install last drivers depending on the technology you wan to use :
     * Modify the configuration (Port Number, weather.com, logs, IP address...)
     * Add components
     * Add Macros/Timer
+    * Add Menu and add plan image which correspond to the menu link : "www\images\plans\menu_xxx.png" for the menu image and "www\images\plans\xxx.jpg" for the plan image used in plan page
+    * Add captors in plan
 
 =USE=
 Start domos.exe
