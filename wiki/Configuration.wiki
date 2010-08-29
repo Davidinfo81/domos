@@ -3,10 +3,8 @@
 
 =General=
 
-For CMD programm (no longer developped) : Domos could start automatically (instead of clicking on "INIT" button)if you had start parameter : "domos.exe start"
-
-Domos has some basic parameters in _"domos.exe.config"_ file :
-    * IP Address, Login and password for SQL Server : Domos must have this information to connect to the database to retrieve the configuration, components.. and store logs and states. Now you can foudn this information in the registry : "HKLM\SOFTWARE\Domos" and manage it with the GUI.
+Domos has some basic parameters in the registry :
+    * IP Address, Login, password and database name for SQL Server : Domos must have this information to connect to the database to retrieve the configuration, components.. and store logs and states. You can found this information in the registry : "HKLM\SOFTWARE\Domos" and manage it with the GUI.
 
 But most of parameters are managed on the web interface :
     * Serv_X10 = 0 : Activate X10 with a CM11 - 0=inactive 1=active
