@@ -1,8 +1,9 @@
 I will had here all modifications made to the database scheme
 
-= 1.0.1 --> 1.0.2 =
+=== Version 1.0.1 --> 1.0.2 ===
 
 Adding menu table :
+
 CREATE TABLE `menu` (
 `menu_id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
 `menu_ordre` int(11) NOT NULL ,
