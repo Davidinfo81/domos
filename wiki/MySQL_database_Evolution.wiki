@@ -1,5 +1,10 @@
 I will had here all modifications made to the database scheme
 
+
+=== Version 1.0.2 --> Dev ===
+
+
+
 === Version 1.0.1 --> 1.0.2 ===
 
 Adding menu table :
