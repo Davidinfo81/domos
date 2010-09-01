@@ -44,8 +44,6 @@ if ($days) {
 	}
 } else {echo "Erreur Récupération information météo";}
 echo "</div><div class=\"meteo\"><br />";
-echo "Algrange <a href='http://fr.weather.com/weather/today-Algrange-57440'><img src='./images/weathercom.gif' title='Weather.com' border='0' style='vertical-align:middle;' /></a> <a href='http://www.pleinchamp.com/meteo/meteoDept.aspx?dpt_id=57&menu_id=35'><img src='./images/pleinchamp.gif' title='pleinchamp.com' border='0' style='vertical-align:middle;' /></a> | ";
-echo "Gap <a href='http://fr.weather.com/weather/today-Gap-05000'><img src='./images/weathercom.gif' title='Weather.com' border='0' style='vertical-align:middle;' /></a> <a href='http://www.pleinchamp.com/meteo/meteoDept.aspx?dpt_id=05&menu_id=35'><img src='./images/pleinchamp.gif' title='pleinchamp.com' border='0' style='vertical-align:middle;' /></a> | ";
 echo "Paris <a href='http://fr.weather.com/weather/today-Paris-75000'><img src='./images/weathercom.gif' title='Weather.com' border='0' style='vertical-align:middle;' /></a> <a href='http://www.pleinchamp.com/meteo/meteoDept.aspx?dpt_id=75&menu_id=35'><img src='./images/pleinchamp.gif' title='pleinchamp.com' border='0' style='vertical-align:middle;' /></a> | ";
 echo "Guadeloupe <a href='http://fr.weather.com/weather/today-Pointe-%E0-Pitre-GPXX0003'><img src='./images/weathercom.gif' title='Weather.com' border='0' style='vertical-align:middle;' /></a> <a href='http://www.pleinchamp.com/meteo/meteoDept.aspx?dpt_id=971&menu_id=35'><img src='./images/pleinchamp.gif' title='pleinchamp.com' border='0' style='vertical-align:middle;' /></a><br />";
 echo "<br /></div></div></td></tr>";
