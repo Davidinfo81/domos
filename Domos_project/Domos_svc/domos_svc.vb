@@ -1293,8 +1293,10 @@ Public Class domos_svc
             liste = STRGS.Mid(liste, 2, STRGS.Len(liste) - 2) 'on supprimer les () de chaque cote de la liste
             While (posfin < STRGS.Len(liste)) 'tant que toute la liste n'a pas ete traite
                 If liste(posfin - 1) = "(" Then 'c'est une liste
+                    'log(" x1 -> " & posdebut & "-" & posfin, 9)
                     posfin = STRGS.InStr(posdebut, liste, ")")
-                    For i = 1 To posfin
+                    'log(" x2 -> " & posdebut & "-" & posfin, 9)
+                    For i = posdebut To (posfin - 1)
                         If liste(i) = "(" Then posfin = STRGS.InStr(posfin, liste, ")")
                     Next
 
@@ -1314,11 +1316,13 @@ Public Class domos_svc
                 Else
                     resultat = resultat Or resultat_temp
                 End If
+                'log(" x3 -> " & posdebut & "-" & posfin, 9)
                 If (posfin) < STRGS.Len(liste) Then 'on a pas fini, on avance à l'element suivant
                     operateur = STRGS.Mid(liste, posfin + 1, 2)
                     posdebut = posfin + 4
                     posfin = posfin + 3
                 End If
+                'log(" x4 -> " & posdebut & "-" & posfin, 9)
             End While
         Catch ex As Exception
             resultat = False
