@@ -739,7 +739,11 @@ Public Class domos_svc
             FileOpen(FreeF, CheminFichier, OpenMode.Append)
             Print(FreeF, Texte)
             FileClose(FreeF)
+        Catch ex As IOException
+            wait(500)
+            EcrireFichier(CheminFichier, Texte)
         Catch ex As Exception
+            wait(500)
             log("ERR: Ecrire_fichier exception : " & Texte & " ::: " & ex.ToString, 2)
         End Try
     End Sub
