@@ -136,6 +136,8 @@
     <Compile Include="Settings.vb" />
     <Compile Include="sockets.vb" />
     <Compile Include="Soleil.vb" />
+    <Compile Include="tellstick.vb" />
+    <Compile Include="x10.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
