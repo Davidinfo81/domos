@@ -3,6 +3,7 @@ Imports System.ServiceProcess
 Imports Microsoft.Win32
 Imports System.Threading
 Imports System.Globalization
+Imports Vallelunga.HomeAutomation.X10
 
 Public Class notify
 
@@ -253,16 +254,26 @@ Public Class notify
     End Sub
 
     '---------------------- TESTS ---------------------------
-    Private Sub Isnumeric182ToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Isnumeric182ToolStripMenuItem.Click
-        If IsNumeric("18.2") Then MsgBox("true") Else MsgBox("false")
+    Dim cm11 As CM11A
+
+    Private Sub X10openToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10openToolStripMenuItem.Click
+        cm11 = CM11A.Instance("COM1")
+        AddHandler cm11.X10MessageReceived, New CM11A.X10MessageReceivedEventHandler(AddressOf controller_MessageReceived)
     End Sub
-    Private Sub Isnumeric182ToolStripMenuItem1_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Isnumeric182ToolStripMenuItem1.Click
-        If IsNumeric("18,2") Then MsgBox("true") Else MsgBox("false")
+
+    Private Sub X10closeToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10closeToolStripMenuItem.Click
+        RemoveHandler cm11.X10MessageReceived, AddressOf controller_MessageReceived
+        cm11.Dispose()
     End Sub
-    Private Sub Isnumeric18ToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Isnumeric18ToolStripMenuItem.Click
-        If IsNumeric("18") Then MsgBox("true") Else MsgBox("false")
+
+    Sub controller_MessageReceived(ByVal e As X10MessageReceivedEventArgs)
+        'Here you can find out what event was received by the CM11A.
+        'Right now only standard On and Off events are monitored.
+        'The details are in the arguments: e.HouseCode, e.UnitCode, e.Command
+        MsgBox(e.HouseCode + "-" + e.UnitCode + " --> " + e.Command)
     End Sub
-    Private Sub Isnumeric18cdToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Isnumeric18cdToolStripMenuItem.Click
-        If IsNumeric("18ab") Then MsgBox("true") Else MsgBox("false")
+
+    Private Sub X10ToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10ToolStripMenuItem.Click
+        cm11.SendCommand(X10HouseCode.A, 1, X10Command.TurnOn)
     End Sub
 End Class
