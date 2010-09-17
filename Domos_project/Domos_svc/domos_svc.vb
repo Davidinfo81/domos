@@ -14,12 +14,13 @@ Public Class domos_svc
     Public Shared mysql As New mysql
     Shared rfxcom As New rfxcom
     Shared plcbus As New plcbus
+    Shared x10 As New x10
 
     'variable interne au script
     Public Shared table_config, table_composants, table_composants_bannis, table_macros, table_timer, table_thread As New DataTable
     Public Shared Serv_DOMOS, Serv_WIR, Serv_WI2, Serv_PLC, Serv_X10, Serv_RFX, Serv_VIR, Serv_SOC As Boolean
     Public Shared Port_PLC, Port_X10, Port_RFX, Port_WIR, Port_WI2, socket_ip, WIR_adaptername As String
-    Public Shared PLC_timeout, Action_timeout, rfx_tpsentrereponse, socket_port, lastetat, WIR_res As Integer
+    Public Shared PLC_timeout, X10_timeout, Action_timeout, rfx_tpsentrereponse, socket_port, lastetat, WIR_res As Integer
     Public Shared heure_coucher_correction, heure_lever_correction As Integer
     Public Shared gps_longitude, gps_latitude As String
     Dim WithEvents timer_pool, timer_timer As New System.Timers.Timer
@@ -72,6 +73,7 @@ Public Class domos_svc
         Serv_SOC = False
         log_niveau = "0-1-2-3-4-5-6-7-8-9-A-B-C-D-E-F" 'log tous les msgs
         log_dest = 2 '0=txt, 1=sql, 2=txt+sql
+        X10_timeout = 500
         PLC_timeout = 500
         Action_timeout = 500
         rfx_tpsentrereponse = 1500
@@ -197,6 +199,7 @@ Public Class domos_svc
                 Port_PLC = table_config.Select("config_nom = 'Port_PLC'")(0)("config_valeur")
                 Port_WIR = table_config.Select("config_nom = 'Port_WIR'")(0)("config_valeur")
                 Port_WI2 = table_config.Select("config_nom = 'Port_WI2'")(0)("config_valeur")
+                X10_timeout = table_config.Select("config_nom = 'X10_timeout'")(0)("config_valeur")
                 PLC_timeout = table_config.Select("config_nom = 'PLC_timeout'")(0)("config_valeur")
                 Action_timeout = table_config.Select("config_nom = 'Action_timeout'")(0)("config_valeur")
                 rfx_tpsentrereponse = table_config.Select("config_nom = 'rfx_tpsentrereponse'")(0)("config_valeur")
@@ -211,7 +214,7 @@ Public Class domos_svc
                 gps_latitude = table_config.Select("config_nom = 'gps_latitude'")(0)("config_valeur")
                 log("     -> LOG_NIVEAU=" & log_niveau & " LOG_DESTINATION=" & log_dest, 0)
                 log("     -> WIR=" & Serv_WIR & " WI2=" & Serv_WI2 & " PLC=" & Serv_PLC & ":" & Port_PLC & " X10=" & Serv_X10 & ":" & Port_X10 & " RFX=" & Serv_RFX & ":" & Port_RFX, 0)
-                log("     -> Action_timeout=" & Action_timeout & " PLC_timeout=" & PLC_timeout & " RFX_tpsentrereponse=" & rfx_tpsentrereponse & " Lastetat=" & lastetat, 0)
+                log("     -> Action_timeout=" & Action_timeout & " PLC_timeout=" & PLC_timeout & " X10_timeout=" & X10_timeout & " RFX_tpsentrereponse=" & rfx_tpsentrereponse & " Lastetat=" & lastetat, 0)
                 log("     -> heure_lever_correction=" & heure_lever_correction & " heure_coucher_correction=" & heure_coucher_correction, 0)
                 log("     -> longitude=" & gps_longitude & " latitude=" & gps_latitude, 0)
                 log("     -> WIR_res=" & WIR_res & " WIR_adaptername=" & WIR_adaptername, 0)
@@ -278,8 +281,23 @@ Public Class domos_svc
             End If
             log("", 0)
 
-            '----- recupération de la liste des composants actifs -----
+            '---------- Initialisation du X10 -------
             etape_startup = 8
+            If Serv_X10 Then
+                err = x10.ouvrir(Port_X10)
+                If STRGS.Left(err, 4) = "ERR:" Then
+                    Serv_X10 = False 'desactivation du X10 car erreur d'ouverture
+                    log("X10 : " & err, 2)
+                    log("     -> Désactivation du servive X10", 0)
+                Else
+                    log("X10 : " & err, 0)
+                End If
+                log("X10 : " & err, -1)
+            End If
+            log("", 0)
+
+            '----- recupération de la liste des composants actifs -----
+            etape_startup = 9
             log("SQL : Récupération de la liste des composants actifs :", 0)
             log("SQL : Récupération de la liste des composants actifs", -1)
             Dim Condition_service As String = ""
@@ -326,7 +344,7 @@ Public Class domos_svc
             End If
 
             '---------- Initialisation des heures du soleil -------
-            etape_startup = 9
+            etape_startup = 10
             log("Initialisation des heures du soleil", 0)
             'soleil.City("Algrange")
             soleil.City_gps(gps_longitude, gps_latitude)
@@ -377,7 +395,7 @@ Public Class domos_svc
 
 
             '---------- Ajout d'un handler sur la modification de l'etat d'un composant -------
-            etape_startup = 10
+            etape_startup = 11
             log("Lancement de l'handler sur l etat des composants", 0)
             AddHandler table_composants.ColumnChanged, New DataColumnChangeEventHandler(AddressOf table_composants_changed)
             log("", 0)
@@ -401,7 +419,7 @@ Public Class domos_svc
             log("", 0)
 
             '----- recupération de la liste des macros -----
-            etape_startup = 11
+            etape_startup = 12
             log("SQL : Récupération de la liste des macros :", 0)
             log("SQL : Récupération de la liste des macros", -1)
             err = Table_maj_sql(table_macros, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions NOT LIKE '%CT#%'")
@@ -424,7 +442,7 @@ Public Class domos_svc
             log("", 0)
 
             '----- recupération de la liste des timers -----
-            etape_startup = 12
+            etape_startup = 13
             log("SQL : Récupération de la liste des timers :", 0)
             log("SQL : Récupération de la liste des timers", -1)
             err = Table_maj_sql(table_timer, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions LIKE '%CT#%'")
@@ -451,7 +469,7 @@ Public Class domos_svc
             log("", 0)
 
             '---------- RFXCOM : Lancement du Handler et paramétrage -------
-            etape_startup = 13
+            etape_startup = 14
             If Serv_RFX Then
                 log("RFX : Lancement et paramétrage du RFXCOM", 0)
                 log("RFX : Lancement et paramétrage du RFXCOM", -1)
@@ -481,7 +499,7 @@ Public Class domos_svc
             log("", 0)
 
             '---------- Initialisation du Socket -------
-            etape_startup = 14
+            etape_startup = 15
             If Serv_SOC Then
                 err = socket.ouvrir(socket_ip, socket_port)
                 If STRGS.Left(err, 4) = "ERR:" Then
@@ -496,7 +514,7 @@ Public Class domos_svc
             End If
 
             '---------- Lancement du pooling -------
-            etape_startup = 15
+            etape_startup = 16
             log("Lancement du Pool", 0)
             log("Lancement du Pool", -1)
             timer_pool = New System.Timers.Timer
@@ -504,7 +522,7 @@ Public Class domos_svc
             timer_pool.Interval = 1000
             timer_pool.Start()
             '---------- Lancement du timer -------
-            etape_startup = 16
+            etape_startup = 17
             log("Lancement du Timer", 0)
             log("Lancement du Timer", -1)
             timer_timer = New System.Timers.Timer
@@ -536,7 +554,7 @@ Public Class domos_svc
             log("", 0)
 
             '---------- arret du timer -------
-            If etape_startup > 16 Then
+            If etape_startup > 17 Then
                 log("Arret du Timer :", 0)
                 log("Arret du Timer", -1)
                 timer_timer.Stop()
@@ -544,7 +562,7 @@ Public Class domos_svc
                 log("     -> Arrété", 0)
             End If
             '---------- arret du pool -------
-            If etape_startup > 15 Then
+            If etape_startup > 16 Then
                 log("Arret du Pool :", 0)
                 log("Arret du Pool", -1)
                 timer_pool.Stop()
@@ -553,7 +571,7 @@ Public Class domos_svc
             End If
 
             '---------- liberation du Socket -------
-            If etape_startup > 14 Then
+            If etape_startup > 15 Then
                 If Serv_SOC Then
                     log("SOC : Fermeture de la connexion : ", 0)
                     err = socket.fermer()
@@ -565,7 +583,6 @@ Public Class domos_svc
                     log("SOCKET Fermeture : " & err, -1)
                 End If
             End If
-
 
             '---------- attente fin des threads : 5 secondes -------
             log("Attente fin des threads :", 0)
@@ -638,6 +655,20 @@ Public Class domos_svc
                         log(" -> PLC Fermeture : " & err, 0)
                     End If
                     log("PLC Fermeture : " & err, -1)
+                End If
+            End If
+
+            '---------- liberation du X10 -------
+            If etape_startup > 8 Then
+                If Serv_X10 Then
+                    log("X10 : Fermeture de la connexion : ", 0)
+                    err = x10.fermer()
+                    If STRGS.Left(err, 4) = "ERR:" Then
+                        log(" -> X10 Fermeture : " & err, 2)
+                    Else
+                        log(" -> X10 Fermeture : " & err, 0)
+                    End If
+                    log("X10 Fermeture : " & err, -1)
                 End If
             End If
 
@@ -1645,7 +1676,7 @@ Public Class domos_svc
                             End While
                             If (limite < (PLC_timeout / 10)) Then 'on a attendu moins que le timeout
                                 'maj du thread pour dire qu'on ecrit sur le bus
-                                tblthread = table_thread.Select("norme='PLC' AND source='ECR' AND composant_id='" & compid & "'")
+                                tblthread = table_thread.Select("norme='PLC' AND source='ECR_PLC' AND composant_id='" & compid & "'")
                                 If tblthread.GetLength(0) = 1 Then
                                     tblthread(0)("source") = "ECR_PLC"
                                 Else
@@ -1670,7 +1701,35 @@ Public Class domos_svc
                         Case "WI2"
                             '???
                         Case "X10"
-                            '???
+                            'verification si on a pas déjà un thread qui ecrit sur le x10 sinon on boucle pour attendre X10_timeout/10 = 5 sec par défaut
+                            Dim tblthread = table_thread.Select("norme='X10' AND source='ECR_X10' AND composant_id<>'" & compid & "'")
+                            While (tblthread.GetLength(0) > 0 And limite < (X10_timeout / 10))
+                                wait(10)
+                                tblthread = table_thread.Select("norme='X10' AND source='ECR_X10' AND composant_id<>'" & compid & "'")
+                                limite = limite + 1
+                            End While
+                            If (limite < (X10_timeout / 10)) Then 'on a attendu moins que le timeout
+                                'maj du thread pour dire qu'on ecrit sur le bus
+                                tblthread = table_thread.Select("norme='X10' AND source='ECR_X10' AND composant_id='" & compid & "'")
+                                If tblthread.GetLength(0) = 1 Then
+                                    tblthread(0)("source") = "ECR_X10"
+                                Else
+                                    log("ECR: Thread non trouvé (pour X10)!", 2)
+                                End If
+                                If valeur2 <> "" Then
+                                    err = x10.ecrire(tabletmp(0)("composants_adresse"), valeur, valeur2)
+                                Else
+                                    err = x10.ecrire(tabletmp(0)("composants_adresse"), valeur, 0)
+                                End If
+                                If STRGS.Left(err, 4) = "ERR:" Then
+                                    log(err, 2)
+                                Else
+                                    log(err, 5)
+                                End If
+                                wait(100) 'pause de 1sec pour recevoir le ack et libérer le bus correctement
+                            Else
+                                log("ECR: Le port X10 nest pas disponible pour une ecriture : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
+                            End If
                         Case Else
                             'log("ECR: norme non gérée : " & tabletmp(0)("composants_modele_norme").ToString & " comp: " & tabletmp(0)("composants_adresse").ToString)
                     End Select

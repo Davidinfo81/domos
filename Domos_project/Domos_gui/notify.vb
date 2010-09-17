@@ -19,8 +19,8 @@ Public Class notify
         Try
             Dim x = controller.ServiceName
         Catch ex As Exception
-            MsgBox("Service Domos don't exist, reinstall DOMOS !", MsgBoxStyle.Critical, "ERROR")
-            Application.Exit()
+            'MsgBox("Service Domos don't exist, reinstall DOMOS !", MsgBoxStyle.Critical, "ERROR")
+            'Application.Exit()
         End Try
 
         Try
@@ -106,38 +106,41 @@ Public Class notify
     '------------------- DOMOS service  -----------------------
     'On menu opening : Enable menus depending on service state
     Private Sub Domosmenu_Opening(ByVal sender As System.Object, ByVal e As System.ComponentModel.CancelEventArgs) Handles Domosmenu.Opening
-        controller.Refresh()
-        EtatToolStripMenuItem.Text = "Etat : " & controller.Status.ToString
-        If controller.Status.Equals(ServiceControllerStatus.Running) Then
-            StartToolStripMenuItem.Enabled = False
-            StopToolStripMenuItem.Enabled = True
-            RestartToolStripMenuItem.Enabled = True
-            ActionsToolStripMenuItem.Enabled = True
-            SQLToolStripMenuItem.Visible = True
-            TablesToolStripMenuItem.Visible = True
-        ElseIf controller.Status.Equals(ServiceControllerStatus.Stopped) Then
-            StartToolStripMenuItem.Enabled = True
-            StopToolStripMenuItem.Enabled = False
-            RestartToolStripMenuItem.Enabled = False
-            ActionsToolStripMenuItem.Enabled = False
-            SQLToolStripMenuItem.Visible = False
-            TablesToolStripMenuItem.Visible = False
-        ElseIf controller.Status.Equals(ServiceControllerStatus.Paused) Then
-            StartToolStripMenuItem.Enabled = True
-            StopToolStripMenuItem.Enabled = True
-            RestartToolStripMenuItem.Enabled = True
-            ActionsToolStripMenuItem.Enabled = False
-            SQLToolStripMenuItem.Visible = False
-            TablesToolStripMenuItem.Visible = False
-        ElseIf controller.Status.Equals(ServiceControllerStatus.StopPending) Or controller.Status.Equals(ServiceControllerStatus.PausePending) Or controller.Status.Equals(ServiceControllerStatus.StartPending) Or controller.Status.Equals(ServiceControllerStatus.ContinuePending) Then
-            StartToolStripMenuItem.Enabled = False
-            StopToolStripMenuItem.Enabled = False
-            RestartToolStripMenuItem.Enabled = False
-            ActionsToolStripMenuItem.Enabled = False
-            SQLToolStripMenuItem.Visible = False
-            TablesToolStripMenuItem.Visible = False
-        End If
-
+        Try
+            controller.Refresh()
+            EtatToolStripMenuItem.Text = "Etat : " & controller.Status.ToString
+            If controller.Status.Equals(ServiceControllerStatus.Running) Then
+                StartToolStripMenuItem.Enabled = False
+                StopToolStripMenuItem.Enabled = True
+                RestartToolStripMenuItem.Enabled = True
+                ActionsToolStripMenuItem.Enabled = True
+                SQLToolStripMenuItem.Visible = True
+                TablesToolStripMenuItem.Visible = True
+            ElseIf controller.Status.Equals(ServiceControllerStatus.Stopped) Then
+                StartToolStripMenuItem.Enabled = True
+                StopToolStripMenuItem.Enabled = False
+                RestartToolStripMenuItem.Enabled = False
+                ActionsToolStripMenuItem.Enabled = False
+                SQLToolStripMenuItem.Visible = False
+                TablesToolStripMenuItem.Visible = False
+            ElseIf controller.Status.Equals(ServiceControllerStatus.Paused) Then
+                StartToolStripMenuItem.Enabled = True
+                StopToolStripMenuItem.Enabled = True
+                RestartToolStripMenuItem.Enabled = True
+                ActionsToolStripMenuItem.Enabled = False
+                SQLToolStripMenuItem.Visible = False
+                TablesToolStripMenuItem.Visible = False
+            ElseIf controller.Status.Equals(ServiceControllerStatus.StopPending) Or controller.Status.Equals(ServiceControllerStatus.PausePending) Or controller.Status.Equals(ServiceControllerStatus.StartPending) Or controller.Status.Equals(ServiceControllerStatus.ContinuePending) Then
+                StartToolStripMenuItem.Enabled = False
+                StopToolStripMenuItem.Enabled = False
+                RestartToolStripMenuItem.Enabled = False
+                ActionsToolStripMenuItem.Enabled = False
+                SQLToolStripMenuItem.Visible = False
+                TablesToolStripMenuItem.Visible = False
+            End If
+        Catch ex As Exception
+            'MsgBox("Error : " & ex.Message, MsgBoxStyle.Critical, "ERROR")
+        End Try
     End Sub
     'Start domos service
     Private Sub StartToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles StartToolStripMenuItem.Click
@@ -255,25 +258,54 @@ Public Class notify
 
     '---------------------- TESTS ---------------------------
     Dim cm11 As CM11A
+    Dim xx10 As New x10
 
     Private Sub X10openToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10openToolStripMenuItem.Click
-        cm11 = CM11A.Instance("COM1")
-        AddHandler cm11.X10MessageReceived, New CM11A.X10MessageReceivedEventHandler(AddressOf controller_MessageReceived)
+        Try
+            'cm11 = CM11A.Instance("COM1")
+            'MsgBox(cm11.PortName)
+            MsgBox(xx10.ouvrir("COM1"))
+        Catch ex As Exception
+            MsgBox(ex.Message)
+        End Try
+        'AddHandler cm11.X10MessageReceived, New CM11A.X10MessageReceivedEventHandler(AddressOf controller_MessageReceived)
     End Sub
 
     Private Sub X10closeToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10closeToolStripMenuItem.Click
-        RemoveHandler cm11.X10MessageReceived, AddressOf controller_MessageReceived
-        cm11.Dispose()
+        'RemoveHandler cm11.X10MessageReceived, AddressOf controller_MessageReceived
+        Try
+            'cm11.Dispose()
+            MsgBox(xx10.fermer())
+        Catch ex As Exception
+            MsgBox(ex.Message)
+        End Try
+
     End Sub
 
     Sub controller_MessageReceived(ByVal e As X10MessageReceivedEventArgs)
         'Here you can find out what event was received by the CM11A.
         'Right now only standard On and Off events are monitored.
         'The details are in the arguments: e.HouseCode, e.UnitCode, e.Command
-        MsgBox(e.HouseCode + "-" + e.UnitCode + " --> " + e.Command)
+        MsgBox(e.HouseCode & "-" & e.UnitCode & " --> " & e.Command)
     End Sub
 
-    Private Sub X10ToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10ToolStripMenuItem.Click
-        cm11.SendCommand(X10HouseCode.A, 1, X10Command.TurnOn)
+    Private Sub X10a1onToolstripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10a1onToolstripMenuItem.Click
+        Try
+            'cm11.SendCommand(X10HouseCode.A, 1, X10Command.AllUnitsOff)
+            MsgBox(xx10.ecrire("A1", "ON", 0))
+        Catch ex As Exception
+            MsgBox(ex.Message)
+        End Try
+
+    End Sub
+
+    Private Sub X10a1offToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10a1offToolStripMenuItem.Click
+        Try
+            'cm11.SendCommand(X10HouseCode.A, 1, X10Command.TurnOff)
+            MsgBox(xx10.ecrire("A1", "OFF", 0))
+        Catch ex As Exception
+            MsgBox(ex.Message)
+        End Try
+
     End Sub
 End Class

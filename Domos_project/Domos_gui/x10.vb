@@ -419,9 +419,9 @@ Public Class x10
     Public Sub WriteLog(ByVal message As String)
         'utilise la fonction de base pour loguer un event
         If STRGS.InStr(message, "ERR:") > 0 Then
-            domos_svc.log("RFX : " & message, 2)
+            'domos_svc.log("RFX : " & message, 2)
         Else
-            domos_svc.log("RFX : " & message, 9)
+            'domos_svc.log("RFX : " & message, 9)
         End If
     End Sub
 
