@@ -40,121 +40,121 @@ echo "<script type=\"text/javascript\">
 						monspan.className = 'spanun';
 						var mona = document.createElement('a');
 						mona.setAttribute('href','composants-grapher-' + resultat.getAttribute('comp') + '.html');
-						mona.setAttribute('title',resultat.getAttribute('compnom'));						
+						mona.setAttribute('title',resultat.getAttribute('compnom'));
 						var monimg = document.createElement('img');
 						monimg.setAttribute('src',\"./images/temp.png\");
 						monimg.style.width = '12px';
 						monimg.style.height = '12px';
 						monimg.style.border = '0px';
-						mona.appendChild(monimg);						
+						mona.appendChild(monimg);
 						texte=resultat.getAttribute('valeur')+\"°\";
 						monaText = document.createTextNode(texte);
 						mona.appendChild(monaText);
 						monspan.appendChild(mona);
 						break;
+
 					case \"hyg\":
-						monspan.className = 'spanun';				
+						monspan.className = 'spanun';
 						var mona = document.createElement('a');
 						mona.setAttribute('href','composants-grapher-' + resultat.getAttribute('comp') + '.html');
-						mona.setAttribute('title',resultat.getAttribute('compnom'));						
+						mona.setAttribute('title',resultat.getAttribute('compnom'));
 						var monimg = document.createElement('img');
 						monimg.setAttribute('src',\"./images/water.png\");
 						monimg.style.width = '12px';
 						monimg.style.height = '12px';
 						monimg.style.border = '0px';
-						mona.appendChild(monimg);						
+						mona.appendChild(monimg);
 						texte=resultat.getAttribute('valeur')+\"%\";
 						monaText = document.createTextNode(texte);
-						mona.appendChild(monaText);		
+						mona.appendChild(monaText);
 						monspan.appendChild(mona);
 						break;
+
 					case \"div\":
-						monspan.className = 'spanun';	
-						monspan.style.width = '150px';				
+						monspan.className = 'spanun';
+						monspan.style.width = '150px';
 						var mona = document.createElement('a');
 						mona.setAttribute('href','composants-relever-' + resultat.getAttribute('comp') + '.html');
-						mona.setAttribute('title',resultat.getAttribute('compnom'));						
+						mona.setAttribute('title',resultat.getAttribute('compnom'));
 						texte=resultat.getAttribute('valeur');
 						monaText = document.createTextNode(texte);
-						mona.appendChild(monaText);			
+						mona.appendChild(monaText);
 						monspan.appendChild(mona);
 						break;
+
 					case \"voletaction\":
-						monspan.className = 'spandeux';	
-						monspan.style.width = '12px';				
-						
+						monspan.className = 'spandeux';
+						monspan.style.width = '12px';
 						var mona = document.createElement('a');
 						mona.setAttribute('href','javascript:sendsocket(\"([AC#' + resultat.getAttribute('comp') + '#OFF])\")');
-						mona.setAttribute('title','Ouvrir ' + resultat.getAttribute('compnom'));				
+						mona.setAttribute('title','Ouvrir ' + resultat.getAttribute('compnom'));
 						var monimg = document.createElement('img');
 						monimg.setAttribute('src',\"./images/s_up.png\");
 						monimg.style.width = '12px';
 						monimg.style.border = '0px';
 						mona.appendChild(monimg);
 						monspan.appendChild(mona);
-						
 						var monbr = document.createElement('br');
-						monspan.appendChild(monbr);	
-						
+						monspan.appendChild(monbr);
 						var mona = document.createElement('a');
 						mona.setAttribute('href','javascript:sendsocket(\"([AC#' + resultat.getAttribute('comp') + '#ON])\")');
-						mona.setAttribute('title','Fermer ' + resultat.getAttribute('compnom'));				
+						mona.setAttribute('title','Fermer ' + resultat.getAttribute('compnom'));
 						var monimg = document.createElement('img');
 						monimg.setAttribute('src',\"./images/s_down.png\");
 						monimg.style.width = '12px';
 						monimg.style.border = '0px';
 						mona.appendChild(monimg);
-						monspan.appendChild(mona);					
+						monspan.appendChild(mona);
 						break;
+
 					case \"voletactionetat\":
-						monspan.className = 'spandeux';	
-						monspan.style.width = '35px';				
-						
+						monspan.className = 'spandeux';
+						monspan.style.width = '35px';
 						var mona = document.createElement('a');
 						mona.setAttribute('href','javascript:sendsocket(\"([AC#' + resultat.getAttribute('comp') + '#OFF])\")');
-						mona.setAttribute('title','Ouvrir ' + resultat.getAttribute('compnom'));				
+						mona.setAttribute('title','Ouvrir ' + resultat.getAttribute('compnom'));
 						var monimg = document.createElement('img');
 						monimg.setAttribute('src',\"./images/s_up.png\");
 						monimg.style.width = '12px';
 						monimg.style.border = '0px';
 						mona.appendChild(monimg);
 						monspan.appendChild(mona);
-						
 						var monbr = document.createElement('br');
 						monspan.appendChild(monbr);	
-						
 						var mona = document.createElement('a');
 						mona.setAttribute('href','javascript:sendsocket(\"([AC#' + resultat.getAttribute('comp') + '#ON])\")');
-						mona.setAttribute('title','Fermer ' + resultat.getAttribute('compnom'));				
+						mona.setAttribute('title','Fermer ' + resultat.getAttribute('compnom'));
 						var monimg = document.createElement('img');
 						monimg.setAttribute('src',\"./images/s_down.png\");
 						monimg.style.width = '12px';
 						monimg.style.border = '0px';
 						mona.appendChild(monimg);
-						monspan.appendChild(mona);					
+						monspan.appendChild(mona);
 						break;
+
 					case \"voletetat\":
-						monspan.className = 'spanun';							
+						monspan.className = 'spanun';
 						var mona = document.createElement('a');
 						mona.setAttribute('href','composants-relever-' + resultat.getAttribute('comp') + '.html');
 						var monimg = document.createElement('img');
 						if (resultat.getAttribute('valeur')==0) {
 							monimg.setAttribute('src',\"./images/volet_ferme.gif\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' Fermé');				
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' Fermé');
 						} else {
 							monimg.setAttribute('src',\"./images/volet_ouvert.gif\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' Ouvert');				
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' Ouvert');
 						}
 						monimg.style.width = '19px';
 						monimg.style.border = '0px';
 						mona.appendChild(monimg);
-						monspan.appendChild(mona);			
+						monspan.appendChild(mona);
 						break;
+
 					case \"jour\":
-						monspan.className = 'spanun';							
+						monspan.className = 'spanun';
 						var mona = document.createElement('a');
 						mona.setAttribute('href','composants-relever-' + resultat.getAttribute('comp') + '.html');
-						var monimg = document.createElement('img');						
+						var monimg = document.createElement('img');
 						var date_du_jour, heure, minute;
 						date_du_jour = new Date();
 						heure = date_du_jour.getHours();
@@ -163,62 +163,43 @@ echo "<script type=\"text/javascript\">
 						if (minute<10) {minute = '0'+ minute}
 						if (resultat.getAttribute('valeur')==0) {
 							monimg.setAttribute('src',\"./images/jour_nuit.png\");
-							mona.setAttribute('title','Nuit - '+heure+':'+minute);				
+							mona.setAttribute('title','Nuit - '+heure+':'+minute);
 						} else {
 							monimg.setAttribute('src',\"./images/jour_jour.png\");
-							mona.setAttribute('title','Jour - '+heure+':'+minute);				
+							mona.setAttribute('title','Jour - '+heure+':'+minute);
 						}
 						monimg.style.width = '60px';
 						monimg.style.border = '0px';
 						mona.appendChild(monimg);
-						monspan.appendChild(mona);			
+						monspan.appendChild(mona);
 						break;
+
 					case \"lampe\":
-						monspan.className = 'spanun';							
+						monspan.className = 'spanun';
 						var mona = document.createElement('a');
-						mona.setAttribute('href','#');
-						//mona.setAttribute('href','composants-relever-' + resultat.getAttribute('comp') + '.html');
-						var monimg = document.createElement('img');						
+						mona.setAttribute('href','composants-relever-' + resultat.getAttribute('comp') + '.html');
+						var monimg = document.createElement('img');
 						if (resultat.getAttribute('valeur')=='OFF') {
 							monimg.setAttribute('src',\"./images/ampoule_off.png\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF');				
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF');
 						} else {
 							monimg.setAttribute('src',\"./images/ampoule_on.png\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON');				
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON');
 						}
 						monimg.style.width = '16px';
 						monimg.style.height = '16px';
 						monimg.style.border = '0px';
 						mona.appendChild(monimg);
-						monspan.appendChild(mona);			
+						monspan.appendChild(mona);
 						break;
-					case \"lampeplc\":
-						monspan.className = 'spanun';							
-						var mona = document.createElement('a');
-						mona.setAttribute('href','#');
-						//mona.setAttribute('href','composants-relever-' + resultat.getAttribute('comp') + '.html');
-						var monimg = document.createElement('img');						
-						if (resultat.getAttribute('valeur')=='OFF') {
-							monimg.setAttribute('src',\"./images/ampoule_off.png\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF');				
-						} else {
-							monimg.setAttribute('src',\"./images/ampoule_on.png\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON');				
-						}
-						monimg.style.width = '16px';
-						monimg.style.height = '16px';
-						monimg.style.border = '0px';
-						mona.appendChild(monimg);
-						monspan.appendChild(mona);			
-						break;
-						
-					case \"lampeplcaction\":
-						monspan.className = 'spandeux';	
-						monspan.style.width = '35px';				
-						
+
+					case \"lampeaction\":
+						//span INTER
+						monspan.className = 'spandeux';
+						monspan.style.width = '35px';
 						var mona = document.createElement('a');
 						mona.setAttribute('href','javascript:sendsocket(\"([AC#' + resultat.getAttribute('comp') + '#ON])\")');
-						mona.setAttribute('title','Allumer ' + resultat.getAttribute('compnom'));				
+						mona.setAttribute('title','Allumer ' + resultat.getAttribute('compnom'));
 						var monimg = document.createElement('img');
 						monimg.setAttribute('src',\"./images/s_on.gif\");
 						monimg.style.width = '12px';
@@ -226,13 +207,11 @@ echo "<script type=\"text/javascript\">
 						monimg.style.border = '0px';
 						mona.appendChild(monimg);
 						monspan.appendChild(mona);
-						
 						var monbr = document.createElement('br');
-						monspan.appendChild(monbr);	
-						
+						monspan.appendChild(monbr);
 						var mona = document.createElement('a');
 						mona.setAttribute('href','javascript:sendsocket(\"([AC#' + resultat.getAttribute('comp') + '#OFF])\")');
-						mona.setAttribute('title','Eteindre ' + resultat.getAttribute('compnom'));				
+						mona.setAttribute('title','Eteindre ' + resultat.getAttribute('compnom'));
 						var monimg = document.createElement('img');
 						monimg.setAttribute('src',\"./images/s_off.gif\");
 						monimg.style.width = '12px';
@@ -240,34 +219,57 @@ echo "<script type=\"text/javascript\">
 						monimg.style.border = '0px';
 						mona.appendChild(monimg);
 						monspan.appendChild(mona);
-						break;
-						
-					case \"mvt\":
-						monspan.className = 'spanun';							
+						monspan.id = resultat.getAttribute('comp');
+						monspan.style.top = (resultat.getAttribute('top')-7)+'px';
+						monspan.style.left = (resultat.getAttribute('left')-20)+'px';
+						document.getElementById('valeurs').appendChild(monspan);
+						//span avec l'ampoule
+						var monspan = document.createElement('span');
+						monspan.className = 'spanun';
 						var mona = document.createElement('a');
 						mona.setAttribute('href','composants-relever-' + resultat.getAttribute('comp') + '.html');
-						var monimg = document.createElement('img');						
+						var monimg = document.createElement('img');
 						if (resultat.getAttribute('valeur')=='OFF') {
-							monimg.setAttribute('src',\"./images/motion_off.gif\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF');				
+							monimg.setAttribute('src',\"./images/ampoule_off.png\");
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF');
 						} else {
-							monimg.setAttribute('src',\"./images/motion_on.gif\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON');				
+							monimg.setAttribute('src',\"./images/ampoule_on.png\");
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON');
 						}
 						monimg.style.width = '16px';
 						monimg.style.height = '16px';
 						monimg.style.border = '0px';
 						mona.appendChild(monimg);
-						monspan.appendChild(mona);			
+						monspan.appendChild(mona);
 						break;
-					default:
-						monspan.className = 'spanun';												
+
+					case \"mvt\":
+						monspan.className = 'spanun';
 						var mona = document.createElement('a');
 						mona.setAttribute('href','composants-relever-' + resultat.getAttribute('comp') + '.html');
-						mona.setAttribute('title',resultat.getAttribute('compnom'));						
+						var monimg = document.createElement('img');
+						if (resultat.getAttribute('valeur')=='OFF') {
+							monimg.setAttribute('src',\"./images/motion_off.gif\");
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF');
+						} else {
+							monimg.setAttribute('src',\"./images/motion_on.gif\");
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON');
+						}
+						monimg.style.width = '16px';
+						monimg.style.height = '16px';
+						monimg.style.border = '0px';
+						mona.appendChild(monimg);
+						monspan.appendChild(mona);
+						break;
+
+					default:
+						monspan.className = 'spanun';
+						var mona = document.createElement('a');
+						mona.setAttribute('href','composants-relever-' + resultat.getAttribute('comp') + '.html');
+						mona.setAttribute('title',resultat.getAttribute('compnom'));
 						texte=resultat.getAttribute('valeur');
 						monaText = document.createTextNode(texte);
-						mona.appendChild(monaText);							
+						mona.appendChild(monaText);
 						monspan.appendChild(mona);
 						break;
 				}

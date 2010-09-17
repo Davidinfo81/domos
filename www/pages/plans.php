@@ -56,7 +56,7 @@ include("./include_php/config.php");
 				}
 			</script>
 		</div>
-		Type de plan : temp, hyg, div, voletaction, voletactionetat, voletetat, lampe, lampeplc, jour.<br /></td></tr>
+		Type de plan : temp, hyg, div, voletaction, voletactionetat, voletetat, lampe, lampeaction, jour.<br /></td></tr>
 	";
 ?>
 		</table>
