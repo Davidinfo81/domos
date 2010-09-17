@@ -3,7 +3,6 @@ Imports System.ServiceProcess
 Imports Microsoft.Win32
 Imports System.Threading
 Imports System.Globalization
-Imports Vallelunga.HomeAutomation.X10
 
 Public Class notify
 
@@ -19,8 +18,8 @@ Public Class notify
         Try
             Dim x = controller.ServiceName
         Catch ex As Exception
-            'MsgBox("Service Domos don't exist, reinstall DOMOS !", MsgBoxStyle.Critical, "ERROR")
-            'Application.Exit()
+            MsgBox("Service Domos don't exist, reinstall DOMOS !", MsgBoxStyle.Critical, "ERROR")
+            Application.Exit()
         End Try
 
         Try
@@ -139,7 +138,7 @@ Public Class notify
                 TablesToolStripMenuItem.Visible = False
             End If
         Catch ex As Exception
-            'MsgBox("Error : " & ex.Message, MsgBoxStyle.Critical, "ERROR")
+            MsgBox("Error : " & ex.Message, MsgBoxStyle.Critical, "ERROR")
         End Try
     End Sub
     'Start domos service
@@ -257,24 +256,18 @@ Public Class notify
     End Sub
 
     '---------------------- TESTS ---------------------------
-    Dim cm11 As CM11A
     Dim xx10 As New x10
 
     Private Sub X10openToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10openToolStripMenuItem.Click
         Try
-            'cm11 = CM11A.Instance("COM1")
-            'MsgBox(cm11.PortName)
             MsgBox(xx10.ouvrir("COM1"))
         Catch ex As Exception
             MsgBox(ex.Message)
         End Try
-        'AddHandler cm11.X10MessageReceived, New CM11A.X10MessageReceivedEventHandler(AddressOf controller_MessageReceived)
     End Sub
 
     Private Sub X10closeToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10closeToolStripMenuItem.Click
-        'RemoveHandler cm11.X10MessageReceived, AddressOf controller_MessageReceived
-        Try
-            'cm11.Dispose()
+         Try
             MsgBox(xx10.fermer())
         Catch ex As Exception
             MsgBox(ex.Message)
@@ -282,16 +275,8 @@ Public Class notify
 
     End Sub
 
-    Sub controller_MessageReceived(ByVal e As X10MessageReceivedEventArgs)
-        'Here you can find out what event was received by the CM11A.
-        'Right now only standard On and Off events are monitored.
-        'The details are in the arguments: e.HouseCode, e.UnitCode, e.Command
-        MsgBox(e.HouseCode & "-" & e.UnitCode & " --> " & e.Command)
-    End Sub
-
     Private Sub X10a1onToolstripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10a1onToolstripMenuItem.Click
         Try
-            'cm11.SendCommand(X10HouseCode.A, 1, X10Command.AllUnitsOff)
             MsgBox(xx10.ecrire("A1", "ON", 0))
         Catch ex As Exception
             MsgBox(ex.Message)
@@ -301,7 +286,6 @@ Public Class notify
 
     Private Sub X10a1offToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10a1offToolStripMenuItem.Click
         Try
-            'cm11.SendCommand(X10HouseCode.A, 1, X10Command.TurnOff)
             MsgBox(xx10.ecrire("A1", "OFF", 0))
         Catch ex As Exception
             MsgBox(ex.Message)

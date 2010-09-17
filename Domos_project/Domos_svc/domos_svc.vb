@@ -31,7 +31,7 @@ Public Class domos_svc
     Private mysql_ip, mysql_db, mysql_login, mysql_mdp As String
     Private Shared install_dir As String
     Private controller As New ServiceController("DOMOS", ".")
-    Private etape_startup As Integer = 0
+    Private etape_startup As Integer
 
     'Variables specifiques
     Private soleil = New Soleil
@@ -84,6 +84,7 @@ Public Class domos_svc
         heure_lever_correction = 0
         gps_longitude = 0
         gps_latitude = 0
+        etape_startup = 0
 
         svc_start()
     End Sub
@@ -360,7 +361,7 @@ Public Class domos_svc
             Dim tabletemp = table_composants.Select("composants_adresse = 'jour'")
             Dim dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
             If tabletemp.GetLength(0) = 1 Then
-                If DateAndTime.Now.ToString("HH:mm:ss") > var_soleil_lever And DateAndTime.Now.ToString("HH:mm:ss") < var_soleil_coucher Then
+                If DateAndTime.Now.ToString("HH:mm:ss") > var_soleil_lever.ToString("HH:mm:ss") And DateAndTime.Now.ToString("HH:mm:ss") < var_soleil_coucher.ToString("HH:mm:ss") Then
                     tabletemp(0)("composants_etat") = "1" 'maj du composant virtuel JOUR à jour
                     err = mysql.mysql_nonquery("UPDATE composants SET composants_etat='1',composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletemp(0)("composants_id") & "'")
                     If err <> "" Then log("SQL: Start Maj Jour " & err, 2)
@@ -377,13 +378,13 @@ Public Class domos_svc
             '---------- Calcul pour savoir si on est de jour ou nuit avec heures corrigés-------
             tabletemp = table_composants.Select("composants_adresse = 'jour2'")
             If tabletemp.GetLength(0) = 1 Then
-                If DateAndTime.Now.ToString("HH:mm:ss") > var_soleil_lever2 And DateAndTime.Now.ToString("HH:mm:ss") < var_soleil_coucher2 Then
-                    tabletemp(0)("composants_etat") = "1" 'maj du composant virtuel JOUR à jour
+                If DateAndTime.Now.ToString("HH:mm:ss") > var_soleil_lever2.ToString("HH:mm:ss") And DateAndTime.Now.ToString("HH:mm:ss") < var_soleil_coucher2.ToString("HH:mm:ss") Then
+                    tabletemp(0)("composants_etat") = "1" 'maj du composant virtuel JOUR2 à jour
                     err = mysql.mysql_nonquery("UPDATE composants SET composants_etat='1',composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletemp(0)("composants_id") & "'")
                     If err <> "" Then log("SQL: Start Maj Jour " & err, 2)
                     log("     -> Maj composant virtuel JOUR2 : JOUR (1)", 0)
                 Else
-                    tabletemp(0)("composants_etat") = "0" 'maj du composant virtuel JOUR à nuit
+                    tabletemp(0)("composants_etat") = "0" 'maj du composant virtuel JOUR2 à nuit
                     err = mysql.mysql_nonquery("UPDATE composants SET composants_etat='0',composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletemp(0)("composants_id") & "'")
                     If err <> "" Then log("SQL: Start Maj Jour " & err, 2)
                     log("     -> Maj composant virtuel JOUR2 : NUIT (0)", 0)
@@ -699,7 +700,7 @@ Public Class domos_svc
 
     Private Sub svc_restart()
         svc_stop()
-        wait(500)
+        'wait(500)
         svc_start()
     End Sub
 
@@ -1676,7 +1677,7 @@ Public Class domos_svc
                             End While
                             If (limite < (PLC_timeout / 10)) Then 'on a attendu moins que le timeout
                                 'maj du thread pour dire qu'on ecrit sur le bus
-                                tblthread = table_thread.Select("norme='PLC' AND source='ECR_PLC' AND composant_id='" & compid & "'")
+                                tblthread = table_thread.Select("norme='PLC' AND source='ECR' AND composant_id='" & compid & "'")
                                 If tblthread.GetLength(0) = 1 Then
                                     tblthread(0)("source") = "ECR_PLC"
                                 Else
@@ -1710,7 +1711,7 @@ Public Class domos_svc
                             End While
                             If (limite < (X10_timeout / 10)) Then 'on a attendu moins que le timeout
                                 'maj du thread pour dire qu'on ecrit sur le bus
-                                tblthread = table_thread.Select("norme='X10' AND source='ECR_X10' AND composant_id='" & compid & "'")
+                                tblthread = table_thread.Select("norme='X10' AND source='ECR' AND composant_id='" & compid & "'")
                                 If tblthread.GetLength(0) = 1 Then
                                     tblthread(0)("source") = "ECR_X10"
                                 Else
