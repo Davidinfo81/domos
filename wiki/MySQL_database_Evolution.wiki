@@ -1,8 +1,14 @@
 I will had here all modifications made to the database scheme
 
 
-=== Version 1.0.2 --> Dev ===
+=== Version 1.0.2 --> 1.0.3 ===
 
+Add X10_timeout parameter :
+
+INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_description`) VALUES
+('5', 'X10_timeout', '500', 'Timeout pour attendre que le port X10 soit disponible en ecriture (Défaut : 500 = 5 sec)');
+
+Modify X10 port to COM1
 
 
 === Version 1.0.1 --> 1.0.2 ===
