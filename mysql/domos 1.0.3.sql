@@ -17,7 +17,8 @@ CREATE TABLE `composants` (
 ) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 INSERT INTO `composants` (`composants_id`, `composants_modele`, `composants_nom`, `composants_adresse`, `composants_description`, `composants_polling`, `composants_actif`, `composants_etat`, `composants_etatdate`, `composants_correction`, `composants_precision`, `composants_divers`, `composants_maj`) VALUES
 ('1', '32', 'JOUR', 'jour', '1=jour, 0=nuit', '0', '1', '1', '2010-01-01 01:01:01', '', '0', '', '0'),
-('2', '32', 'JOUR2', 'jour2', '1=jour, 0=nuit, avec correction', '0', '1', '1', '2010-01-01 01:01:01', '', '0', '', '0');
+('2', '32', 'JOUR2', 'jour2', '1=jour, 0=nuit, avec correction', '0', '1', '1', '2010-01-01 01:01:01', '', '0', '', '0'),
+('3', '32', 'MODE_NUIT', 'mode_nuit', 'Si mode-nuit=1, tout le monde fait dodo', '0', '1', '0', '2010-01-01 01:01:01', '', '0', '', '0');
 
 CREATE TABLE `composants_bannis` (
   `composants_bannis_id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -135,6 +136,11 @@ CREATE TABLE `macro` (
   `macro_actif` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`macro_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+INSERT INTO `macro` (`macro_id`, `macro_nom`, `macro_description`, `macro_conditions`, `macro_actions`, `macro_actif`) VALUES
+('1', 'Mode_nuit : ON', 'Passer en mode nuit a 23h00', '([CT#=#0#00#23#*#*#*])', '([AC#3#1])', '1'),
+('2', 'Mode_nuit : OFF', 'Quitter le mode nuit a 6h30', '([CT#=#0#30#6#*#*#*])', '([AC#3#0])', '1'),
+('3', 'Task - SQL Maintenance', 'Optimiser les tables et Purger les logs de 2 mois', '([CT#=#0#0#4#*#*#*])', '([AN#SQL#purgelogs][AN#SQL#optimise][AN#SQL#reconnect])', '1'),
+('4', 'TEST - Log en mode nuit', 'Log un texte quand passage en mode nuit', '([CC#3#=#1])', '([AL#TEST : passage en mode nuit])', '1');
 
 CREATE TABLE `menu` (
 `menu_id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
