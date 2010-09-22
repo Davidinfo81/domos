@@ -105,7 +105,7 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('18', 'Port_WI2', 'USB2', 'Nom du port de la cle USB WI2'),
 ('19', 'rfx_tpsentrereponse', '1500', 'Temps entre deux receptions de valeurs a prendre en compte (pour eviter les doublons/triplons) (1500 par defaut  = 1.5sec)'),
 ('20', 'PLC_timeout', '500', 'Timeout pour attendre que le port PLCBUS soit disponible en ecriture (Defaut : 500 = 5 sec)'),
-('21', 'socket_ip', '192.168.1.2', 'Socket : Adresse IP du serveur'),
+('21', 'socket_ip', '127.0.0.1', 'Socket : Adresse IP du serveur'),
 ('22', 'socket_port', '3852', 'Socket : Port du serveur (3852)'),
 ('23', 'Serv_SOC', '1', 'Active la connexion Socket domos-php'),
 ('24', 'lastetat', '1', '0=desactive 1=active : ne pas prendre en compte les variations 19.1 19.2 19.1...'),
