@@ -1472,6 +1472,12 @@ Public Class domos_svc
                 posfin = STRGS.InStr(posdebut, liste, "]")
                 contenu = STRGS.Split(STRGS.Mid(liste, posdebut, posfin - posdebut), "#")
 
+                'gestion du timer dans une action de type [xx#xx#xx#timer_20] -> pause de 20 sec avant d'executer l'action
+                Dim lastcontenu = contenu(UBound(contenu) - 1)
+                If STRGS.Left(lastcontenu, 6) = "timer_" Then
+                    wait(STRGS.Right(lastcontenu, STRGS.Len(lastcontenu) - 6) * 100)
+                End If
+
                 '--------------------------- AC = Action sur un composant -------------------------
                 If contenu(0) = "AC" Then 'c'est un composant :  : [AC#compid#Valeur] ou [AC#compid#Valeur#Valeur2]
                     'recherche du composant
@@ -1641,6 +1647,9 @@ Public Class domos_svc
                     posdebut = posfin + 2
                     posfin = posfin + 2
                 End If
+
+                'pause entre chaque action de 0.1 seconde
+                wait(10)
             End While
         Catch ex As Exception
             log("MACRO: ERR: Action:exception : " & ex.ToString & " --> " & liste, 2)
