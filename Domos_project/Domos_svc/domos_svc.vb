@@ -31,7 +31,7 @@ Public Class domos_svc
     Private mysql_ip, mysql_db, mysql_login, mysql_mdp As String
     Private Shared install_dir As String
     Private controller As New ServiceController("DOMOS", ".")
-    Private etape_startup As Integer
+    Public Shared etape_startup As Integer
 
     'Variables specifiques
     Private soleil = New Soleil
@@ -1473,7 +1473,7 @@ Public Class domos_svc
                 contenu = STRGS.Split(STRGS.Mid(liste, posdebut, posfin - posdebut), "#")
 
                 'gestion du timer dans une action de type [xx#xx#xx#timer_20] -> pause de 20 sec avant d'executer l'action
-                Dim lastcontenu = contenu(UBound(contenu) - 1)
+                Dim lastcontenu = contenu(UBound(contenu))
                 If STRGS.Left(lastcontenu, 6) = "timer_" Then
                     wait(STRGS.Right(lastcontenu, STRGS.Len(lastcontenu) - 6) * 100)
                 End If
@@ -1511,7 +1511,7 @@ Public Class domos_svc
                             If tabletempp.GetLength(0) = 1 Then
                                 tabletempp(0)("composants_etat") = contenu(2)
                             End If
-
+                            log("MAC:  -> Modif composant: Composant :" & tabletemp(0)("composants_nom") & " Etat=" & contenu(2), 6)
                         Else
                             log("MAC:  -> Un thread est déjà associé à " & tabletemp(0)("composants_nom").ToString(), 2)
                         End If
