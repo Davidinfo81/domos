@@ -73,7 +73,7 @@ case "gerer" :
 				}
 				function ajouter() {
 					mygrid.addRow((new Date()).valueOf(),['','','nom',1,'','',0,0,'','2000-01-01 00:00:00','','0','','0']);
-					settimeout( \"ajouter2();\", 1000);
+					setTimeout( \"ajouter2();\", 500);
 				}
 				function ajouter2() {
 					window.location.href='composants.html'
