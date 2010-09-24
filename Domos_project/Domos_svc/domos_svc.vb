@@ -1472,10 +1472,10 @@ Public Class domos_svc
                 posfin = STRGS.InStr(posdebut, liste, "]")
                 contenu = STRGS.Split(STRGS.Mid(liste, posdebut, posfin - posdebut), "#")
 
-                'gestion du timer dans une action de type [xx#xx#xx#timer_20] -> pause de 20 sec avant d'executer l'action
+                'gestion du timer dans une action de type [xx#xx#xx#timer20] -> pause de 20 sec avant d'executer l'action
                 Dim lastcontenu = contenu(UBound(contenu))
-                If STRGS.Left(lastcontenu, 6) = "timer_" Then
-                    wait(STRGS.Right(lastcontenu, STRGS.Len(lastcontenu) - 6) * 100)
+                If STRGS.Left(lastcontenu, 5) = "timer" Then
+                    wait(STRGS.Right(lastcontenu, STRGS.Len(lastcontenu) - 5) * 100)
                 End If
 
                 '--------------------------- AC = Action sur un composant -------------------------
