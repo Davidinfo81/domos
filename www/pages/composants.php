@@ -71,6 +71,14 @@ case "gerer" :
 					x = mygrid.getSelectedId();
 					window.location.href='composants_bannis.html'
 				}
+				function ajouter() {
+					mygrid.addRow((new Date()).valueOf(),['','','nom',1,'','',0,0,'','2000-01-01 00:00:00','','0','','0']);
+					settimeout( \"ajouter2();\", 1000);
+				}
+				function ajouter2() {
+					window.location.href='composants.html'
+				} 
+
 				function sendsocket(message) {
 					var XHR = new XHRConnection();
 					XHR.appendData('tache', \"socket\");
@@ -83,7 +91,7 @@ case "gerer" :
 					alert(obj.responseText);
 				}
 			</script>
-			<input type=\"button\" name=\"a1\" value=\"Ajouter\" onClick=\"mygrid.addRow((new Date()).valueOf(),['','','nom',1,'','',0,0,'','2000-01-01 00:00:00','','0','','0'],0)\" class=\"formsubmit\">
+			<input type=\"button\" name=\"a1\" value=\"Ajouter\" onClick=\"ajouter()\" class=\"formsubmit\">
 			<input type=\"button\" name=\"a1\" value=\"Supprimer\" onClick=\"deletee()\" class=\"formsubmit\">
 			<input type=\"button\" name=\"a1\" value=\"Grapher\" onClick=\"grapher()\" class=\"formsubmit\">
 			<input type=\"button\" name=\"a1\" value=\"Bannis\" onClick=\"bannis()\" class=\"formsubmit\">

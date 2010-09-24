@@ -5,10 +5,10 @@ include("../include_php/fonctions.php");
 function add_row(){
 	global $newId;
 	$sql = 	"INSERT INTO composants(composants_nom,composants_modele,composants_adresse,composants_description,composants_polling,composants_actif,composants_etat,composants_correction,composants_precision,composants_divers,composants_maj)
-					VALUES ('".$_GET["c2"]."','".$_GET["c3"]."','".quote($_GET["c4"])."','".$_GET["c5"]."','".$_GET["c6"]."','".$_GET["c7"]."','".$_GET["c9"]."','".$_GET["c10"]."','".$_GET["c11"]."','".$_GET["c12"]."','".quote($_GET["c13"])."')";
+					VALUES ('".$_GET["c2"]."','".$_GET["c3"]."','".quote($_GET["c4"])."','".$_GET["c5"]."','".$_GET["c6"]."','".$_GET["c7"]."','".$_GET["c8"]."','".$_GET["c10"]."','".$_GET["c11"]."','".$_GET["c12"]."','".quote($_GET["c13"])."')";
 	$res = mysql_query($sql);
 	$newId = mysql_insert_id();
-	return "insert";			
+	return "insert";
 }
 
 function update_row(){
