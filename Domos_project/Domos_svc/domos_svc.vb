@@ -1298,7 +1298,7 @@ Public Class domos_svc
                 For i = 0 To table_macros.Rows.Count() - 1
                     'test si le composant fait partie d'une macro
                     If STRGS.InStr(table_macros.Rows(i).Item("macro_conditions"), "CC#" & comp_id & "#") > 0 Then
-                        If analyse_cond(table_macros.Rows(i).Item("macro_conditions")) Then 'verification des conditions
+                        If analyse_cond(table_macros.Rows(i).Item("macro_conditions"), comp_id) Then 'verification des conditions
                             If table_macros.Rows(i).Item("verrou") = False Then 'si la macro n'est pas déjà en cours d'execution
                                 table_macros.Rows(i).Item("verrou") = True
                                 log("MAC: " & table_macros.Rows(i).Item("macro_nom") & " : OK", 4)
@@ -1314,7 +1314,7 @@ Public Class domos_svc
         End Try
     End Sub
 
-    Function analyse_cond(ByVal liste As String) As Boolean
+    Function analyse_cond(ByVal liste As String, ByVal composants_id As Integer) As Boolean
         'fonction recursive d'analyse des conditions d'une macro
         Dim resultat As Boolean = True
         Dim resultat_temp As Boolean = True
@@ -1325,41 +1325,76 @@ Public Class domos_svc
         Try
 
             'log("liste de base " & liste, 9)
+            If STRGS.Left(liste, 1) = "!" Then
+                liste = STRGS.Mid(liste, 2, STRGS.Len(liste) - 2) 'on supprimer les () de chaque cote de la liste
+                While (posfin < STRGS.Len(liste)) 'tant que toute la liste n'a pas ete traite
+                    If liste(posfin - 1) = "(" Then 'c'est une liste
+                        'log(" x1 -> " & posdebut & "-" & posfin, 9)
+                        posfin = STRGS.InStr(posdebut, liste, ")")
+                        'log(" x2 -> " & posdebut & "-" & posfin, 9)
+                        For i = posdebut To (posfin - 1)
+                            If liste(i) = "(" Then posfin = STRGS.InStr(posfin, liste, ")")
+                        Next
+                        'log("sous liste " & STRGS.Mid(liste, posdebut - 1, posfin - posdebut + 2), 9)
+                        resultat_temp = analyse_cond(STRGS.Mid(liste, posdebut - 1, posfin - posdebut + 2), composants_id) 'on relance une analyse sur cette sous liste
+                    ElseIf liste(posfin - 1) = "[" Then 'c'est un atome
+                        posfin = STRGS.InStr(posdebut, liste, "]")
+                        'log("atome " & STRGS.Mid(liste, posdebut, posfin - posdebut), 9)
+                        'si le test concerne le composant modifié alors je teste sinon j'ignore
+                        If (STRGS.InStr(STRGS.Mid(liste, posdebut, posfin - posdebut), composants_id) > 0) Then
+                            resultat_temp = test_cond(STRGS.Mid(liste, posdebut, posfin - posdebut)) 'on teste la condition
+                        Else
+                            resultat_temp = False
+                        End If
+                    End If
+                    'Calcul du resultat
+                    If operateur = "&&" Then
+                        resultat = resultat And resultat_temp
+                    Else
+                        resultat = resultat Or resultat_temp
+                    End If
+                    'log(" x3 -> " & posdebut & "-" & posfin, 9)
+                    If (posfin) < STRGS.Len(liste) Then 'on a pas fini, on avance à l'element suivant
+                        operateur = STRGS.Mid(liste, posfin + 1, 2)
+                        posdebut = posfin + 4
+                        posfin = posfin + 3
+                    End If
+                    'log(" x4 -> " & posdebut & "-" & posfin, 9)
+                End While
+            Else
+                liste = STRGS.Mid(liste, 2, STRGS.Len(liste) - 2) 'on supprimer les () de chaque cote de la liste
+                While (posfin < STRGS.Len(liste)) 'tant que toute la liste n'a pas ete traite
+                    If liste(posfin - 1) = "(" Then 'c'est une liste
+                        'log(" x1 -> " & posdebut & "-" & posfin, 9)
+                        posfin = STRGS.InStr(posdebut, liste, ")")
+                        'log(" x2 -> " & posdebut & "-" & posfin, 9)
+                        For i = posdebut To (posfin - 1)
+                            If liste(i) = "(" Then posfin = STRGS.InStr(posfin, liste, ")")
+                        Next
+                        'log("sous liste " & STRGS.Mid(liste, posdebut - 1, posfin - posdebut + 2), 9)
+                        resultat_temp = analyse_cond(STRGS.Mid(liste, posdebut - 1, posfin - posdebut + 2), composants_id) 'on relance une analyse sur cette sous liste
+                    ElseIf liste(posfin - 1) = "[" Then 'c'est un atome
+                        posfin = STRGS.InStr(posdebut, liste, "]")
+                        'log("atome " & STRGS.Mid(liste, posdebut, posfin - posdebut), 9)
+                        resultat_temp = test_cond(STRGS.Mid(liste, posdebut, posfin - posdebut)) 'on teste la condition
+                    End If
+                    'Calcul du resultat
+                    If operateur = "&&" Then
+                        resultat = resultat And resultat_temp
+                    Else
+                        resultat = resultat Or resultat_temp
+                    End If
+                    'log(" x3 -> " & posdebut & "-" & posfin, 9)
+                    If (posfin) < STRGS.Len(liste) Then 'on a pas fini, on avance à l'element suivant
+                        operateur = STRGS.Mid(liste, posfin + 1, 2)
+                        posdebut = posfin + 4
+                        posfin = posfin + 3
+                    End If
+                    'log(" x4 -> " & posdebut & "-" & posfin, 9)
+                End While
+            End If
 
-            liste = STRGS.Mid(liste, 2, STRGS.Len(liste) - 2) 'on supprimer les () de chaque cote de la liste
-            While (posfin < STRGS.Len(liste)) 'tant que toute la liste n'a pas ete traite
-                If liste(posfin - 1) = "(" Then 'c'est une liste
-                    'log(" x1 -> " & posdebut & "-" & posfin, 9)
-                    posfin = STRGS.InStr(posdebut, liste, ")")
-                    'log(" x2 -> " & posdebut & "-" & posfin, 9)
-                    For i = posdebut To (posfin - 1)
-                        If liste(i) = "(" Then posfin = STRGS.InStr(posfin, liste, ")")
-                    Next
-
-                    'log("sous liste " & STRGS.Mid(liste, posdebut - 1, posfin - posdebut + 2), 9)
-
-                    resultat_temp = analyse_cond(STRGS.Mid(liste, posdebut - 1, posfin - posdebut + 2)) 'on relance une analyse sur cette sous liste
-                ElseIf liste(posfin - 1) = "[" Then 'c'est un atome
-                    posfin = STRGS.InStr(posdebut, liste, "]")
-
-                    'log("atome " & STRGS.Mid(liste, posdebut, posfin - posdebut), 9)
-
-                    resultat_temp = test_cond(STRGS.Mid(liste, posdebut, posfin - posdebut)) 'on teste la condition
-                End If
-                'Calcul du resultat
-                If operateur = "&&" Then
-                    resultat = resultat And resultat_temp
-                Else
-                    resultat = resultat Or resultat_temp
-                End If
-                'log(" x3 -> " & posdebut & "-" & posfin, 9)
-                If (posfin) < STRGS.Len(liste) Then 'on a pas fini, on avance à l'element suivant
-                    operateur = STRGS.Mid(liste, posfin + 1, 2)
-                    posdebut = posfin + 4
-                    posfin = posfin + 3
-                End If
-                'log(" x4 -> " & posdebut & "-" & posfin, 9)
-            End While
+            
         Catch ex As Exception
             resultat = False
             log("MACRO: ERR: analyse_cond:exception : " & ex.ToString & " --> " & liste, 2)
@@ -1475,6 +1510,7 @@ Public Class domos_svc
                 'gestion du timer dans une action de type [xx#xx#xx#timer20] -> pause de 20 sec avant d'executer l'action
                 Dim lastcontenu = contenu(UBound(contenu))
                 If STRGS.Left(lastcontenu, 5) = "timer" Then
+                    log("MAC:  -> tempo avant action : " & contenu(0) & "-" & contenu(1) & " Timer=" & contenu(UBound(contenu)), 6)
                     wait(STRGS.Right(lastcontenu, STRGS.Len(lastcontenu) - 5) * 100)
                 End If
 
@@ -1631,7 +1667,7 @@ Public Class domos_svc
                     Dim tabletemp = table_macros.Select("macro_id = '" & contenu(1) & "'")
                     If tabletemp.GetLength(0) = 1 Then 'macro trouvé
                         log("MAC:  -> Analyse Macro : " & tabletemp(0)("macro_nom"), 5)
-                        If analyse_cond(tabletemp(0)("macro_conditions")) Then 'verification des conditions
+                        If analyse_cond(tabletemp(0)("macro_conditions"), "") Then 'verification des conditions
                             If tabletemp(0)("verrou") = False Then 'si la macro n'est pas déjà en cours d'execution
                                 tabletemp(0)("verrou") = True
                                 log("MAC: " & tabletemp(0)("macro_nom") & " : OK", 4)
