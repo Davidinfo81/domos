@@ -34,11 +34,14 @@ $macro_id=isset($_GET["macro_id"])?$_GET["macro_id"]:(isset($_POST["macro_id"])?
 
 switch ($action) {
 case "gerer" :
+	echo "<tr height=\"23\" bgcolor=\"#5680CB\">
+		<td align=right class=\"titrecolonne\"><a href=\"javascript:history.go(-1);\"><img src=\"./images/plus.gif\" border=\"0\"> Retour</a>&nbsp;&nbsp;&nbsp;</td>
+	     </tr>\n";
 	echo "
 		<tr><td align=center><div class=\"plan\" id=\"plan\" style=\"padding:5px;\">
 			<link rel=\"stylesheet\" type=\"text/css\" href=\"dhtmlx/dhtmlx.css\">
 			<script  src=\"dhtmlx/dhtmlx.js\"></script>
-			<div id=\"gridbox\" style=\"width:915px;height:480px;overflow:hidden\"></div> 
+			<div id=\"gridbox\" style=\"width:915px;height:488px;overflow:hidden\"></div> 
 			<script>
 				mygrid = new dhtmlXGridObject('gridbox');
 				mygrid.setImagePath(\"./dhtmlx/imgs/\");
@@ -77,10 +80,12 @@ case "gerer" :
 			</script>
 			<input type=\"button\" name=\"a1\" value=\"Ajouter\" onClick=\"mygrid.addRow((new Date()).valueOf(),['','0','nom','description'],0)\" class=\"formsubmit\">
 			<input type=\"button\" name=\"a1\" value=\"Supprimer\" onClick=\"deletee()\" class=\"formsubmit\">
-			<input type=\"button\" name=\"a1\" value=\"Maj SVC\" onClick='sendsocket(\"([AS#maj_macro][AS#maj_timer])\")' class=\"formsubmit\">
+			<input type=\"button\" name=\"a1\" value=\"Maj SVC\" onClick='sendsocket(\"([AS#maj_macro][AS#maj_timer])\")' class=\"formsubmit\"><br />
 			<span id='conditions'> </span><br />
 			<span id='actions'> </span><br /><br />
-			composant : CC#id#=<>#etat, Timer : CT#ss#mm#hh#j#jj#mm#yy, Heure : CH#=<>#j#hh:mm:ss
+			Conditions -> composant : CC#id#=<>#etat, Timer : CT#ss#mm#hh#j#jj#mm#yy, Heure : CH#=<>#j#hh:mm: ss<br />
+			Si = !(...) alors on ne teste que le composant, pas les autres conditions)<br />
+			Actions -> composant : AC#id#etat, AS#service, AM#macro_id 
 		</div></td></tr>
 	";
 	break;

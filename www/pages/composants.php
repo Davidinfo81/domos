@@ -41,7 +41,7 @@ case "gerer" :
 		<tr><td align=center><div class=\"plan\" id=\"plan\" style=\"padding:5px;\">
 			<link rel=\"stylesheet\" type=\"text/css\" href=\"dhtmlx/dhtmlx.css\">
 			<script  src=\"dhtmlx/dhtmlx.js\"></script>
-			<div id=\"gridbox\" style=\"width:915px;height:510px;overflow:hidden\"></div> 
+			<div id=\"gridbox\" style=\"width:915px;height:515px;overflow:hidden\"></div> 
 			<script>
 				mygrid = new dhtmlXGridObject('gridbox');
 				mygrid.setImagePath(\"./dhtmlx/imgs/\");

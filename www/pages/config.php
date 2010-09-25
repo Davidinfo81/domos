@@ -25,11 +25,14 @@
 
 include("./include_php/config.php");
 
+	echo "<tr height=\"23\" bgcolor=\"#5680CB\">
+		<td align=right class=\"titrecolonne\"><a href=\"javascript:history.go(-1);\"><img src=\"./images/plus.gif\" border=\"0\"> Retour</a>&nbsp;&nbsp;&nbsp;</td>
+	     </tr>\n";
 	echo "
 		<tr><td align=center><div class=\"plan\" id=\"plan\" style=\"padding:5px;\">
 			<link rel=\"stylesheet\" type=\"text/css\" href=\"dhtmlx/dhtmlx.css\">
 			<script  src=\"dhtmlx/dhtmlx.js\"></script>
-			<div id=\"gridbox\" style=\"width:915px;height:510px;overflow:hidden\"></div> 
+			<div id=\"gridbox\" style=\"width:915px;height:533px;overflow:hidden\"></div> 
 			<script>
 				mygrid = new dhtmlXGridObject('gridbox');
 				mygrid.setImagePath('./dhtmlx/imgs/');
@@ -45,6 +48,7 @@ include("./include_php/config.php");
 				myDataProcessor.init(mygrid);
 				myDataProcessor.enableUTFencoding(false);
 			</script>
+			<br />
 		</div></td></tr>
 	";
 ?>

@@ -25,14 +25,14 @@
 
 include("./include_php/config.php");
 
+	echo "<tr height=\"23\" bgcolor=\"#5680CB\">
+		<td align=right class=\"titrecolonne\"><a href=\"javascript:history.go(-1);\"><img src=\"./images/plus.gif\" border=\"0\"> Retour</a>&nbsp;&nbsp;&nbsp;</td>
+	     </tr>\n";
 	echo "
 		<tr><td align=center><div class=\"plan\" id=\"plan\" style=\"padding:5px;\">
 			<link rel=\"stylesheet\" type=\"text/css\" href=\"dhtmlx/dhtmlx.css\">
 			<script  src=\"dhtmlx/dhtmlx.js\"></script>
-			<div id=\"gridbox\" style=\"width:915px;height:510px;overflow:hidden\"></div> 
-			<input type=\"button\" name=\"a1\" value=\"Ajouter\" onClick=\"mygrid.addRow((new Date()).valueOf(),['1','0','0','0',''],0)\" class=\"formsubmit\">
-			<input type=\"button\" name=\"a1\" value=\"Supprimer\" onClick=\"deletee()\" class=\"formsubmit\"><br /><br />
-			
+			<div id=\"gridbox\" style=\"width:915px;height:515px;overflow:hidden\"></div> 
 			<script>
 				mygrid = new dhtmlXGridObject('gridbox');
 				mygrid.setImagePath('./dhtmlx/imgs/');
@@ -55,8 +55,10 @@ include("./include_php/config.php");
 					if (confirm('Supprimer ?')) {mygrid.deleteRow(mygrid.getSelectedId());}
 				}
 			</script>
-		</div>
-		Type de plan : temp, hyg, div, voletaction, voletactionetat, voletetat, lampe, lampeaction, jour.<br /></td></tr>
+			<input type=\"button\" name=\"a1\" value=\"Ajouter\" onClick=\"mygrid.addRow((new Date()).valueOf(),['1','0','0','0',''],0)\" class=\"formsubmit\">
+			<input type=\"button\" name=\"a1\" value=\"Supprimer\" onClick=\"deletee()\" class=\"formsubmit\"><br /><br />
+			Type de plan : temp, hyg, div, voletaction, voletactionetat, voletetat, lampe, lampeaction, jour.<br />
+		</div></td></tr>
 	";
 ?>
 		</table>
