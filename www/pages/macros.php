@@ -94,6 +94,7 @@ case "modifier" :
 	$resultat = mysql_query("select * from macro where macro_id='$macro_id'");
 	$macro_nom = mysql_result($resultat,0,"macro_nom");
 	$macro_description = mysql_result($resultat,0,"macro_description");
+	$macro_actif = mysql_result($resultat,0,"macro_actif");
 	$macro_conditions = mysql_result($resultat,0,"macro_conditions");
 	$macro_actions = mysql_result($resultat,0,"macro_actions");
 	echo "<tr height=\"23\" bgcolor=\"#5680CB\">
@@ -102,7 +103,7 @@ case "modifier" :
 	     </tr>\n";
 	echo "<tr><td colspan=2>
 	<div class=\"inscription\">
-	<table width=100% border=0><form name=modifier_macro action=\"macros-modifiersave-$macro_id.html\" method=\"post\">
+	<table width=100% border=0><form name=modifier_macro action=\"macros-modifiersave-$macro_id.html\" method=\"post\"><INPUT name=macro_actif type=hidden value=\"$macro_actif\">
 	<tr height=20>
 	  <td colspan=2 align=center>
 		<TABLE border=0 cellPadding=0 cellSpacing=0 width=100%>
@@ -142,6 +143,7 @@ case "modifiersave" :
 	$macro_id=$_GET["macro_id"];
 	$macro_conditions = $_POST["macro_conditions"];
 	$macro_actions = $_POST["macro_actions"];
+	$macro_actif = $_POST["macro_actif"];
 	$resultat = mysql_query("update macro set macro_conditions='$macro_conditions', macro_actions='$macro_actions' where macro_id='$macro_id'");
 	//envoi par socket de la nouvelle condition/action
 	$resultat = mysql_query("select config_valeur from config where config_nom='socket_ip'");
@@ -152,7 +154,7 @@ case "modifiersave" :
 	$replace = array('_1', '_2', '_3', '_4', '_5');
 	$macro_conditions2=str_replace($search,$replace,$macro_conditions);
 	$macro_actions2=str_replace($search,$replace,$macro_actions);
-	socket_simple("([MM#".$macro_id."#".$macro_conditions2."#".$macro_actions2."])",$adresse,$port);
+	if ($macro_actif==1) {socket_simple("([MM#".$macro_id."#".$macro_conditions2."#".$macro_actions2."])",$adresse,$port);}
 
 	echo "<tr height=\"23\" bgcolor=\"#5680CB\">
 			<td align=left class=\"titrecolonne\"> &nbsp;..:: Modifier les conditions/actions d'une MACRO ::..</td>
