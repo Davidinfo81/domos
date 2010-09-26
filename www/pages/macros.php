@@ -144,6 +144,9 @@ case "modifiersave" :
 	$macro_conditions = $_POST["macro_conditions"];
 	$macro_actions = $_POST["macro_actions"];
 	$macro_actif = $_POST["macro_actif"];
+	//suppression des " " au début
+	if (substr($macro_conditions, 0, 1)==" ") {$macro_conditions=substr($macro_conditions, 1, strlen($macro_conditions)-1);}
+	if (substr($macro_actions, 0, 1)==" ") {$macro_actions=substr($macro_actions, 1, strlen($macro_actions)-1);}
 	$resultat = mysql_query("update macro set macro_conditions='$macro_conditions', macro_actions='$macro_actions' where macro_id='$macro_id'");
 	//envoi par socket de la nouvelle condition/action
 	$resultat = mysql_query("select config_valeur from config where config_nom='socket_ip'");
