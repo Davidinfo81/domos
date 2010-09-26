@@ -1171,7 +1171,7 @@ Public Class domos_svc
                             Case "2263-2264" 'PLC : MicroModule lampes
                                 'valeur = plcbus.ecrire(tabletemp(i)("composants_adresse").ToString, "STATUS_REQUEST", 0, 0)
                                 'If STR.Left(valeur, 4) = "ERR:" Then log("POL : " & valeur)
-                                Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "STATUS_REQUEST", "", "")
+                                Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "STATUS_REQUEST", "", "", "")
                                 y = New Thread(AddressOf ecrire.action)
                                 y.Name = "ecrire_" & tabletemp(i)("composants_id")
                                 thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
@@ -1179,7 +1179,7 @@ Public Class domos_svc
                             Case "2267-2268" 'PLC : MicroModule Appareils
                                 'valeur = plcbus.ecrire(tabletemp(i)("composants_adresse").ToString, "STATUS_REQUEST", 0, 0)
                                 'If STR.Left(valeur, 4) = "ERR:" Then log("POL : " & valeur)
-                                Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "STATUS_REQUEST", "", "")
+                                Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "STATUS_REQUEST", "", "", "")
                                 y = New Thread(AddressOf ecrire.action)
                                 y.Name = "ecrire_" & tabletemp(i)("composants_id")
                                 thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
@@ -1507,19 +1507,13 @@ Public Class domos_svc
         Dim posdebut As Integer = 2
         Dim posfin As Integer = 2
         Dim contenu
+        Dim timer_valeur As String
         Dim y As Thread
         Try
             liste = STRGS.Mid(liste, 2, STRGS.Len(liste) - 2) 'on supprimer les () de chaque cote de la liste
             While (posfin < STRGS.Len(liste)) 'tant que toute la liste n'a pas ete traite
                 posfin = STRGS.InStr(posdebut, liste, "]")
                 contenu = STRGS.Split(STRGS.Mid(liste, posdebut, posfin - posdebut), "#")
-
-                'gestion du timer dans une action de type [xx#xx#xx#timer20] -> pause de 20 sec avant d'executer l'action
-                Dim lastcontenu = contenu(UBound(contenu))
-                If STRGS.Left(lastcontenu, 5) = "timer" Then
-                    log("MAC:  -> tempo avant action : " & contenu(0) & "-" & contenu(1) & " Timer=" & contenu(UBound(contenu)), 6)
-                    wait(STRGS.Right(lastcontenu, STRGS.Len(lastcontenu) - 5) * 100)
-                End If
 
                 '--------------------------- AC = Action sur un composant -------------------------
                 If contenu(0) = "AC" Then 'c'est un composant :  : [AC#compid#Valeur] ou [AC#compid#Valeur#Valeur2]
@@ -1537,13 +1531,23 @@ Public Class domos_svc
                         'a la fin du timeout on verifie si Libre
                         tblthread = table_thread.Select("composant_id = '" & contenu(1) & "'")
                         If tblthread.GetUpperBound(0) < 0 Then
+                            'gestion du timer dans une action de type [AC#xx#...#timer20] -> pause de 20 sec avant d'executer l'action
+                            Dim lastcontenu = contenu(UBound(contenu))
+                            If STRGS.Left(lastcontenu, 5) = "timer" Then
+                                log("MAC:  -> tempo avant action : " & contenu(0) & "-" & contenu(1) & " Timer=" & contenu(UBound(contenu)), 6)
+                                'wait(STRGS.Right(lastcontenu, STRGS.Len(lastcontenu) - 5) * 100)
+                                timer_valeur = STRGS.Right(lastcontenu, STRGS.Len(lastcontenu) - 5) * 100
+                            Else
+                                timer_valeur = ""
+                            End If
+
                             Dim x As ECRIRE
                             If UBound(contenu) = 5 Then
-                                x = New ECRIRE(tabletemp(0)("composants_id"), contenu(2), contenu(3), contenu(4))
+                                x = New ECRIRE(tabletemp(0)("composants_id"), contenu(2), contenu(3), contenu(4), timer_valeur)
                             ElseIf UBound(contenu) = 4 Then
-                                x = New ECRIRE(tabletemp(0)("composants_id"), contenu(2), contenu(3), "")
+                                x = New ECRIRE(tabletemp(0)("composants_id"), contenu(2), contenu(3), "", timer_valeur)
                             Else
-                                x = New ECRIRE(tabletemp(0)("composants_id"), contenu(2), "", "")
+                                x = New ECRIRE(tabletemp(0)("composants_id"), contenu(2), "", "", timer_valeur)
                             End If
                             y = New Thread(AddressOf x.action)
                             y.Name = "ecrire_" & tabletemp(0)("composants_id")
@@ -1704,11 +1708,13 @@ Public Class domos_svc
         Private valeur As String
         Private valeur2 As String
         Private valeur3 As String
-        Public Sub New(ByVal id As Integer, ByVal val As String, ByVal val2 As String, ByVal val3 As String)
+        Private valeur4 As String
+        Public Sub New(ByVal id As Integer, ByVal val As String, ByVal val2 As String, ByVal val3 As String, ByVal val4 As String)
             compid = id
             valeur = val
             valeur2 = val2
             valeur3 = val3
+            valeur4 = val4 'timer
         End Sub
         Public Sub action()
             Dim tabletmp() As DataRow
@@ -1717,7 +1723,11 @@ Public Class domos_svc
             Try
                 tabletmp = table_composants.Select("composants_id = '" & compid & "'")
                 If tabletmp.GetLength(0) > 0 Then
-
+                    'si il y a un timer avant action, faire une pause de valeur4 secondes
+                    If valeur4 <> "" Then
+                        wait(valeur4)
+                    End If
+                    'suivant la norme du composant
                     Select Case tabletmp(0)("composants_modele_norme").ToString
                         Case "PLC"
                             'verification si on a pas déjà un thread qui ecrit sur le plcbus sinon on boucle pour attendre PLC_timeout/10 = 5 sec par défaut
