@@ -1326,17 +1326,23 @@ Public Class domos_svc
 
             'log("liste de base " & liste, 9)
             If STRGS.Left(liste, 1) = "!" Then
-                liste = STRGS.Mid(liste, 2, STRGS.Len(liste) - 2) 'on supprimer les () de chaque cote de la liste
+                liste = STRGS.Mid(liste, 3, STRGS.Len(liste) - 2) 'on supprimer les !(...) de chaque cote de la liste
                 While (posfin < STRGS.Len(liste)) 'tant que toute la liste n'a pas ete traite
                     If liste(posfin - 1) = "(" Then 'c'est une liste
                         'log(" x1 -> " & posdebut & "-" & posfin, 9)
                         posfin = STRGS.InStr(posdebut, liste, ")")
                         'log(" x2 -> " & posdebut & "-" & posfin, 9)
-                        For i = posdebut To (posfin - 1)
-                            If liste(i) = "(" Then posfin = STRGS.InStr(posfin, liste, ")")
+                        For i = (posdebut - 1) To (posfin - 1)
+                            If liste(i) = "(" Then posfin = STRGS.InStr(posfin + 1, liste, ")")
                         Next
+                        'log(" x22 -> " & posdebut & "-" & posfin, 9)
                         'log("sous liste " & STRGS.Mid(liste, posdebut - 1, posfin - posdebut + 2), 9)
-                        resultat_temp = analyse_cond(STRGS.Mid(liste, posdebut - 1, posfin - posdebut + 2), composants_id) 'on relance une analyse sur cette sous liste
+                        'si le test concerne le composant modifié alors je teste sinon j'ignore
+                        If (STRGS.InStr(STRGS.Mid(liste, posdebut - 1, posfin - posdebut + 2), composants_id) > 0) Then
+                            resultat_temp = analyse_cond(STRGS.Mid(liste, posdebut - 1, posfin - posdebut + 2), composants_id) 'on relance une analyse sur cette sous liste
+                        Else
+                            resultat_temp = False
+                        End If
                     ElseIf liste(posfin - 1) = "[" Then 'c'est un atome
                         posfin = STRGS.InStr(posdebut, liste, "]")
                         'log("atome " & STRGS.Mid(liste, posdebut, posfin - posdebut), 9)
@@ -1368,9 +1374,10 @@ Public Class domos_svc
                         'log(" x1 -> " & posdebut & "-" & posfin, 9)
                         posfin = STRGS.InStr(posdebut, liste, ")")
                         'log(" x2 -> " & posdebut & "-" & posfin, 9)
-                        For i = posdebut To (posfin - 1)
-                            If liste(i) = "(" Then posfin = STRGS.InStr(posfin, liste, ")")
+                        For i = (posdebut - 1) To (posfin - 1)
+                            If liste(i) = "(" Then posfin = STRGS.InStr(posfin + 1, liste, ")")
                         Next
+                        'log(" x22 -> " & posdebut & "-" & posfin, 9)
                         'log("sous liste " & STRGS.Mid(liste, posdebut - 1, posfin - posdebut + 2), 9)
                         resultat_temp = analyse_cond(STRGS.Mid(liste, posdebut - 1, posfin - posdebut + 2), composants_id) 'on relance une analyse sur cette sous liste
                     ElseIf liste(posfin - 1) = "[" Then 'c'est un atome
