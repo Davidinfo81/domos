@@ -464,23 +464,24 @@ html * .popup:hover{z-index:1;}
 	top: 505px;
 	left: 810px;
 }
-.plan .cadresl, .plan .cadresr{
+
+.plan .cadregauche {width:680px;float: left;}
+.plan .cadredroit {width:235px;float: right;}
+.plan .cadresl, .plan .cadresr, .plan .cadres_webcam{
 	text-align: center;
-	z-index: 90;
 	border: 1px dashed gray;
 	background-color: #FFFFCC;
 	color: #0000FF;
 	padding: 2px;
-	margin: 5px;
+	margin-bottom: 5px;
 }
-.plan .cadresl {float: left;width:650px;position: relative;}
-.plan .cadresl table {float: left;}
-.plan .cadresr {float: right;position: relative;}
-.plan .cadresl td, .plan .cadresr td{
-		border:0px;padding:1px;margin:0;
-}
-.plan .lien {position:absolute;bottom:0;right:0;margin:4px;}
-
+.plan .cadresl {width:680px;float: left;position:relative;}
+.plan .cadresr {width:230px;;float: right;position:relative;}
+.plan .cadresr #webcam {border:0px;width: 227px}
+.plan .cadresl td, .plan .cadresr td {border:0px;padding:1px;margin:0;}
+.plan .lien {position:absolute; bottom:0px;right:0px;margin:4px;}
+.plan .cadres_webcam {width:292px;float: left;margin:5px;}
+.plan .cadres_webcam img {width:280px;border:0px;}
 
 
 

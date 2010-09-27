@@ -4,23 +4,23 @@ include("../include_php/fonctions.php");
 
 function add_row(){
 	global $newId;
-	$sql = 	"INSERT INTO composants_bannis(composants_bannis_norme,composants_bannis_adresse,composants_bannis_description)
-					VALUES ('".quote($_GET["c1"])."','".$_GET["c2"]."','".quote($_GET["c3"]).")";
+	$sql = 	"INSERT INTO webcams(webcams_nom,webcams_description,webcams_lien,webcams_accueil)
+					VALUES ('".quote($_GET["c1"])."','".quote($_GET["c2"])."','".quote($_GET["c3"])."','".quote($_GET["c4"])."')";
 	$res = mysql_query($sql);
 	$newId = mysql_insert_id();
 	return "insert";			
 }
 
 function update_row(){
-	$sql = 	"UPDATE composants_bannis SET 
-		composants_bannis_norme='".quote($_GET["c1"])."',composants_bannis_adresse='".$_GET["c2"]."',
-		composants_bannis_description='".quote($_GET["c3"])."' WHERE composants_bannis_id=".$_GET["gr_id"];
+	$sql = 	"UPDATE webcams SET 
+		webcams_nom='".quote($_GET["c1"])."',webcams_description='".quote($_GET["c2"])."',
+		webcams_lien='".quote($_GET["c3"])."',webcams_accueil='".quote($_GET["c4"])."' WHERE webcams_id=".$_GET["gr_id"];
 	$res = mysql_query($sql);
 	return "update";	
 }
 
 function delete_row(){
-	$d_sql = "DELETE FROM composants_bannis WHERE composants_bannis_id=".$_GET["gr_id"];
+	$d_sql = "DELETE FROM webcams WHERE webcams_id=".$_GET["gr_id"];
 	$resDel = mysql_query($d_sql);
 	return "delete";	
 }

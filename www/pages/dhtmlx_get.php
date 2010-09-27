@@ -58,6 +58,23 @@ case "composants_bannis" :
 	}else{echo mysql_errno().": ".mysql_error()." at ".__LINE__." line in ".__FILE__." file<br>";}
 	break;
 
+case "webcams" :
+	$sql = "SELECT * from webcams";
+	$res = mysql_query ($sql);
+	if($res){
+		while($row=mysql_fetch_array($res)){
+			//create xml tag for grid's row
+			echo ("<row id='".$row['webcams_id']."'>");
+			print("<cell><![CDATA[".$row['webcams_id']."]]></cell>");
+			print("<cell><![CDATA[".dequote($row['webcams_nom'])."]]></cell>");
+			print("<cell><![CDATA[".dequote($row['webcams_description'])."]]></cell>");
+			print("<cell><![CDATA[".dequote($row['webcams_lien'])."]]></cell>");
+			print("<cell><![CDATA[".dequote($row['webcams_accueil'])."]]></cell>");
+			print("</row>");
+		}
+	}else{echo mysql_errno().": ".mysql_error()." at ".__LINE__." line in ".__FILE__." file<br>";}
+	break;
+
 case "menu" :
 	$sql = "SELECT * from menu";
 	$res = mysql_query ($sql);

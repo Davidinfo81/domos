@@ -29,6 +29,7 @@
         <li id="macros"><img src="images/menu/macro.png" width=28 /> Macros</li>
         <li id="menu"><img src="images/menu/menu.png" width=28 /> Menu</li>
         <li id="users"><img src="images/menu/users.png" width=28 /> Users</li>
+        <li id="webcamsadmin"><img src="images/menu/webcam.png" width=28 /> Webcams</li>
         <li id="configuration"><img src="images/menu/config.png" width=28 /> Configuration</li>
         <li id="phpinfo"><img src="images/menu/info.png" width=28 /> phpinfo</li>
       </ul>
@@ -46,6 +47,7 @@
 							'macros': function(t) {window.location.href='macros.html';},
 							'menu': function(t) {window.location.href='menu.html';},
 							'users': function(t) {window.location.href='users.html';},
+							'webcamsadmin': function(t) {window.location.href='webcamsadmin.html';},
 							'configuration': function(t) {window.location.href='config.html';},
 							'phpinfo': function(t) {window.location.href='phpinfo.html';}
 						}
@@ -69,6 +71,7 @@
 					<a href="meteo.html" class="fisheyeItem"><img src="images/menu/meteo.gif" /><span>Météo</span></a>
 					<a href="calendrier.html" class="fisheyeItem"><img src="images/menu/calendrier.png" /><span>Calendrier</span></a>
 					<a href="logs.html" class="fisheyeItem"><img src="images/menu/logs.png" /><span>Logs</span></a>
+					<a href="webcams.html" class="fisheyeItem"><img src="images/menu/webcam.png" /><span>Webcams</span></a>
 					<a href="divers.html" class="fisheyeItem"><img src="images/menu/display.png" /><span>Divers</span></a>
 				</div>
 		</div>
