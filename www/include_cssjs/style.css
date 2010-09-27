@@ -481,7 +481,7 @@ html * .popup:hover{z-index:1;}
 .plan .cadresl td, .plan .cadresr td {border:0px;padding:1px;margin:0;}
 .plan .lien {position:absolute; bottom:0px;right:0px;margin:4px;}
 .plan .cadres_webcam {width:292px;float: left;margin:5px;}
-.plan .cadres_webcam img {width:280px;border:0px;}
+.plan .cadres_webcam img {width:280px;height:210px;border:0px;}
 
 
 
