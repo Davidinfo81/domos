@@ -14,7 +14,7 @@ CREATE TABLE `composants` (
   `composants_divers` tinytext NOT NULL,
   `composants_maj` int(11) NOT NULL,
   PRIMARY KEY (`composants_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 INSERT INTO `composants` (`composants_id`, `composants_modele`, `composants_nom`, `composants_adresse`, `composants_description`, `composants_polling`, `composants_actif`, `composants_etat`, `composants_etatdate`, `composants_correction`, `composants_precision`, `composants_divers`, `composants_maj`) VALUES
 ('1', '32', 'JOUR', 'jour', '1=jour, 0=nuit', '0', '1', '1', '2010-01-01 01:01:01', '', '0', '', '0'),
 ('2', '32', 'JOUR2', 'jour2', '1=jour, 0=nuit, avec correction', '0', '1', '1', '2010-01-01 01:01:01', '', '0', '', '0'),
@@ -26,7 +26,7 @@ CREATE TABLE `composants_bannis` (
   `composants_bannis_adresse` tinytext NOT NULL,
   `composants_bannis_description` text NOT NULL,
   PRIMARY KEY (`composants_bannis_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
 CREATE TABLE `composants_modele` (
   `composants_modele_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -35,7 +35,7 @@ CREATE TABLE `composants_modele` (
   `composants_modele_norme` tinytext NOT NULL,
   `composants_modele_graphe` int(11) NOT NULL,
   PRIMARY KEY (`composants_modele_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=43 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+) ENGINE=MyISAM AUTO_INCREMENT=42 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
 INSERT INTO `composants_modele` (`composants_modele_id`, `composants_modele_nom`, `composants_modele_description`, `composants_modele_norme`, `composants_modele_graphe`) VALUES
 ('1', 'DS18B20', 'Capteur de temp&eacute;rature', 'WIR', '3'),
 ('2', 'DS2406_relais', 'Switch pour commander un relais', 'WIR', '1'),
@@ -72,10 +72,10 @@ INSERT INTO `composants_modele` (`composants_modele_id`, `composants_modele_nom`
 ('35', 'SD10', 'D&eacute;tecteur de fum&eacute;e', 'RFX', '0'),
 ('36', 'COD18', 'Detecteur CO', 'RFX', '0'),
 ('37', 'GD18', 'D&eacute;tecteur de Gaz', 'RFX', '0'),
-('39', 'DS10', 'Détecteur de contact X10RF', 'RFX', '1'),
-('40', 'telecommande', 'Télécommande basique', 'RFX', '1'),
-('41', 'DS2423_A', 'Compteur A du dualcounter', 'WIR', '2'),
-('42', 'DS2423_B', 'Compteur B du dualcounter', 'WIR', '2');
+('38', 'DS10', 'Détecteur de contact X10RF', 'RFX', '1'),
+('39', 'telecommande', 'Télécommande basique', 'RFX', '1'),
+('40', 'DS2423_A', 'Compteur A du dualcounter', 'WIR', '2'),
+('41', 'DS2423_B', 'Compteur B du dualcounter', 'WIR', '2');
 
 CREATE TABLE `config` (
   `config_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -83,7 +83,7 @@ CREATE TABLE `config` (
   `config_valeur` text NOT NULL,
   `config_description` text NOT NULL,
   PRIMARY KEY (`config_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=34 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=32 DEFAULT CHARSET=latin1;
 INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_description`) VALUES
 ('1', 'Serv_X10', '0', '0=desactive 1=active'),
 ('2', 'Serv_WIR', '1', '0=desactive 1=active'),
@@ -113,9 +113,9 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('26', 'Action_timeout', '500', 'TimeOut quand un thread est deja actif sur un composant lors d une action.'),
 ('27', 'heure_coucher_correction', '0', 'Ajout de x minutes a l heure de couche du soleil'),
 ('28', 'heure_lever_correction', '0', 'Ajout de x minutes a l heure de leve du soleil'),
-('33', 'WIR_adaptername', '{DS9490}', 'Nom de l adaptateur onewire'),
-('34', 'gps_longitude', '48.8616', 'longitude de ta maison (calcul soleil)'),
-('35', 'gps_latitude', '2.3517', 'Latitude de ta maison (calcul soleil)');
+('29', 'WIR_adaptername', '{DS9490}', 'Nom de l adaptateur onewire'),
+('30', 'gps_longitude', '48.8616', 'longitude de ta maison (calcul soleil)'),
+('31', 'gps_latitude', '2.3517', 'Latitude de ta maison (calcul soleil)');
 
 CREATE TABLE `logs` (
   `logs_id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -123,7 +123,7 @@ CREATE TABLE `logs` (
   `logs_description` text NOT NULL,
   `logs_date` datetime NOT NULL,
   PRIMARY KEY (`logs_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=648325 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 INSERT INTO `logs` (`logs_id`, `logs_source`, `logs_description`, `logs_date`) VALUES
 ('1', '0', 'installation', '2010-09-01 00:00:00');
 
@@ -135,7 +135,7 @@ CREATE TABLE `macro` (
   `macro_actions` text NOT NULL,
   `macro_actif` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`macro_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
 INSERT INTO `macro` (`macro_id`, `macro_nom`, `macro_description`, `macro_conditions`, `macro_actions`, `macro_actif`) VALUES
 ('1', 'Mode_nuit : ON', 'Passer en mode nuit a 23h00', '([CT#=#0#00#23#*#*#*])', '([AC#3#1])', '1'),
 ('2', 'Mode_nuit : OFF', 'Quitter le mode nuit a 6h30', '([CT#=#0#30#6#*#*#*])', '([AC#3#0])', '1'),
@@ -183,3 +183,11 @@ INSERT INTO `users` (`id`, `login`, `pwd`, `droits`) VALUES
 ('1', 'administrateur', 'domos', '9'),
 ('2', 'utilisateur', 'domos', '5'),
 ('3', 'visiteur', 'domos', '1');
+
+CREATE TABLE `domos`.`webcams` (
+`webcams_id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+`webcams_nom` TINYTEXT NOT NULL ,
+`webcams_description` TEXT NOT NULL ,
+`webcams_lien` TEXT NOT NULL ,
+`webcams_accueil` TINYINT NOT NULL
+) ENGINE = MYISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
