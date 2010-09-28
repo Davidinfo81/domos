@@ -35,7 +35,7 @@ CREATE TABLE `composants_modele` (
   `composants_modele_norme` tinytext NOT NULL,
   `composants_modele_graphe` int(11) NOT NULL,
   PRIMARY KEY (`composants_modele_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=42 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+) ENGINE=MyISAM AUTO_INCREMENT=43 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
 INSERT INTO `composants_modele` (`composants_modele_id`, `composants_modele_nom`, `composants_modele_description`, `composants_modele_norme`, `composants_modele_graphe`) VALUES
 ('1', 'DS18B20', 'Capteur de temp&eacute;rature', 'WIR', '3'),
 ('2', 'DS2406_relais', 'Switch pour commander un relais', 'WIR', '1'),
@@ -75,7 +75,8 @@ INSERT INTO `composants_modele` (`composants_modele_id`, `composants_modele_nom`
 ('38', 'DS10', 'Détecteur de contact X10RF', 'RFX', '1'),
 ('39', 'telecommande', 'Télécommande basique', 'RFX', '1'),
 ('40', 'DS2423_A', 'Compteur A du dualcounter', 'WIR', '2'),
-('41', 'DS2423_B', 'Compteur B du dualcounter', 'WIR', '2');
+('41', 'DS2423_B', 'Compteur B du dualcounter', 'WIR', '2'),
+('42', 'RFXPower', 'Mesure tension', 'RFX', '2');
 
 CREATE TABLE `config` (
   `config_id` int(11) NOT NULL AUTO_INCREMENT,
