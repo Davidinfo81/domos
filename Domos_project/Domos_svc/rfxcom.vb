@@ -1220,127 +1220,118 @@ Public Class rfxcom
 
     'pas géré
     Private Sub processrfxmeter()
-        'WriteLog("ERR: Process RFXMETER pas encore géré")
+        Dim adresse, valeur, valeurtemp As String
         'Dim measured_value As Single
         'WriteMessage("           RFXMeter[" & (recbuf(0) * 256 + recbuf(1)).ToString & "]M RFXMeter", False)
         'WriteMessage(" addr:" & VB.Right("0" & Hex(recbuf(0)), 2), False)
         'WriteMessage(VB.Right("0" & Hex(recbuf(1)), 2), False)
+        adresse = VB.Right("0" & Hex(recbuf(0)), 2) & VB.Right("0" & Hex(recbuf(1)), 2) & "-" & Convert.ToString(recbuf(1) + (recbuf(0) * 256))
         'WriteMessage(" ID:" & Convert.ToString(recbuf(1) + (recbuf(0) * 256)) & " ", False)
-        'Select Case recbuf(5) And &HF0
-        '    Case &H0
-        '        measured_value = ((recbuf(4) * 65536) + (recbuf(2) * 256) + recbuf(3))
-        '        WriteMessage("RFXMeter: " & Convert.ToString(measured_value), False)
-        '        WriteMessage(";  RFXPower: " & Convert.ToString(measured_value / 100) & " kWh", False)
-        '        WriteMessage(";  RFXPower-Module: " & Convert.ToString(measured_value / 1000) & " kWh", False)
-        '    Case &H10
-        '        WriteMessage("Interval: ", False)
-        '        Select Case recbuf(2)
-        '            Case &H1 : WriteMessage("30 sec.", False)
-        '            Case &H2 : WriteMessage("1 min.", False)
-        '            Case &H4 : WriteMessage("6 (old=5) min.", False)
-        '            Case &H8 : WriteMessage("12 (old=10) min.", False)
-        '            Case &H10 : WriteMessage("15 min.", False)
-        '            Case &H20 : WriteMessage("30 min.", False)
-        '            Case &H40 : WriteMessage("45 min.", False)
-        '            Case &H80 : WriteMessage("60 min.", False)
-        '            Case Else : WriteMessage("illegal value", False)
-        '        End Select
-        '    Case &H20
-        '        Select Case (recbuf(4) And &HC0)
-        '            Case &H0 : WriteMessage("Input-0 ", False)
-        '            Case &H40 : WriteMessage("Input-1 ", False)
-        '            Case &H80 : WriteMessage("Input-2 ", False)
-        '            Case Else : WriteMessage("Error, unknown input ", False)
-        '        End Select
-        '        measured_value = (((recbuf(4) And &H3F) * 65536) + (recbuf(2) * 256) + recbuf(3)) / 1000
-        '        WriteMessage("Calibration: " & Convert.ToString(measured_value) & "msec ", False)
-        '        If measured_value <> 0 Then
-        '            WriteMessage("RFXPower= " & Convert.ToString(Round(1 / ((16 * measured_value) / (3600000 / 100)), 3)) & "kW", False)
-        '            WriteMessage(" RFXPwr= " & Convert.ToString(Round(1 / ((16 * measured_value) / (3600000 / 62.5)), 3)) & "|" & Convert.ToString(Round((1 / ((16 * measured_value) / (3600000 / 62.5))) * 1.917, 3)) & "kW", False)
-        '        End If
-        '    Case &H30
-        '        WriteMessage("New address set", False)
-        '    Case &H40
-        '        Select Case (recbuf(4) And &HC0)
-        '            Case &H0 : WriteMessage("Counter for Input-0 will be set to zero within 5 seconds OR push MODE button for next command.", False)
-        '            Case &H40 : WriteMessage("Counter for Input-1 will be set to zero within 5 seconds OR push MODE button for next command.", False)
-        '            Case &H80 : WriteMessage("Counter for Input-2 will be set to zero within 5 seconds OR push MODE button for next command.", False)
-        '            Case Else : WriteMessage("Error, unknown input ", False)
-        '        End Select
-        '    Case &H50
-        '        WriteMessage("Push MODE push button within 5 seconds to increment the 1st digit.", False)
-        '        measured_value = (recbuf(2) >> 4) * 100000 + (recbuf(2) And &HF) * 10000 + (recbuf(3) >> 4) _
-        '        * 1000 + (recbuf(3) And &HF) * 100 + (recbuf(4) >> 4) * 10 + (recbuf(4) And &HF)
-        '        WriteMessage("Counter value = " & VB.Right("00000" & Convert.ToString(measured_value), 6), False)
-        '    Case &H60
-        '        WriteMessage("Push MODE push button within 5 seconds to increment the 2nd digit.", False)
-        '        measured_value = (recbuf(2) >> 4) * 100000 + (recbuf(2) And &HF) * 10000 + (recbuf(3) >> 4) _
-        '        * 1000 + (recbuf(3) And &HF) * 100 + (recbuf(4) >> 4) * 10 + (recbuf(4) And &HF)
-        '        WriteMessage("Counter value = " & VB.Right("00000" & Convert.ToString(measured_value), 6), False)
-        '    Case &H70
-        '        WriteMessage("Push MODE push button within 5 seconds to increment the 3rd digit.", False)
-        '        measured_value = (recbuf(2) >> 4) * 100000 + (recbuf(2) And &HF) * 10000 + (recbuf(3) >> 4) _
-        '        * 1000 + (recbuf(3) And &HF) * 100 + (recbuf(4) >> 4) * 10 + (recbuf(4) And &HF)
-        '        WriteMessage("Counter value = " & VB.Right("00000" & Convert.ToString(measured_value), 6), False)
-        '    Case &H80
-        '        WriteMessage("Push MODE push button within 5 seconds to increment the 4th digit.", False)
-        '        measured_value = (recbuf(2) >> 4) * 100000 + (recbuf(2) And &HF) * 10000 + (recbuf(3) >> 4) _
-        '        * 1000 + (recbuf(3) And &HF) * 100 + (recbuf(4) >> 4) * 10 + (recbuf(4) And &HF)
-        '        WriteMessage("Counter value = " & VB.Right("00000" & Convert.ToString(measured_value), 6), False)
-        '    Case &H90
-        '        WriteMessage("Push MODE push button within 5 seconds to increment the 5th digit.", False)
-        '        measured_value = (recbuf(2) >> 4) * 100000 + (recbuf(2) And &HF) * 10000 + (recbuf(3) >> 4) _
-        '        * 1000 + (recbuf(3) And &HF) * 100 + (recbuf(4) >> 4) * 10 + (recbuf(4) And &HF)
-        '        WriteMessage("Counter value = " & VB.Right("00000" & Convert.ToString(measured_value), 6), False)
-        '    Case &HA0
-        '        WriteMessage("Push MODE push button within 5 seconds to increment the 6th digit.", False)
-        '        measured_value = (recbuf(2) >> 4) * 100000 + (recbuf(2) And &HF) * 10000 + (recbuf(3) >> 4) _
-        '        * 1000 + (recbuf(3) And &HF) * 100 + (recbuf(4) >> 4) * 10 + (recbuf(4) And &HF)
-        '        WriteMessage("Counter value = " & VB.Right("00000" & Convert.ToString(measured_value), 6), False)
-        '    Case &HB0
-        '        Select Case recbuf(4)
-        '            Case &H0 : WriteMessage("Counter for Input-0 reset to zero.", False)
-        '            Case &H40 : WriteMessage("Counter for Input-1 reset to zero.", False)
-        '            Case &H80 : WriteMessage("Counter for Input-2 reset to zero.", False)
-        '            Case Else : WriteMessage("protocol error.", False)
-        '        End Select
-        '    Case &HC0
-        '        WriteMessage("Enter SET INTERVAL RATE mode within 5 seconds OR push MODE button for next command.", False)
-        '    Case &HD0
-        '        Select Case (recbuf(4) And &HC0)
-        '            Case &H0 : WriteMessage("Enter CALIBRATION mode for Input-0 within 5 seconds OR push MODE button for next command.", False)
-        '            Case &H40 : WriteMessage("Enter CALIBRATION mode for Input-1 within 5 seconds OR push MODE button for next command.", False)
-        '            Case &H80 : WriteMessage("Enter CALIBRATION mode for Input-2 within 5 seconds OR push MODE button for next command.", False)
-        '            Case Else : WriteMessage("Error, unknown input ", False)
-        '        End Select
-        '    Case &HE0
-        '        WriteMessage("Enter SET ADDRESS mode within 5 seconds OR push MODE button for next command.", False)
-        '    Case &HF0
-        '        If recbuf(2) < &H40 Then
-        '            WriteMessage("RFXPower Identification,", False)
-        '        ElseIf recbuf(2) < &H80 Then
-        '            WriteMessage("RFXWater Identification,", False)
-        '        ElseIf recbuf(2) < &HC0 Then
-        '            WriteMessage("RFXGas Identification,", False)
-        '        Else
-        '            WriteMessage("RFXMeter Identification,", False)
-        '        End If
-        '        WriteMessage(" Firmware Version: " & VB.Right("0" & Hex(recbuf(2)), 2), False)
-        '        WriteMessage(", Interval rate: ", False)
-        '        Select Case recbuf(3)
-        '            Case &H1 : WriteMessage("30 seconds", False)
-        '            Case &H2 : WriteMessage("1 minute", False)
-        '            Case &H4 : WriteMessage("6 minutes", False)
-        '            Case &H8 : WriteMessage("12 minutes", False)
-        '            Case &H10 : WriteMessage("15 minutes", False)
-        '            Case &H20 : WriteMessage("30 minutes", False)
-        '            Case &H40 : WriteMessage("45 minutes", False)
-        '            Case &H80 : WriteMessage("60 minutes", False)
-        '            Case Else : WriteMessage("illegal value", False)
-        '        End Select
-        '    Case Else
-        '        WriteMessage("illegal packet type", False)
-        'End Select
+        Select recbuf(5) And &HF0
+            Case &H0
+                valeur = ((recbuf(4) * 65536) + (recbuf(2) * 256) + recbuf(3))
+                WriteRetour(adresse, valeur / 100)
+                'WriteMessage("RFXMeter: " & Convert.ToString(measured_value), False)
+                'WriteMessage(";  RFXPower: " & Convert.ToString(measured_value / 100) & " kWh", False)
+                'WriteMessage(";  RFXPower-Module: " & Convert.ToString(measured_value / 1000) & " kWh", False)
+            Case &H10
+                Select Case recbuf(2)
+                    Case &H1 : valeur = "Interval: 30 sec."
+                    Case &H2 : valeur = "Interval: 1 min."
+                    Case &H4 : valeur = "Interval: 6 (old=5) min."
+                    Case &H8 : valeur = "Interval: 12 (old=10) min."
+                    Case &H10 : valeur = "Interval: 15 min."
+                    Case &H20 : valeur = "Interval: 30 min."
+                    Case &H40 : valeur = "Interval: 45 min."
+                    Case &H80 : valeur = "Interval: 60 min."
+                    Case Else : valeur = "Interval: illegal value"
+                End Select
+                WriteRetour(adresse, "CFG: " & valeur)
+            Case &H20
+                Select Case (recbuf(4) And &HC0)
+                    Case &H0 : valeurtemp = "Input-0 "
+                    Case &H40 : valeurtemp = "Input-1 "
+                    Case &H80 : valeurtemp = "Input-2 "
+                    Case Else : valeurtemp = "Error, unknown input "
+                End Select
+                valeur = (((recbuf(4) And &H3F) * 65536) + (recbuf(2) * 256) + recbuf(3)) / 1000
+                valeurtemp = valeurtemp & " Calibration: " & Convert.ToString(valeur) & "msec "
+                If valeur <> 0 Then
+                    valeurtemp = valeurtemp & "RFXPower= " & Convert.ToString(Round(1 / ((16 * valeur) / (3600000 / 100)), 3)) & "kW"
+                    valeurtemp = valeurtemp & " RFXPwr= " & Convert.ToString(Round(1 / ((16 * valeur) / (3600000 / 62.5)), 3)) & "|" & Convert.ToString(Round((1 / ((16 * valeur) / (3600000 / 62.5))) * 1.917, 3)) & "kW"
+                End If
+                WriteRetour(adresse, "CFG: Calibration" & Convert.ToString(valeur) & "msec " & valeurtemp)
+            Case &H30
+                WriteRetour(adresse, "CFG: New address set")
+            Case &H40
+                Select Case (recbuf(4) And &HC0)
+                    Case &H0 : WriteRetour(adresse, "CFG: Counter for Input-0 will be set to zero within 5 seconds OR push MODE button for next command.")
+                    Case &H40 : WriteRetour(adresse, "CFG: Counter for Input-1 will be set to zero within 5 seconds OR push MODE button for next command.")
+                    Case &H80 : WriteRetour(adresse, "CFG: Counter for Input-2 will be set to zero within 5 seconds OR push MODE button for next command.")
+                    Case Else : WriteRetour(adresse, "ERR: unknown input ")
+                End Select
+            Case &H50
+                valeur = (recbuf(2) >> 4) * 100000 + (recbuf(2) And &HF) * 10000 + (recbuf(3) >> 4) * 1000 + (recbuf(3) And &HF) * 100 + (recbuf(4) >> 4) * 10 + (recbuf(4) And &HF)
+                WriteRetour(adresse, "CFG: Push MODE push button within 5 seconds to increment the 1st digit - Counter value = " & VB.Right("00000" & Convert.ToString(valeur), 6))
+            Case &H60
+                valeur = (recbuf(2) >> 4) * 100000 + (recbuf(2) And &HF) * 10000 + (recbuf(3) >> 4) * 1000 + (recbuf(3) And &HF) * 100 + (recbuf(4) >> 4) * 10 + (recbuf(4) And &HF)
+                WriteRetour(adresse, "CFG: Push MODE push button within 5 seconds to increment the 2nd digit - Counter value = " & VB.Right("00000" & Convert.ToString(valeur), 6))
+            Case &H70
+                valeur = (recbuf(2) >> 4) * 100000 + (recbuf(2) And &HF) * 10000 + (recbuf(3) >> 4) * 1000 + (recbuf(3) And &HF) * 100 + (recbuf(4) >> 4) * 10 + (recbuf(4) And &HF)
+                WriteRetour(adresse, "CFG: Push MODE push button within 5 seconds to increment the 3rd digit - Counter value = " & VB.Right("00000" & Convert.ToString(valeur), 6))
+            Case &H80
+                valeur = (recbuf(2) >> 4) * 100000 + (recbuf(2) And &HF) * 10000 + (recbuf(3) >> 4) * 1000 + (recbuf(3) And &HF) * 100 + (recbuf(4) >> 4) * 10 + (recbuf(4) And &HF)
+                WriteRetour(adresse, "CFG: Push MODE push button within 5 seconds to increment the 4th digit - Counter value = " & VB.Right("00000" & Convert.ToString(valeur), 6))
+            Case &H90
+                valeur = (recbuf(2) >> 4) * 100000 + (recbuf(2) And &HF) * 10000 + (recbuf(3) >> 4) * 1000 + (recbuf(3) And &HF) * 100 + (recbuf(4) >> 4) * 10 + (recbuf(4) And &HF)
+                WriteRetour(adresse, "CFG: Push MODE push button within 5 seconds to increment the 5th digit - Counter value = " & VB.Right("00000" & Convert.ToString(valeur), 6))
+            Case &HA0
+                valeur = (recbuf(2) >> 4) * 100000 + (recbuf(2) And &HF) * 10000 + (recbuf(3) >> 4) * 1000 + (recbuf(3) And &HF) * 100 + (recbuf(4) >> 4) * 10 + (recbuf(4) And &HF)
+                WriteRetour(adresse, "CFG: Push MODE push button within 5 seconds to increment the 6th digit - Counter value = " & VB.Right("00000" & Convert.ToString(valeur), 6))
+            Case &HB0
+                Select Case recbuf(4)
+                    Case &H0 : WriteRetour(adresse, "CFG: Counter for Input-0 reset to zero.")
+                    Case &H40 : WriteRetour(adresse, "CFG: Counter for Input-1 reset to zero.")
+                    Case &H80 : WriteRetour(adresse, "CFG: Counter for Input-2 reset to zero.")
+                    Case Else : WriteRetour(adresse, "CFG: protocol error.")
+                End Select
+            Case &HC0
+                WriteRetour(adresse, "CFG: Enter SET INTERVAL RATE mode within 5 seconds OR push MODE button for next command.")
+            Case &HD0
+                Select Case (recbuf(4) And &HC0)
+                    Case &H0 : WriteRetour(adresse, "CFG: Enter CALIBRATION mode for Input-0 within 5 seconds OR push MODE button for next command.")
+                    Case &H40 : WriteRetour(adresse, "CFG: Enter CALIBRATION mode for Input-1 within 5 seconds OR push MODE button for next command.")
+                    Case &H80 : WriteRetour(adresse, "CFG: Enter CALIBRATION mode for Input-2 within 5 seconds OR push MODE button for next command.")
+                    Case Else : WriteRetour(adresse, "CFG: unknown input ")
+                End Select
+            Case &HE0
+                WriteRetour(adresse, "CFG: Enter SET ADDRESS mode within 5 seconds OR push MODE button for next command.")
+            Case &HF0
+                If recbuf(2) < &H40 Then
+                    valeur = "RFXPower Identification, "
+                ElseIf recbuf(2) < &H80 Then
+                    valeur = "RFXWater Identification, "
+                ElseIf recbuf(2) < &HC0 Then
+                    valeur = "RFXGas Identification, "
+                Else
+                    valeur = "RFXMeter Identification, "
+                End If
+                valeur = valeur & "Firmware Version: " & VB.Right("0" & Hex(recbuf(2)), 2) & ", Interval rate: "
+                Select Case recbuf(3)
+                    Case &H1 : valeur = valeur & "30 seconds"
+                    Case &H2 : valeur = valeur & "1 minute"
+                    Case &H4 : valeur = valeur & "6 minutes"
+                    Case &H8 : valeur = valeur & "12 minutes"
+                    Case &H10 : valeur = valeur & "15 minutes"
+                    Case &H20 : valeur = valeur & "30 minutes"
+                    Case &H40 : valeur = valeur & "45 minutes"
+                    Case &H80 : valeur = valeur & "60 minutes"
+                    Case Else : valeur = valeur & "illegal value"
+                End Select
+                WriteRetour(adresse, "CFG:" & valeur)
+            Case Else
+                WriteRetour(adresse, "ERR: illegal packet type")
+        End Select
     End Sub
 
     'pas géré : renvoi le message recu dans le log
@@ -2382,9 +2373,11 @@ Public Class rfxcom
                             Else
                                 domos_svc.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString, 6)
                                 '  --- modification de l'etat du composant dans la table en memoire ---
-                                tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
-                                tabletmp(0)("composants_etat") = valeur.ToString
-                                tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
+                                If VB.Left(valeur, 4) <> "CFG:" Then
+                                    tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
+                                    tabletmp(0)("composants_etat") = valeur.ToString
+                                    tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
+                                End If
                             End If
                             'Domos.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString)
                             ''  --- modification de l'etat du composant dans la table en memoire ---
