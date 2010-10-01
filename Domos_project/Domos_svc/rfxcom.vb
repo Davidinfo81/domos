@@ -606,8 +606,9 @@ Public Class rfxcom
         End If
     End Sub
 
-    'pas géré
+    'OK 
     Private Sub processhe()
+        Dim adresse, valeur As String
         'WriteLog("ERR: Process HE pas encore géré")
         'WriteMessage(" HE", False)
         'WriteMessage(" Device=" & Hex(recbuf(0) >> 6), False)
@@ -615,28 +616,30 @@ Public Class rfxcom
         'WriteMessage(VB.Right("0" & Hex((recbuf(1) << 2 Or recbuf(2) >> 6) And &HFF), 2), False)
         'WriteMessage(VB.Right("0" & Hex((recbuf(2) << 2 Or recbuf(3) >> 6) And &HFF), 2), False)
         'WriteMessage(" Unit=" & CStr((recbuf(3) And &HF) + 1), False)
-        'If recbits = 34 Then
-        '    Select Case recbuf(3) And &H30
-        '        Case &H0 : WriteMessage(" OFF", False)
-        '        Case &H10 : WriteMessage(" ON", False)
-        '        Case &H20 : WriteMessage(" GROUP OFF", False)
-        '        Case &H30 : WriteMessage(" GROUP ON", False)
-        '    End Select
-        'Else
-        '    Select Case recbuf(4) And &HC
-        '        Case &H0
-        '            WriteMessage(" Error (preset record length without preset bits set)", False)
-        '        Case &H4
-        '            If (recbuf(3) And &H20) = &H0 Then
-        '                WriteMessage(" Preset command,", False)
-        '            Else
-        '                WriteMessage(" Preset group command,", False)
-        '            End If
-        '        Case &H8 : WriteMessage(" Reserved (unexpected)", False)
-        '        Case &HC : WriteMessage(" Reserved (unexpected)", False)
-        '    End Select
-        '    WriteMessage(" Level=" & CStr((recbuf(4) >> 4) + 1), False)
-        'End If
+        adresse = Hex(recbuf(0) >> 6) & VB.Right("0" & Hex((recbuf(0) << 2 Or recbuf(1) >> 6) And &HFF), 2) & VB.Right("0" & Hex((recbuf(1) << 2 Or recbuf(2) >> 6) And &HFF), 2) & VB.Right("0" & Hex((recbuf(2) << 2 Or recbuf(3) >> 6) And &HFF), 2) & "-" & CStr((recbuf(3) And &HF) + 1)
+        If recbits = 34 Then
+            Select Case recbuf(3) And &H30
+                Case &H0 : WriteRetour(adresse, "OFF")
+                Case &H10 : WriteRetour(adresse, "ON")
+                Case &H20 : WriteRetour(adresse, "GROUP OFF")
+                Case &H30 : WriteRetour(adresse, "GROUP ON")
+            End Select
+        Else
+            valeur = ""
+            Select Case recbuf(4) And &HC
+                Case &H0
+                    valeur = "ERR: preset record length without preset bits set"
+                Case &H4
+                    If (recbuf(3) And &H20) = &H0 Then
+                        valeur = "CFG: Preset command"
+                    Else
+                        valeur = "CFG: Preset group command"
+                    End If
+                Case &H8 : valeur = "CFG: Reserved (unexpected)"
+                Case &HC : valeur = "CFG: Reserved (unexpected)"
+            End Select
+            WriteRetour(adresse, "CFG: " & valeur & " Level=" & CStr((recbuf(4) >> 4) + 1))
+        End If
     End Sub
 
     'OK
@@ -1218,7 +1221,7 @@ Public Class rfxcom
         'End If
     End Sub
 
-    'pas géré
+    'OK
     Private Sub processrfxmeter()
         Dim adresse, valeur, valeurtemp As String
         'Dim measured_value As Single

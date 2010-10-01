@@ -134,7 +134,7 @@
                     If switch_state Then retour = "1" Else retour = "0"
                     If switch_level Then retour = retour & "1" Else retour = retour & "0"
                     If switch_activity Then retour = retour & "1" Else retour = retour & "0"
-                    switch_state = tc.getLatchState(0, state) 'recup l'etat du switch
+                    'switch_state = tc.getLatchState(0, state) 'recup l'etat du switch
                     wir_adapter.endExclusive() 'rend l'accés au reseau
                 Else
                     retour = "ERR: switch_get : Capteur non présent"
@@ -360,27 +360,27 @@
 
     Public Function counter(ByVal adresse As String, ByVal countera As Boolean) As String
         'recupere la valeur du compteur A (true) ou B (false)
-        'Dim owd As com.dalsemi.onewire.container.OneWireContainer1D
         Dim CounterContainer As com.dalsemi.onewire.container.OneWireContainer1D
+        Dim owd As com.dalsemi.onewire.container.OneWireContainer
         Dim retour As String = ""
         Dim counterstate As Long
         Try
             If adapter_present Then
                 wir_adapter.beginExclusive(True)
                 'owd = wir_adapter.getDeviceContainer(adresse)
-                CounterContainer = New com.dalsemi.onewire.container.OneWireContainer1D(wir_adapter, adresse)
-                If countera Then
-                    counterstate = CounterContainer.readCounter(14)
-                Else
-                    counterstate = CounterContainer.readCounter(15)
-                End If
-                'owd = wir_adapter.getDeviceContainer(adresse)
-                'CounterContainer = DirectCast(owd, com.dalsemi.onewire.container.OneWireContainer1D)
+                'CounterContainer = New com.dalsemi.onewire.container.OneWireContainer1D(wir_adapter, adresse)
                 'If countera Then
                 '    counterstate = CounterContainer.readCounter(14)
                 'Else
                 '    counterstate = CounterContainer.readCounter(15)
                 'End If
+                owd = wir_adapter.getDeviceContainer(adresse)
+                CounterContainer = DirectCast(owd, com.dalsemi.onewire.container.OneWireContainer1D)
+                If countera Then
+                    counterstate = CounterContainer.readCounter(14)
+                Else
+                    counterstate = CounterContainer.readCounter(15)
+                End If
                 wir_adapter.endExclusive()
                 retour = counterstate.ToString
             Else

@@ -488,8 +488,8 @@ Public Class domos_svc
                 If STRGS.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err, 0)
                 err = rfxcom.ecrire(&HF0, rfxcom.DISVIS)
                 If STRGS.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err, 0)
-                err = rfxcom.ecrire(&HF0, rfxcom.DISHE)
-                If STRGS.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err, 0)
+                'err = rfxcom.ecrire(&HF0, rfxcom.DISHE)
+                'If STRGS.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err, 0)
                 err = rfxcom.ecrire(&HF0, rfxcom.DISKOP)
                 If STRGS.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err, 0)
                 err = rfxcom.ecrire(&HF0, rfxcom.DISARC)
@@ -1153,17 +1153,19 @@ Public Class domos_svc
                             Case "DS2406_relais" 'WIR ou WI2 : etat d'un relais
                                 log("POL : ERR: DS2406_Relais pas encore géré", 2)
                             Case "DS2406_capteur" 'WIR ou WI2 : capteur d'ouverture d'un switch
-                                log("POL : ERR: DS2406_Capteur pas encore géré", 2)
+                                Dim POL_DS2406_capteur As POL_DS2406_capteur = New POL_DS2406_capteur(tabletemp(i)("composants_id"))
+                                y = New Thread(AddressOf POL_DS2406_capteur.Execute)
+                                y.Name = "poll_" & tabletemp(i)("composants_id")
+                                thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "POL", y)
+                                y.Start()
                             Case "DS2423_A" 'WIR ou WI2 : compteur A
                                 Dim POL_DS2423 As POL_DS2423 = New POL_DS2423(tabletemp(i)("composants_id"), True)
-                                'POL_DS18B20.Execute()
                                 y = New Thread(AddressOf POL_DS2423.Execute)
                                 y.Name = "poll_" & tabletemp(i)("composants_id")
                                 thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "POL", y)
                                 y.Start()
                             Case "DS2423_B" 'WIR ou WI2 : compteur B
                                 Dim POL_DS2423 As POL_DS2423 = New POL_DS2423(tabletemp(i)("composants_id"), False)
-                                'POL_DS18B20.Execute()
                                 y = New Thread(AddressOf POL_DS2423.Execute)
                                 y.Name = "poll_" & tabletemp(i)("composants_id")
                                 thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "POL", y)
@@ -1324,7 +1326,7 @@ Public Class domos_svc
         Dim listesup As Boolean = False
         Try
 
-            'log("liste de base " & liste, 9)
+            'log("liste de base " & liste & " --- avec comp ID:" & composants_id, 9)
             If STRGS.Left(liste, 1) = "!" Then
                 liste = STRGS.Mid(liste, 3, STRGS.Len(liste) - 2) 'on supprimer les !(...) de chaque cote de la liste
                 While (posfin < STRGS.Len(liste)) 'tant que toute la liste n'a pas ete traite
@@ -1629,7 +1631,12 @@ Public Class domos_svc
                 ElseIf contenu(0) = "AS" Then 'on execute une action sur le service  : [AS#action(#divers)]
                     log("MAC:  -> " & contenu(1), 5)
                     If contenu(1) = "stop" Then 'arret du service
-                        If Serv_DOMOS Then svc_stop()
+                        If Serv_DOMOS Then
+                            Dim controller As New ServiceController("DOMOS", ".")
+                            controller.Stop()
+                            [Stop]() 'svc_stop()
+                        End If
+
                     ElseIf contenu(1) = "restart" Then 'restart du service
                         If Serv_DOMOS Then
                             svc_restart()
@@ -1931,7 +1938,9 @@ Public Class domos_svc
                     If valeur_activite <> tabletmp(0)("composants_etat").ToString() Then
                         domos_svc.log("POL DS2406_capteur : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur_activite & " ", 6)
                         '--- modification de l'etat du composant dans la table en memoire ---
+                        tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
                         tabletmp(0)("composants_etat") = valeur_activite
+                        tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                     Else
                         domos_svc.log("POL DS2406_capteur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur_activite, 7)
                     End If
@@ -1939,7 +1948,17 @@ Public Class domos_svc
                     'erreur
                     domos_svc.log("POL DS2406_capteur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur, 2)
                 End If
+                '--- suppresion du thread de la liste des thread lancé ---
+                tabletmp = table_thread.Select("composant_id = '" & _id & "'")
+                If tabletmp.GetUpperBound(0) >= 0 Then
+                    tabletmp(0).Delete()
+                End If
             Catch ex As Exception
+                '--- suppresion du thread de la liste des thread lancé ---
+                tabletmp = table_thread.Select("composant_id = '" & _id & "'")
+                If tabletmp.GetUpperBound(0) >= 0 Then
+                    tabletmp(0).Delete()
+                End If
                 domos_svc.log("POL : DS2406_capteur " & ex.ToString, 2)
             End Try
 
@@ -1968,7 +1987,10 @@ Public Class domos_svc
                     If valeur <> tabletmp(0)("composants_etat").ToString() Then
                         domos_svc.log("POL DS2423 : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur & " ", 6)
                         '--- modification de l'etat du composant dans la table en memoire ---
+                        tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
                         tabletmp(0)("composants_etat") = valeur
+                        tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
+
                     Else
                         domos_svc.log("POL DS2423 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur, 7)
                     End If
