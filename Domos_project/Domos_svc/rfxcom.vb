@@ -829,127 +829,126 @@ Public Class rfxcom
         'WriteMessage(" Somfy ", False)
     End Sub
 
-    'pas géré
+    'OK
     Private Sub processARC()
         'WriteLog("ERR: Process ARC pas encore géré")
-        'Dim group As Byte
-        'Dim unit As Byte
-        'Dim housecode As Char
-        'Dim i As Integer
-        'If bytecnt = 3 Then
-        '    group = (((recbuf(1) And &H40) >> 5) Or ((recbuf(1) And &H10) >> 4)) + 1
-        '    unit = (((recbuf(1) And &H4) >> 1) Or (recbuf(1) And &H1)) + 1
-        '    housecode = Chr((((recbuf(2) And &H40) >> 3) Or ((recbuf(2) And &H10) >> 2) Or ((recbuf(2) And &H4) >> 1) Or (recbuf(2) And &H1)) + &H41)
-        '    If recbuf(1) = &HFF Then
-        '        Select Case recbuf(0)
-        '            Case &H54
-        '                message = " GROUP Housecode=" & housecode & " Command: ON"
-        '            Case &H14
-        '                message = " GROUP Housecode=" & housecode & " Command: OFF"
-        '            Case &H55
-        '                message = " GROUP Housecode=" & housecode & " Command: Button released"
-        '            Case Else
-        '        End Select
-        '    Else
-        '        Select Case recbuf(0)
-        '            Case &H54
-        '                message = " Housecode=" & housecode & " Group=" & Str(group) & " Unit=" & Str(unit) & " Command: ON"
-        '            Case &H14
-        '                message = " Housecode=" & housecode & " Group=" & Str(group) & " Unit=" & Str(unit) & " Command: OFF"
-        '            Case &H55
-        '                message = " Housecode=" & housecode & " Group=" & Str(group) & " Unit=" & Str(unit) & " Command: Button released"
-        '            Case Else
-        '        End Select
-        '    End If
-        'ElseIf bytecnt = 8 Or bytecnt = 9 Then
-        '    message = " HomeEasy code="
-        '    For i = 0 To (bytecnt - 1)
-        '        message = message & VB.Right("0" & Hex(recbuf(i)), 2)
-        '    Next
-        'Else
-        '    message = " Unknown code="
-        '    For i = 0 To (bytecnt - 1)
-        '        message = message & VB.Right("0" & Hex(recbuf(i)), 2)
-        '    Next
-        'End If
+        Dim group As Byte
+        Dim unit As Byte
+        Dim housecode As Char
+        Dim i As Integer
+        Dim adresse, message As String
+        If bytecnt = 3 Then
+            group = (((recbuf(1) And &H40) >> 5) Or ((recbuf(1) And &H10) >> 4)) + 1
+            unit = (((recbuf(1) And &H4) >> 1) Or (recbuf(1) And &H1)) + 1
+            housecode = Chr((((recbuf(2) And &H40) >> 3) Or ((recbuf(2) And &H10) >> 2) Or ((recbuf(2) And &H4) >> 1) Or (recbuf(2) And &H1)) + &H41)
+            adresse = ""
+            message = ""
+            If recbuf(1) = &HFF Then
+                Select Case recbuf(0)
+                    Case &H54
+                        'message = " GROUP Housecode=" & housecode & " Command: ON"
+                        message = "ON"
+                    Case &H14
+                        'message = " GROUP Housecode=" & housecode & " Command: OFF"
+                        message = "OFF"
+                    Case &H55
+                        'message = " GROUP Housecode=" & housecode & " Command: Button released"
+                        message = "Button released"
+                    Case Else
+                End Select
+                adresse = housecode
+            Else
+                Select Case recbuf(0)
+                    Case &H54
+                        'message = " Housecode=" & housecode & " Group=" & Str(group) & " Unit=" & Str(unit) & " Command: ON"
+                        message = "ON"
+                    Case &H14
+                        'message = " Housecode=" & housecode & " Group=" & Str(group) & " Unit=" & Str(unit) & " Command: OFF"
+                        message = "OFF"
+                    Case &H55
+                        'message = " Housecode=" & housecode & " Group=" & Str(group) & " Unit=" & Str(unit) & " Command: Button released"
+                        message = "Button released"
+                    Case Else
+                End Select
+                adresse = housecode & Str(group) & Str(unit)
+            End If
+            WriteRetour(adresse, message)
+        ElseIf bytecnt = 8 Or bytecnt = 9 Then
+            message = " HomeEasy code="
+            For i = 0 To (bytecnt - 1)
+                message = message & VB.Right("0" & Hex(recbuf(i)), 2)
+            Next
+            WriteLog(message)
+        Else
+            message = "Unknown code="
+            For i = 0 To (bytecnt - 1)
+                message = message & VB.Right("0" & Hex(recbuf(i)), 2)
+            Next
+            WriteLog("ERR: " & message)
+        End If
         'WriteMessage(message & " bits=" & recbits, False)
     End Sub
 
-    'pas géré : renvoi le message recu dans le log
+    'OK
     Private Sub processkoppla()
         Dim temp As Byte
         Dim parity, i As Integer
         Dim morech As Boolean
-        message = " System=" & VB.Right("0" & Trim(Str((recbuf(2) And &HF) + 1)), 2)
-        message = message & "  CH:"
+        Dim adresse As String
+        'message = " System=" & VB.Right("0" & Trim(Str((recbuf(2) And &HF) + 1)), 2)
+        'message = message & "  CH:"
+        adresse = VB.Right("0" & Trim(Str((recbuf(2) And &HF) + 1)), 2) & "_"
         If (recbuf(2) And &H20) = &H20 Then
-            message = message & "1"
+            adresse = adresse & "1"
             morech = True
         End If
         If (recbuf(2) And &H40) <> 0 Then
-            If morech Then
-                message = message & "-"
-            End If
+            If morech Then adresse = adresse & "-"
             morech = True
-            message = message & "2"
+            adresse = adresse & "2"
         End If
         If (recbuf(2) And &H80) <> 0 Then
-            If morech Then
-                message = message & "-"
-            End If
+            If morech Then adresse = adresse & "-"
             morech = True
-            message = message & "3"
+            adresse = adresse & "3"
         End If
         If (recbuf(1) And &H1) <> 0 Then
-            If morech Then
-                message = message & "-"
-            End If
+            If morech Then adresse = adresse & "-"
             morech = True
-            message = message & "4"
+            adresse = adresse & "4"
         End If
         If (recbuf(1) And &H2) <> 0 Then
-            If morech Then
-                message = message & "-"
-            End If
+            If morech Then adresse = adresse & "-"
             morech = True
-            message = message & "5"
+            adresse = adresse & "5"
         End If
         If (recbuf(1) And &H4) <> 0 Then
-            If morech Then
-                message = message & "-"
-            End If
+            If morech Then adresse = adresse & "-"
             morech = True
-            message = message & "6"
+            adresse = adresse & "6"
         End If
         If (recbuf(1) And &H8) <> 0 Then
-            If morech Then
-                message = message & "-"
-            End If
+            If morech Then adresse = adresse & "-"
             morech = True
-            message = message & "7"
+            adresse = adresse & "7"
         End If
         If (recbuf(1) And &H10) <> 0 Then
-            If morech Then
-                message = message & "-"
-            End If
+            If morech Then adresse = adresse & "-"
             morech = True
-            message = message & "8"
+            adresse = adresse & "8"
         End If
         If (recbuf(1) And &H20) <> 0 Then
-            If morech Then
-                message = message & "-"
-            End If
+            If morech Then adresse = adresse & "-"
             morech = True
-            message = message & "9"
+            adresse = adresse & "9"
         End If
         If (recbuf(2) And &H10) <> 0 Then
-            If morech Then
-                message = message & "-"
-            End If
+            If morech Then adresse = adresse & "-"
             morech = True
-            message = message & "10"
+            adresse = adresse & "10"
         End If
-        message = message & "  Command:"
+        'message = "  Command:"
+        message = ""
         If (recbuf(0) And &H3F) = &H10 Then
             message = message & " ON"
         ElseIf (recbuf(0) And &H3F) = &H11 Then
@@ -983,26 +982,19 @@ Public Class rfxcom
         Else
             message = message & " unknown cmd:" & VB.Right("0" & (Hex(recbuf(0) And &H3F)), 2)
         End If
-
         parity = &H0
         temp = recbuf(0)
         For i = 1 To 4
             parity = parity + (temp And &H1)
             temp = temp >> 2
         Next
-        If (parity And &H1) <> 1 Then
-            message = message & " Odd parity error in byte 0"
-        End If
-
+        If (parity And &H1) <> 1 Then message = message & " Odd parity error in byte 0"
         parity = &H0
         For i = 1 To 8
             parity = parity + (recbuf(0) And &H1)
             recbuf(0) = recbuf(0) >> 1
         Next
-        If (parity And &H1) <> 0 Then
-            message = message & " Even parity error in byte 0"
-        End If
-
+        If (parity And &H1) <> 0 Then message = message & " Even parity error in byte 0"
         parity = &H0
         temp = recbuf(2)
         For i = 1 To 4
@@ -1014,10 +1006,7 @@ Public Class rfxcom
             parity = parity + (temp And &H1)
             temp = temp >> 2
         Next
-        If (parity And &H1) <> 1 Then
-            message = message & " Odd parity error in byte 1-2"
-        End If
-
+        If (parity And &H1) <> 1 Then message = message & " Odd parity error in byte 1-2"
         parity = &H0
         For i = 1 To 8
             parity = parity + (recbuf(2) And &H1)
@@ -1027,114 +1016,117 @@ Public Class rfxcom
             parity = parity + (recbuf(1) And &H1)
             recbuf(1) = recbuf(1) >> 1
         Next
-        If (parity And &H1) <> 0 Then
-            message = message & " Even parity error in byte 1-2"
-        End If
-        WriteLog("ERR: Process KOPPLA pas encore géré : " & message)
+        If (parity And &H1) <> 0 Then message = message & " Even parity error in byte 1-2"
+        WriteRetour(adresse, message)
     End Sub
 
-    'pas géré
+    'OK
     Private Sub processvisonic(ByVal recbits As Byte)
         'WriteLog("ERR: Process VISONIC pas encore géré")
-        'Dim parity As Integer
-        'If recbits = 96 Then
-        '    WriteMessage(" MKP150 cmd from Console", False)
-        'ElseIf recbits = 80 Then
-        '    WriteMessage("       MKP150 cmd", False)
-        'ElseIf recbits = 72 Then
-        '    WriteMessage("       MKP150 cmd", False)
-        'ElseIf recbits = 66 Then
-        '    WriteMessage("       CodeSecure", False)
-        '    WriteMessage(" encr:" & VB.Right("0" & Hex(recbuf(0)), 2) & VB.Right("0" & Hex(recbuf(1)), 2) & VB.Right("0" & Hex(recbuf(2)), 2) & VB.Right("0" & Hex(recbuf(3)), 2), False)
-        '    WriteMessage(" serial:" & VB.Right("0" & Hex(recbuf(4)), 2) & VB.Right("0" & Hex(recbuf(5)), 2) & VB.Right("0" & Hex(recbuf(6)), 2) & Hex((recbuf(7) >> 4) And &HF), False)
-        '    WriteMessage(" Button:", False)
-        '    If (recbuf(7) And &H1) <> 0 Then WriteMessage(" Light", False)
-        '    If (recbuf(7) And &H2) <> 0 Then WriteMessage(" Arm", False)
-        '    If (recbuf(7) And &H4) <> 0 Then WriteMessage(" Disarm", False)
-        '    If (recbuf(7) And &H8) <> 0 Then WriteMessage(" Arm-Home", False)
-        '    If (recbuf(8) And &H4) <> 0 Then WriteMessage(" Repeat bit", False)
-        '    If (recbuf(8) And &H8) <> 0 Then WriteMessage(" Bat-Low", False)
-
-        'ElseIf recbits = 36 Then
-        '    parity = &H0
-        '    If (recbuf(0) And &H10) <> 0 Then parity += 1
-        '    If (recbuf(0) And &H1) <> 0 Then parity += 1
-        '    If (recbuf(1) And &H10) <> 0 Then parity += 1
-        '    If (recbuf(1) And &H1) <> 0 Then parity += 1
-        '    If (recbuf(2) And &H10) <> 0 Then parity += 1
-        '    If (recbuf(2) And &H1) <> 0 Then parity += 1
-        '    If (recbuf(3) And &H10) <> 0 Then parity += 1
-        '    If (recbuf(3) And &H1) <> 0 Then parity += 1
-        '    If (recbuf(4) And &H10) <> 0 Then parity += 1
-        '    If (parity And &H1) <> 0 Then WriteMessage(" B0 Parity error B4+B8+B12+B16+B20+B24+B28+B32", True)
-        '    parity = &H0
-        '    If (recbuf(0) And &H20) <> 0 Then parity += 1
-        '    If (recbuf(0) And &H2) <> 0 Then parity += 1
-        '    If (recbuf(1) And &H20) <> 0 Then parity += 1
-        '    If (recbuf(1) And &H2) <> 0 Then parity += 1
-        '    If (recbuf(2) And &H20) <> 0 Then parity += 1
-        '    If (recbuf(2) And &H2) <> 0 Then parity += 1
-        '    If (recbuf(3) And &H20) <> 0 Then parity += 1
-        '    If (recbuf(3) And &H2) <> 0 Then parity += 1
-        '    If (recbuf(4) And &H20) <> 0 Then parity += 1
-        '    If (parity And &H1) <> 0 Then WriteMessage(" B1 Parity error B5+B9+B13+B17+B21+B25+B29+B33", True)
-        '    parity = &H0
-        '    If (recbuf(0) And &H40) <> 0 Then parity += 1
-        '    If (recbuf(0) And &H4) <> 0 Then parity += 1
-        '    If (recbuf(1) And &H40) <> 0 Then parity += 1
-        '    If (recbuf(1) And &H4) <> 0 Then parity += 1
-        '    If (recbuf(2) And &H40) <> 0 Then parity += 1
-        '    If (recbuf(2) And &H4) <> 0 Then parity += 1
-        '    If (recbuf(3) And &H40) <> 0 Then parity += 1
-        '    If (recbuf(3) And &H4) <> 0 Then parity += 1
-        '    If (recbuf(4) And &H40) <> 0 Then parity += 1
-        '    If (parity And &H1) <> 0 Then WriteMessage(" B2 Parity error B6+B10+B14+B18+B22+B26+B30+B34", True)
-        '    parity = &H0
-        '    If (recbuf(0) And &H80) <> 0 Then parity += 1
-        '    If (recbuf(0) And &H8) <> 0 Then parity += 1
-        '    If (recbuf(1) And &H80) <> 0 Then parity += 1
-        '    If (recbuf(1) And &H8) <> 0 Then parity += 1
-        '    If (recbuf(2) And &H80) <> 0 Then parity += 1
-        '    If (recbuf(2) And &H8) <> 0 Then parity += 1
-        '    If (recbuf(3) And &H80) <> 0 Then parity += 1
-        '    If (recbuf(3) And &H8) <> 0 Then parity += 1
-        '    If (recbuf(4) And &H80) <> 0 Then parity += 1
-        '    If (parity And &H1) <> 0 Then WriteMessage(" B3 Parity error B7+B11+B15+B19+B23+B27+B31+B35", True)
-        '    WriteMessage("               PowerCode", False)
-        '    WriteMessage(" Addr:" & VB.Right("0" & Hex(recbuf(0)), 2) + VB.Right("0" & Hex(recbuf(1)), 2) + VB.Right("0" & Hex(recbuf(2)), 2), False)
-        '    If (recbuf(3) And &H80) <> 0 Then
-        '        WriteMessage(" Tamper   ,", False)
-        '    Else
-        '        WriteMessage(" No Tamper,", False)
-        '    End If
-        '    If (recbuf(3) And &H40) <> 0 Then
-        '        WriteMessage("Alert,", False)
-        '    Else
-        '        WriteMessage("Close,", False)
-        '    End If
-        '    If (recbuf(3) And &H20) <> 0 Then
-        '        WriteMessage("Battery-Low,", False)
-        '    Else
-        '        WriteMessage("Battery-OK ,", False)
-        '    End If
-        '    If (recbuf(3) And &H10) <> 0 Then
-        '        WriteMessage("Alive,", False)
-        '    Else
-        '        WriteMessage("Event,", False)
-        '    End If
-        '    If (recbuf(3) And &H8) <> 0 Then
-        '        WriteMessage("Restore reported    ,", False)
-        '    Else
-        '        WriteMessage("Restore not reported,", False)
-        '    End If
-        '    If (recbuf(3) And &H4) <> 0 Then
-        '        WriteMessage("Primary contact", False)
-        '    Else
-        '        WriteMessage("Second. contact", False)
-        '    End If
-        '    If (recbuf(3) And &H2) <> 0 Then WriteMessage(",Bit 5??", False)
-        '    If (recbuf(3) And &H1) <> 0 Then WriteMessage(",Bit 4??", False)
-        'End If
+        Dim parity As Integer
+        Dim adresse, message As String
+        If recbits = 96 Then
+            WriteLog("Visionic - MKP150 cmd from Console")
+        ElseIf recbits = 80 Then
+            WriteLog("Visionic - MKP150 cmd")
+        ElseIf recbits = 72 Then
+            WriteLog("Visionic - MKP150 cmd")
+        ElseIf recbits = 66 Then
+            'adresse = "CodeSecure"
+            'adresse = " encr:" & VB.Right("0" & Hex(recbuf(0)), 2) & VB.Right("0" & Hex(recbuf(1)), 2) & VB.Right("0" & Hex(recbuf(2)), 2) & VB.Right("0" & Hex(recbuf(3)), 2)
+            'adresse = adresse & " serial:" & VB.Right("0" & Hex(recbuf(4)), 2) & VB.Right("0" & Hex(recbuf(5)), 2) & VB.Right("0" & Hex(recbuf(6)), 2) & Hex((recbuf(7) >> 4) And &HF)
+            adresse = "" & VB.Right("0" & Hex(recbuf(0)), 2) & VB.Right("0" & Hex(recbuf(1)), 2) & VB.Right("0" & Hex(recbuf(2)), 2) & VB.Right("0" & Hex(recbuf(3)), 2)
+            adresse = adresse & "-" & VB.Right("0" & Hex(recbuf(4)), 2) & VB.Right("0" & Hex(recbuf(5)), 2) & VB.Right("0" & Hex(recbuf(6)), 2) & Hex((recbuf(7) >> 4) And &HF)
+            message = ""
+            If (recbuf(7) And &H1) <> 0 Then message = " Light"
+            If (recbuf(7) And &H2) <> 0 Then message = " Arm"
+            If (recbuf(7) And &H4) <> 0 Then message = " Disarm"
+            If (recbuf(7) And &H8) <> 0 Then message = " Arm-Home"
+            If (recbuf(8) And &H4) <> 0 Then message = " Repeat bit"
+            If (recbuf(8) And &H8) <> 0 Then message = " Bat-Low"
+            WriteRetour(adresse, message)
+        ElseIf recbits = 36 Then
+            parity = &H0
+            If (recbuf(0) And &H10) <> 0 Then parity += 1
+            If (recbuf(0) And &H1) <> 0 Then parity += 1
+            If (recbuf(1) And &H10) <> 0 Then parity += 1
+            If (recbuf(1) And &H1) <> 0 Then parity += 1
+            If (recbuf(2) And &H10) <> 0 Then parity += 1
+            If (recbuf(2) And &H1) <> 0 Then parity += 1
+            If (recbuf(3) And &H10) <> 0 Then parity += 1
+            If (recbuf(3) And &H1) <> 0 Then parity += 1
+            If (recbuf(4) And &H10) <> 0 Then parity += 1
+            If (parity And &H1) <> 0 Then WriteLog(" Visionic - B0 Parity error B4+B8+B12+B16+B20+B24+B28+B32")
+            parity = &H0
+            If (recbuf(0) And &H20) <> 0 Then parity += 1
+            If (recbuf(0) And &H2) <> 0 Then parity += 1
+            If (recbuf(1) And &H20) <> 0 Then parity += 1
+            If (recbuf(1) And &H2) <> 0 Then parity += 1
+            If (recbuf(2) And &H20) <> 0 Then parity += 1
+            If (recbuf(2) And &H2) <> 0 Then parity += 1
+            If (recbuf(3) And &H20) <> 0 Then parity += 1
+            If (recbuf(3) And &H2) <> 0 Then parity += 1
+            If (recbuf(4) And &H20) <> 0 Then parity += 1
+            If (parity And &H1) <> 0 Then WriteLog(" B1 Parity error B5+B9+B13+B17+B21+B25+B29+B33")
+            parity = &H0
+            If (recbuf(0) And &H40) <> 0 Then parity += 1
+            If (recbuf(0) And &H4) <> 0 Then parity += 1
+            If (recbuf(1) And &H40) <> 0 Then parity += 1
+            If (recbuf(1) And &H4) <> 0 Then parity += 1
+            If (recbuf(2) And &H40) <> 0 Then parity += 1
+            If (recbuf(2) And &H4) <> 0 Then parity += 1
+            If (recbuf(3) And &H40) <> 0 Then parity += 1
+            If (recbuf(3) And &H4) <> 0 Then parity += 1
+            If (recbuf(4) And &H40) <> 0 Then parity += 1
+            If (parity And &H1) <> 0 Then WriteLog(" B2 Parity error B6+B10+B14+B18+B22+B26+B30+B34")
+            parity = &H0
+            If (recbuf(0) And &H80) <> 0 Then parity += 1
+            If (recbuf(0) And &H8) <> 0 Then parity += 1
+            If (recbuf(1) And &H80) <> 0 Then parity += 1
+            If (recbuf(1) And &H8) <> 0 Then parity += 1
+            If (recbuf(2) And &H80) <> 0 Then parity += 1
+            If (recbuf(2) And &H8) <> 0 Then parity += 1
+            If (recbuf(3) And &H80) <> 0 Then parity += 1
+            If (recbuf(3) And &H8) <> 0 Then parity += 1
+            If (recbuf(4) And &H80) <> 0 Then parity += 1
+            If (parity And &H1) <> 0 Then WriteLog(" B3 Parity error B7+B11+B15+B19+B23+B27+B31+B35")
+            'WriteMessage("               PowerCode", False)
+            adresse = VB.Right("0" & Hex(recbuf(0)), 2) + VB.Right("0" & Hex(recbuf(1)), 2) + VB.Right("0" & Hex(recbuf(2)), 2)
+            message = ""
+            If (recbuf(3) And &H80) <> 0 Then
+                message = message & " Tamper   ,"
+            Else
+                message = message & " No Tamper,"
+            End If
+            If (recbuf(3) And &H40) <> 0 Then
+                message = message & "Alert,"
+            Else
+                message = message & "Close,"
+            End If
+            If (recbuf(3) And &H20) <> 0 Then
+                message = message & "Battery-Low,"
+            Else
+                message = message & "Battery-OK ,"
+            End If
+            If (recbuf(3) And &H10) <> 0 Then
+                message = message & "Alive,"
+            Else
+                message = message & "Event,"
+            End If
+            If (recbuf(3) And &H8) <> 0 Then
+                message = message & "Restore reported    ,"
+            Else
+                message = message & "Restore not reported,"
+            End If
+            If (recbuf(3) And &H4) <> 0 Then
+                message = message & "Primary contact"
+            Else
+                message = message & "Second. contact"
+            End If
+            If (recbuf(3) And &H2) <> 0 Then message = message & " Bit 5??"
+            If (recbuf(3) And &H1) <> 0 Then message = message & " Bit 4??"
+            WriteRetour(adresse, message)
+        End If
     End Sub
 
     'pas géré
