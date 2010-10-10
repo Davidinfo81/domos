@@ -102,8 +102,8 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('14', 'meteo_codevillereleve', 'FRXX0076', 'Code Ville Releve weather.com (FRXX0076)'),
 ('15', 'logs_nbparpage', '1000', 'Nb de logs/Releves a afficher par page'),
 ('16', 'Serv_VIR', '1', '0=desactive 1=active'),
-('17', 'Port_WIR', 'USB1', 'Nom du port de la cle USB WIR'),
-('18', 'Port_WI2', 'USB2', 'Nom du port de la cle USB WI2'),
+('17', 'Port_WIR', 'USB1', 'Nom du port de la cle USB WIR ex: USB1 ou COM1'),
+('18', 'Port_WI2', 'USB2', 'Nom du port de la cle USB WI2 ex: USB1 ou COM1'),
 ('19', 'rfx_tpsentrereponse', '1500', 'Temps entre deux receptions de valeurs a prendre en compte (pour eviter les doublons/triplons) (1500 par defaut  = 1.5sec)'),
 ('20', 'PLC_timeout', '500', 'Timeout pour attendre que le port PLCBUS soit disponible en ecriture (Defaut : 500 = 5 sec)'),
 ('21', 'socket_ip', '127.0.0.1', 'Socket : Adresse IP du serveur'),
@@ -114,9 +114,11 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('26', 'Action_timeout', '500', 'TimeOut quand un thread est deja actif sur un composant lors d une action.'),
 ('27', 'heure_coucher_correction', '0', 'Ajout de x minutes a l heure de couche du soleil'),
 ('28', 'heure_lever_correction', '0', 'Ajout de x minutes a l heure de leve du soleil'),
-('29', 'WIR_adaptername', '{DS9490}', 'Nom de l adaptateur onewire'),
+('29', 'WIR_adaptername', '{DS9490}', 'Nom de l adaptateur onewire usb:{DS9490} serie:{DS9097U}'),
 ('30', 'gps_longitude', '48.8616', 'longitude de ta maison (calcul soleil)'),
-('31', 'gps_latitude', '2.3517', 'Latitude de ta maison (calcul soleil)');
+('31', 'gps_latitude', '2.3517', 'Latitude de ta maison (calcul soleil)'),
+('32', 'logs_erreur_nb', '3', 'Nb d erreurs identique a loguer pendant logs_erreur_duree'),
+('33', 'logs_erreur_duree', '60', 'Duree pendant laquelle on ne logue pas plus de logs_erreur_nb erreurs identiques');
 
 CREATE TABLE `logs` (
   `logs_id` bigint(20) NOT NULL AUTO_INCREMENT,
