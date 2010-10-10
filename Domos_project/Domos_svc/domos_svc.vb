@@ -17,7 +17,7 @@ Public Class domos_svc
     Shared x10 As New x10
 
     'variable interne au script
-    Public Shared table_config, table_composants, table_composants_bannis, table_macros, table_timer, table_thread As New DataTable
+    Public Shared table_config, table_composants, table_composants_bannis, table_macros, table_timer, table_thread, table_erreur As New DataTable
     Public Shared Serv_DOMOS, Serv_WIR, Serv_WI2, Serv_PLC, Serv_X10, Serv_RFX, Serv_VIR, Serv_SOC As Boolean
     Public Shared Port_PLC, Port_X10, Port_RFX, Port_WIR, Port_WI2, socket_ip, WIR_adaptername As String
     Public Shared PLC_timeout, X10_timeout, Action_timeout, rfx_tpsentrereponse, socket_port, lastetat, WIR_res As Integer
@@ -63,6 +63,18 @@ Public Class domos_svc
         x.ColumnName = "thread"
         table_thread.Columns.Add(x)
 
+        '---------- Creation table des erreurs ----------
+        table_erreur.Dispose()
+        x = New DataColumn
+        x.ColumnName = "texte"
+        table_erreur.Columns.Add(x)
+        x = New DataColumn
+        x.ColumnName = "nombre"
+        table_erreur.Columns.Add(x)
+        x = New DataColumn
+        x.ColumnName = "datetime"
+        table_erreur.Columns.Add(x)
+        
         '---- initialisation des variables par défaut ----
         Serv_WIR = False
         Serv_WI2 = False
@@ -721,31 +733,74 @@ Public Class domos_svc
         '    9 : Divers
 
         Dim dateheure, fichierlog As String
+        Dim erreur_log As Integer = 1
         Try
-            If niveau <> "-1" And STRGS.InStr(log_niveau, niveau) > 0 Then
-                fichierlog = install_dir & "logs\log_" & DateAndTime.Now.ToString("yyyyMMdd") & ".txt"
-                dateheure = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
-                If Not Directory.Exists(install_dir & "logs") Then
-                    Directory.CreateDirectory(install_dir & "logs")
-                End If
-                If log_dest = 0 Or log_dest = 2 Then
-                    domos_svc.EcrireFichier(fichierlog, dateheure & " " & niveau & " " & texte & Environment.NewLine())
-                End If
-                If (log_dest = 1 Or log_dest = 2) And mysql.connected Then
-                    texte = STRGS.Replace(texte, "'", "&#39;")
-                    texte = STRGS.Replace(texte, """", "&quot;")
-                    mysql.mysql_nonquery("INSERT INTO logs(logs_source,logs_description,logs_date) VALUES('" & niveau & "', '" & texte & "', '" & dateheure & "')")
+            'gestion de la table des erreurs si on doit loguer une erreur
+            If niveau = "2" Then
+                'si c'est une erreur générale
+                Dim tabletemp = table_erreur.Select("texte = '" & texte & "'")
+                If tabletemp.GetLength(0) >= 1 Then
+                    'ecrireevtlog("DBG: on a deja en memoire " & texte & " --> " & tabletemp(0)("datetime").ToString, 3, 109)
+                    'on a déjà une erreur de ce type en memoire
+                    If Date.Now.ToString("yyyy-MM-dd HH:mm:ss") > tabletemp(0)("datetime").ToString Then
+                        'ecrireevtlog("DBG: ca fait au moins x minutes " & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & ">" & tabletemp(0)("datetime").ToString, 3, 109)
+                        'ca fait au moins x minutes qu'on a eu cette erreur, on supprime
+                        'tabletemp(0).Item("datetime") = DateAdd(DateInterval.Hour, 1, Date.Now).ToString("yyyy-MM-dd HH:mm:ss")
+                        texte = texte & " (repetition " & tabletemp(0).Item("nombre").ToString & " fois)"
+                        tabletemp(0).Delete()
+                    ElseIf tabletemp(0).Item("nombre").ToString >= "2" Then
+                        'ecrireevtlog("DBG: ca fait moins de x minutes " & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & ">" & tabletemp(0)("datetime").ToString & " et plus de 2 fois : " & tabletemp(0).Item("nombre").ToString, 3, 109)
+                        'ca fait moins de x minutes et + de 2 fois, on ne logue pas
+                        tabletemp(0).Item("nombre") = CInt(tabletemp(0).Item("nombre").ToString) + 1
+                        erreur_log = 0
+                    Else
+                        'ca fait moins de x minutes et - de 2 fois, on logue (repeat)
+                        'ecrireevtlog("DBG: ca fait moins de x minutes " & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & ">" & tabletemp(0)("datetime").ToString & " et moins de 2 fois : " & tabletemp(0).Item("nombre").ToString, 3, 109)
+                        tabletemp(0).Item("nombre") = CInt(tabletemp(0).Item("nombre").ToString) + 1
+                        texte = texte & " (2x)"
+                    End If
+                Else
+                    'ecrireevtlog("DBG: on a pas en memoire " & texte, 3, 109)
+                    'cet erreur n'est pas encore présente, on l'ajoute
+                    Dim newRow As DataRow
+                    newRow = table_erreur.NewRow()
+                    newRow.Item("texte") = texte
+                    newRow.Item("nombre") = 1
+                    newRow.Item("datetime") = DateAdd(DateInterval.Minute, 60, Date.Now).ToString("yyyy-MM-dd HH:mm:ss")
+                    table_erreur.Rows.Add(newRow)
+                    'ecrireevtlog("DBG: ajout en memoire de " & texte & " --> " & DateAdd(DateInterval.Minute, 60, Date.Now).ToString("yyyy-MM-dd HH:mm:ss"), 3, 109)
                 End If
             End If
-            'Log dans les events logs
-            Select Case niveau
-                Case "-1" : ecrireevtlog(texte, 3, 100)
-                Case "1" : ecrireevtlog(texte, 1, 101)
-                Case "3" : ecrireevtlog(texte, 3, 103)
-                Case "4" : ecrireevtlog(texte, 3, 104)
-            End Select
 
+            'si on peut loguer
+            If erreur_log = 1 Then
+                If niveau <> "-1" And STRGS.InStr(log_niveau, niveau) > 0 Then
+                    fichierlog = install_dir & "logs\log_" & DateAndTime.Now.ToString("yyyyMMdd") & ".txt"
+                    dateheure = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                    If Not Directory.Exists(install_dir & "logs") Then
+                        Directory.CreateDirectory(install_dir & "logs")
+                    End If
+                    If log_dest = 0 Or log_dest = 2 Then
+                        domos_svc.EcrireFichier(fichierlog, dateheure & " " & niveau & " " & texte & Environment.NewLine())
+                    End If
+                    If (log_dest = 1 Or log_dest = 2) And mysql.connected Then
+                        texte = STRGS.Replace(texte, "'", "&#39;")
+                        texte = STRGS.Replace(texte, """", "&quot;")
+                        mysql.mysql_nonquery("INSERT INTO logs(logs_source,logs_description,logs_date) VALUES('" & niveau & "', '" & texte & "', '" & dateheure & "')")
+                    End If
+                End If
+                'Log dans les events logs
+                Select Case niveau
+                    Case "-1" : ecrireevtlog(texte, 3, 100)
+                    Case "1" : ecrireevtlog(texte, 1, 101)
+                    Case "3" : ecrireevtlog(texte, 3, 103)
+                    Case "4" : ecrireevtlog(texte, 3, 104)
+                End Select
+            End If
         Catch ex As Exception
+            'texte = "LOG: Err exeption : " & ex.ToString
+            'mysql.mysql_nonquery("INSERT INTO logs(logs_source,logs_description,logs_date) VALUES('" & niveau & "', '" & texte & "', '" & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & "')")
+            ecrireevtlog("LOG: Err exeption : " & ex.ToString & " --> " & texte, 1, 109)
         End Try
     End Sub
 
@@ -1114,6 +1169,7 @@ Public Class domos_svc
     End Sub
 
     Private Sub thread_ajout(ByVal composant_id As String, ByVal norme As String, ByVal source As String, ByRef mythread As Thread)
+        'ajoute une ligne dans la table pour le nouveau thread
         Try
             Dim newRow As DataRow
             newRow = table_thread.NewRow()
