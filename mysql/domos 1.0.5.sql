@@ -1,7 +1,7 @@
 
 CREATE TABLE `composants` (
-  `composants_id` int(11) NOT NULL AUTO_INCREMENT,
-  `composants_modele` int(11) NOT NULL,
+  `composants_id` smallint(6) unsigned NOT NULL AUTO_INCREMENT,
+  `composants_modele` smallint(6) unsigned NOT NULL,
   `composants_nom` tinytext NOT NULL,
   `composants_adresse` tinytext NOT NULL,
   `composants_description` text NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE `composants` (
   `composants_correction` tinytext NOT NULL,
   `composants_precision` text NOT NULL,
   `composants_divers` tinytext NOT NULL,
-  `composants_maj` int(11) NOT NULL,
+  `composants_maj` smallint(6) NOT NULL,
   PRIMARY KEY (`composants_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 INSERT INTO `composants` (`composants_id`, `composants_modele`, `composants_nom`, `composants_adresse`, `composants_description`, `composants_polling`, `composants_actif`, `composants_etat`, `composants_etatdate`, `composants_correction`, `composants_precision`, `composants_divers`, `composants_maj`) VALUES
@@ -21,7 +21,7 @@ INSERT INTO `composants` (`composants_id`, `composants_modele`, `composants_nom`
 ('3', '32', 'MODE_NUIT', 'mode_nuit', 'Si mode-nuit=1, tout le monde fait dodo', '0', '1', '0', '2010-01-01 01:01:01', '', '0', '', '0');
 
 CREATE TABLE `composants_bannis` (
-  `composants_bannis_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `composants_bannis_id` smallint(6) unsigned NOT NULL AUTO_INCREMENT,
   `composants_bannis_norme` tinytext NOT NULL,
   `composants_bannis_adresse` tinytext NOT NULL,
   `composants_bannis_description` text NOT NULL,
@@ -29,11 +29,11 @@ CREATE TABLE `composants_bannis` (
 ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
 CREATE TABLE `composants_modele` (
-  `composants_modele_id` int(11) NOT NULL AUTO_INCREMENT,
+  `composants_modele_id` smallint(6) unsigned NOT NULL AUTO_INCREMENT,
   `composants_modele_nom` tinytext NOT NULL,
   `composants_modele_description` text NOT NULL,
   `composants_modele_norme` tinytext NOT NULL,
-  `composants_modele_graphe` int(11) NOT NULL,
+  `composants_modele_graphe` smallint(6) unsigned NOT NULL,
   PRIMARY KEY (`composants_modele_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=43 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
 INSERT INTO `composants_modele` (`composants_modele_id`, `composants_modele_nom`, `composants_modele_description`, `composants_modele_norme`, `composants_modele_graphe`) VALUES
@@ -79,7 +79,7 @@ INSERT INTO `composants_modele` (`composants_modele_id`, `composants_modele_nom`
 ('42', 'RFXPower', 'Mesure tension', 'RFX', '2');
 
 CREATE TABLE `config` (
-  `config_id` int(11) NOT NULL AUTO_INCREMENT,
+  `config_id` smallint(6) unsigned NOT NULL AUTO_INCREMENT,
   `config_nom` text NOT NULL,
   `config_valeur` text NOT NULL,
   `config_description` text NOT NULL,
@@ -131,7 +131,7 @@ INSERT INTO `logs` (`logs_id`, `logs_source`, `logs_description`, `logs_date`) V
 ('1', '0', 'installation', '2010-09-01 00:00:00');
 
 CREATE TABLE `macro` (
-  `macro_id` int(11) NOT NULL AUTO_INCREMENT,
+  `macro_id` smallint(6) unsigned NOT NULL AUTO_INCREMENT,
   `macro_nom` tinytext NOT NULL,
   `macro_description` text NOT NULL,
   `macro_conditions` text NOT NULL,
@@ -146,7 +146,7 @@ INSERT INTO `macro` (`macro_id`, `macro_nom`, `macro_description`, `macro_condit
 ('4', 'TEST - Log en mode nuit', 'Log un texte quand passage en mode nuit', '([CC#3#=#1])', '([AL#TEST : passage en mode nuit])', '1');
 
 CREATE TABLE `menu` (
-`menu_id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+`menu_id` smallint(6) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY ,
 `menu_ordre` int(11) NOT NULL ,
 `menu_nom` tinytext NOT NULL ,
 `menu_lien` tinytext NOT NULL
@@ -155,11 +155,11 @@ INSERT INTO `menu` (`menu_id`, `menu_ordre`, `menu_nom`, `menu_lien`) VALUES
 ('1', '1', 'test', 'test');
 
 CREATE TABLE `plan` (
-  `plan_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `plan_id` smallint(6) unsigned NOT NULL AUTO_INCREMENT,
   `plan_composant` bigint(20) NOT NULL,
   `plan_nomplan` text NOT NULL,
-  `plan_top` int(11) NOT NULL,
-  `plan_left` int(11) NOT NULL,
+  `plan_top` smallint(6) NOT NULL,
+  `plan_left` smallint(6) NOT NULL,
   `plan_visible` tinyint(4) NOT NULL,
   PRIMARY KEY (`plan_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
@@ -168,7 +168,7 @@ INSERT INTO `plan` (`plan_id`, `plan_composant`, `plan_nomplan`, `plan_top`, `pl
 
 CREATE TABLE `releve` (
   `releve_id` bigint(15) unsigned NOT NULL AUTO_INCREMENT,
-  `releve_composants` int(6) NOT NULL,
+  `releve_composants` smallint(6) unsigned NOT NULL,
   `releve_valeur` tinytext NOT NULL,
   `releve_dateheure` datetime NOT NULL,
   PRIMARY KEY (`releve_id`),
@@ -176,10 +176,10 @@ CREATE TABLE `releve` (
 ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
 CREATE TABLE `users` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `id` smallint(6) unsigned NOT NULL AUTO_INCREMENT,
   `login` tinytext NOT NULL,
   `pwd` tinytext NOT NULL,
-  `droits` int(11) NOT NULL,
+  `droits` smallint(6) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 INSERT INTO `users` (`id`, `login`, `pwd`, `droits`) VALUES
@@ -187,10 +187,10 @@ INSERT INTO `users` (`id`, `login`, `pwd`, `droits`) VALUES
 ('2', 'utilisateur', 'domos', '5'),
 ('3', 'visiteur', 'domos', '1');
 
-CREATE TABLE `domos`.`webcams` (
-`webcams_id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
-`webcams_nom` TINYTEXT NOT NULL ,
-`webcams_description` TEXT NOT NULL ,
-`webcams_lien` TEXT NOT NULL ,
-`webcams_accueil` TINYINT NOT NULL
+CREATE TABLE `webcams` (
+  `webcams_id` smallint(6) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+  `webcams_nom` TINYTEXT NOT NULL ,
+  `webcams_description` TEXT NOT NULL ,
+  `webcams_lien` TEXT NOT NULL ,
+  `webcams_accueil` TINYINT NOT NULL
 ) ENGINE = MYISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
