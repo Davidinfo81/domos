@@ -57,7 +57,7 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_A6B84F72C38EDAB06065F025DE777539"
+        "MsmKey" = "8:_AA8044E0CE21CCA78D781AC32C32ED05"
         "OwnerKey" = "8:_E3B2AE2880CD4B549D3991B9FBEB6371"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -100,7 +100,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_A6B84F72C38EDAB06065F025DE777539"
+        "OwnerKey" = "8:_E3B2AE2880CD4B549D3991B9FBEB6371"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -124,7 +124,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_E3B2AE2880CD4B549D3991B9FBEB6371"
+        "OwnerKey" = "8:_AA8044E0CE21CCA78D781AC32C32ED05"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -425,14 +425,14 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_A6B84F72C38EDAB06065F025DE777539"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_AA8044E0CE21CCA78D781AC32C32ED05"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
             "AssemblyAsmDisplayName" = "8:NCrontab, Version=0.2.10124.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_A6B84F72C38EDAB06065F025DE777539"
+                    "_AA8044E0CE21CCA78D781AC32C32ED05"
                     {
                     "Name" = "8:NCrontab.dll"
                     "Attributes" = "3:512"
@@ -625,14 +625,14 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Domos"
-        "ProductCode" = "8:{76AFE831-5243-47CB-9A11-3E65660A6864}"
-        "PackageCode" = "8:{BA5C2480-FFFF-453B-93A8-1BECDF00E2AB}"
+        "ProductCode" = "8:{DDC656F0-D910-4A61-92B4-C20243DABF79}"
+        "PackageCode" = "8:{D94105AF-F9F9-46A8-8577-113DE2C660FB}"
         "UpgradeCode" = "8:{A38D82A6-E5E0-49DC-8275-FC1DD4DFA04F}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.0.4"
+        "ProductVersion" = "8:1.0.5"
         "Manufacturer" = "8:Davidinfo"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://domos.googlecode.com"

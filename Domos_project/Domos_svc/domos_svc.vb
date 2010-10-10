@@ -22,6 +22,7 @@ Public Class domos_svc
     Public Shared Port_PLC, Port_X10, Port_RFX, Port_WIR, Port_WI2, socket_ip, WIR_adaptername As String
     Public Shared PLC_timeout, X10_timeout, Action_timeout, rfx_tpsentrereponse, socket_port, lastetat, WIR_res As Integer
     Public Shared heure_coucher_correction, heure_lever_correction As Integer
+    Public Shared logs_erreur_nb, logs_erreur_duree As Integer
     Public Shared gps_longitude, gps_latitude As String
     Dim WithEvents timer_pool, timer_timer As New System.Timers.Timer
     Dim err As String = ""
@@ -97,6 +98,8 @@ Public Class domos_svc
         gps_longitude = 0
         gps_latitude = 0
         etape_startup = 0
+        logs_erreur_nb = 3
+        logs_erreur_duree = 60
 
         svc_start()
     End Sub
@@ -225,6 +228,8 @@ Public Class domos_svc
                 heure_coucher_correction = table_config.Select("config_nom = 'heure_coucher_correction'")(0)("config_valeur")
                 gps_longitude = table_config.Select("config_nom = 'gps_longitude'")(0)("config_valeur")
                 gps_latitude = table_config.Select("config_nom = 'gps_latitude'")(0)("config_valeur")
+                logs_erreur_nb = table_config.Select("config_nom = 'logs_erreur_nb'")(0)("config_valeur")
+                logs_erreur_duree = table_config.Select("config_nom = 'logs_erreur_duree'")(0)("config_valeur")
                 log("     -> LOG_NIVEAU=" & log_niveau & " LOG_DESTINATION=" & log_dest, 0)
                 log("     -> WIR=" & Serv_WIR & " WI2=" & Serv_WI2 & " PLC=" & Serv_PLC & ":" & Port_PLC & " X10=" & Serv_X10 & ":" & Port_X10 & " RFX=" & Serv_RFX & ":" & Port_RFX, 0)
                 log("     -> Action_timeout=" & Action_timeout & " PLC_timeout=" & PLC_timeout & " X10_timeout=" & X10_timeout & " RFX_tpsentrereponse=" & rfx_tpsentrereponse & " Lastetat=" & lastetat, 0)
@@ -232,6 +237,7 @@ Public Class domos_svc
                 log("     -> longitude=" & gps_longitude & " latitude=" & gps_latitude, 0)
                 log("     -> WIR_res=" & WIR_res & " WIR_adaptername=" & WIR_adaptername, 0)
                 log("     -> Socket Activé=" & Serv_SOC & " IP=" & socket_ip & " Port=" & socket_port, 0)
+                log("     -> Logs erreur NB=" & logs_erreur_nb & " Logs erreur Duree=" & logs_erreur_duree, 0)
             Else
                 log("     -> ERR: pas de données récupérées : fermeture du programme", 1)
                 'svc_stop()
@@ -746,18 +752,21 @@ Public Class domos_svc
                         'ecrireevtlog("DBG: ca fait au moins x minutes " & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & ">" & tabletemp(0)("datetime").ToString, 3, 109)
                         'ca fait au moins x minutes qu'on a eu cette erreur, on supprime
                         'tabletemp(0).Item("datetime") = DateAdd(DateInterval.Hour, 1, Date.Now).ToString("yyyy-MM-dd HH:mm:ss")
-                        texte = texte & " (repetition " & tabletemp(0).Item("nombre").ToString & " fois)"
                         tabletemp(0).Delete()
-                    ElseIf tabletemp(0).Item("nombre").ToString >= "2" Then
+                    ElseIf CInt(tabletemp(0).Item("nombre").ToString) >= logs_erreur_nb Then
                         'ecrireevtlog("DBG: ca fait moins de x minutes " & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & ">" & tabletemp(0)("datetime").ToString & " et plus de 2 fois : " & tabletemp(0).Item("nombre").ToString, 3, 109)
-                        'ca fait moins de x minutes et + de 2 fois, on ne logue pas
+                        'ca fait moins de x minutes et + de logs_erreur_nb fois, on ne logue pas
                         tabletemp(0).Item("nombre") = CInt(tabletemp(0).Item("nombre").ToString) + 1
                         erreur_log = 0
                     Else
-                        'ca fait moins de x minutes et - de 2 fois, on logue (repeat)
+                        'ca fait moins de x minutes et - de logs_erreur_nb fois, on logue (repeat)
                         'ecrireevtlog("DBG: ca fait moins de x minutes " & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & ">" & tabletemp(0)("datetime").ToString & " et moins de 2 fois : " & tabletemp(0).Item("nombre").ToString, 3, 109)
                         tabletemp(0).Item("nombre") = CInt(tabletemp(0).Item("nombre").ToString) + 1
-                        texte = texte & " (2x)"
+                        If CInt(tabletemp(0).Item("nombre").ToString) < logs_erreur_nb Then
+                            texte = texte & " (" & tabletemp(0).Item("nombre") & "x -> erreur multiple)"
+                        Else
+                            texte = texte & " (" & tabletemp(0).Item("nombre") & "x -> erreur multiple, on ne logue plus jusqu'à " & tabletemp(0)("datetime").ToString & ")"
+                        End If
                     End If
                 Else
                     'ecrireevtlog("DBG: on a pas en memoire " & texte, 3, 109)
@@ -766,7 +775,7 @@ Public Class domos_svc
                     newRow = table_erreur.NewRow()
                     newRow.Item("texte") = texte
                     newRow.Item("nombre") = 1
-                    newRow.Item("datetime") = DateAdd(DateInterval.Minute, 60, Date.Now).ToString("yyyy-MM-dd HH:mm:ss")
+                    newRow.Item("datetime") = DateAdd(DateInterval.Minute, logs_erreur_duree, DateTime.Now).ToString("yyyy-MM-dd HH:mm:ss")
                     table_erreur.Rows.Add(newRow)
                     'ecrireevtlog("DBG: ajout en memoire de " & texte & " --> " & DateAdd(DateInterval.Minute, 60, Date.Now).ToString("yyyy-MM-dd HH:mm:ss"), 3, 109)
                 End If
