@@ -29,8 +29,12 @@ echo "<div class=cadregauche>";
 	echo "<tr><td colspan='2' align='left'><b> Les derniéres erreurs :</b></td></tr>";
 	$sql = "SELECT distinct logs_description, logs_date  from logs where logs_source = '2' order by logs_date desc limit 0,9 ";
 	$res = mysql_query ($sql);
-	if($res){while($row=mysql_fetch_array($res)){echo ("<tr><td align='center' width='140'>".$row['logs_date']."</td><td align=left>".substr($row['logs_description'],0,95)."...</td></tr>");}}
-	else {echo "<tr><td colspan='2'><br /><br /> Pas de logs <br /><br /><br /></td></tr>";}
+	if($res){
+		while($row=mysql_fetch_array($res)){
+			if(strlen($row['logs_description'])>95) {echo ("<tr><td align='center' width='140'>".$row['logs_date']."</td><td align=left>".substr($row['logs_description'],0,95)."...</td></tr>");}
+			else {echo ("<tr><td align='center' width='140'>".$row['logs_date']."</td><td align=left>".$row['logs_description']."</td></tr>");}
+		}
+	} else {echo "<tr><td colspan='2'><br /><br /> Pas de logs <br /><br /><br /></td></tr>";}
 	echo "</table>";
 	echo "<div class='lien'><a href=logs.html> ... </a></div>";
 	echo "</div>";

@@ -129,6 +129,14 @@ case "grapher" :
   			graphe_numerique($resultat_annee,$composants_id."-annee",dequote($composants_nom),"Cette année",925,200,0,1.3,"m/d H:i",80,0,1,0);		
 			break;
 		case 2 : //Cumul
+			//graphe_cumul($resultat_jour,$composants_id."-jour",dequote($composants_nom),"Dernieres 24 Heures",925,350,0,2,"H:i",45,0,1,1);
+ 			//graphe_cumul($resultat_semaine,$composants_id."-semaine",dequote($composants_nom),"Les 7 derniers jours",925,350,0,2,"D d H:i",85,0,1,0);
+ 			//graphe_cumul($resultat_mois,$composants_id."-mois",dequote($composants_nom),"Le dernier mois",925,350,0,2,"m/d H:i",80,0,4,1);
+ 			//graphe_cumul($resultat_annee,$composants_id."-annee",dequote($composants_nom),"Cette année",925,350,0,2,"m/d H:i",80,0,8,1);
+			graphe_compteur($resultat_jour,$composants_id."-jour",dequote($composants_nom),"Dernieres 24 Heures",925,350,0,2,"H:i",45);
+ 			graphe_compteur($resultat_semaine,$composants_id."-semaine",dequote($composants_nom),"Les 7 derniers jours",925,350,0,2,"D d H:i",85);
+ 			graphe_compteur($resultat_mois,$composants_id."-mois",dequote($composants_nom),"Le dernier mois",925,350,0,2,"m/d H:i",80);
+ 			graphe_compteur($resultat_annee,$composants_id."-annee",dequote($composants_nom),"Cette année",925,350,0,2,"m/d H:i",80);
 			break;
 		case 3 : //Numerique
  			graphe_numerique($resultat_jour,$composants_id."-jour",dequote($composants_nom),"Dernieres 24 Heures",925,350,0,25,"H:i",45,0,1,0);
