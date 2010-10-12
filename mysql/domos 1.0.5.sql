@@ -118,7 +118,8 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('30', 'gps_longitude', '48.8616', 'longitude de ta maison (calcul soleil)'),
 ('31', 'gps_latitude', '2.3517', 'Latitude de ta maison (calcul soleil)'),
 ('32', 'logs_erreur_nb', '3', 'Nb d erreurs identique a loguer pendant logs_erreur_duree'),
-('33', 'logs_erreur_duree', '60', 'Duree pendant laquelle on ne logue pas plus de logs_erreur_nb erreurs identiques');
+('33', 'logs_erreur_duree', '60', 'Duree pendant laquelle on ne logue pas plus de logs_erreur_nb erreurs identiques'),
+('34', 'menu_seticone', '1', 'Numero du set d icones pour le menu (www\\images\\menu\\x)');
 
 CREATE TABLE `logs` (
   `logs_id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -128,7 +129,7 @@ CREATE TABLE `logs` (
   PRIMARY KEY (`logs_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 INSERT INTO `logs` (`logs_id`, `logs_source`, `logs_description`, `logs_date`) VALUES
-('1', '0', 'installation', '2010-09-01 00:00:00');
+('1', '0', 'installation', '2010-10-01 00:00:00');
 
 CREATE TABLE `macro` (
   `macro_id` smallint(6) unsigned NOT NULL AUTO_INCREMENT,
