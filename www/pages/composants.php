@@ -67,10 +67,6 @@ case "gerer" :
 					x = mygrid.getSelectedId();
 					window.location.href='composants-grapherdyn-'+x+'.html'
 				}
-				function bannis() {
-					x = mygrid.getSelectedId();
-					window.location.href='composants_bannis.html'
-				}
 				function ajouter() {
 					mygrid.addRow((new Date()).valueOf(),['','','nom',1,'','',0,0,'','2000-01-01 00:00:00','','0','','0']);
 					setTimeout( \"ajouter2();\", 500);
@@ -94,7 +90,6 @@ case "gerer" :
 			<input type=\"button\" name=\"a1\" value=\"Ajouter\" onClick=\"ajouter()\" class=\"formsubmit\">
 			<input type=\"button\" name=\"a1\" value=\"Supprimer\" onClick=\"deletee()\" class=\"formsubmit\">
 			<input type=\"button\" name=\"a1\" value=\"Grapher\" onClick=\"grapher()\" class=\"formsubmit\">
-			<input type=\"button\" name=\"a1\" value=\"Bannis\" onClick=\"bannis()\" class=\"formsubmit\">
 			<input type=\"button\" name=\"a1\" value=\"Maj SVC\" onClick='sendsocket(\"([AS#maj_composants])\")' class=\"formsubmit\">
 		</div></td></tr>
 	";
