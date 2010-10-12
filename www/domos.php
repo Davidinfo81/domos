@@ -3,7 +3,8 @@
 	if(isset($_SESSION['user_id'])){
 		include("./include_php/config.php");
 		include ("./include_php/fonctions.php");
-		
+		$resultat = mysql_query("select config_valeur from config where config_nom='menu_seticone'");
+		$menuset = mysql_result($resultat,0,"config_valeur");
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -22,16 +23,20 @@
 <!--Context menu-->
     <div class="contextMenu" id="myMenufisheye" style="display:none;">
       <ul>
-        <li id="composants"><img src="images/menu/composants.gif" width=28/> Composants</li>
-        <li id="composants_bannis"><img src="images/menu/composants.gif" width=28/> Comp. Bannis</li>
-        <li id="modeles"><img src="images/_modele.png" width=28/> Modéles</li>
-        <li id="plans"><img src="images/menu/plans.gif" width=28 /> Plans</li>
-        <li id="macros"><img src="images/menu/macro.png" width=28 /> Macros</li>
-        <li id="menu"><img src="images/menu/menu.png" width=28 /> Menu</li>
-        <li id="users"><img src="images/menu/users.png" width=28 /> Users</li>
-        <li id="webcamsadmin"><img src="images/menu/webcam.png" width=28 /> Webcams</li>
-        <li id="configuration"><img src="images/menu/config.png" width=28 /> Configuration</li>
-        <li id="phpinfo"><img src="images/menu/info.png" width=28 /> phpinfo</li>
+      <?php
+      echo "
+        <li id=\"composants\"><img src=\"images/menu/$menuset/composants.gif\" width=28/> Composants</li>
+        <li id=\"composants_bannis\"><img src=\"images/menu/$menuset/composantsbanis.gif\" width=28/> Comp. Bannis</li>
+        <li id=\"modeles\"><img src=\"images/menu/$menuset/modele.png\" width=28/> Modéles</li>
+        <li id=\"plans\"><img src=\"images/menu/$menuset/plans.gif\" width=28 /> Plans</li>
+        <li id=\"macros\"><img src=\"images/menu/$menuset/macro.png\" width=28 /> Macros</li>
+        <li id=\"menu\"><img src=\"images/menu/$menuset/menu.png\" width=28 /> Menu</li>
+        <li id=\"users\"><img src=\"images/menu/$menuset/users.png\" width=28 /> Users</li>
+        <li id=\"webcamsadmin\"><img src=\"images/menu/$menuset/webcam.png\" width=28 /> Webcams</li>
+        <li id=\"configuration\"><img src=\"images/menu/$menuset/config.png\" width=28 /> Configuration</li>
+        <li id=\"phpinfo\"><img src=\"images/menu/$menuset/info.png\" width=28 /> phpinfo</li>
+        ";
+      ?>
       </ul>
     </div>
 	<script type="text/javascript">
@@ -59,20 +64,22 @@
 	<tr align="left" valign="middle" colspan="2"><td width="100%" height="5" style="background-image:url('images/bandeau_2.jpg');background-position:top left;background-repeat:no-repeat;">
 		<div id="fisheye" class="fisheye">
 				<div class="fisheyeContainter">
-					<a href="domos.html" class="fisheyeItem"><img src="images/menu/domos.png" /><span>Accueil</span></a>
 					<?php
+					echo"<a href=\"domos.html\" class=\"fisheyeItem\"><img src=\"images/menu/$menuset/domos.png\" /><span>Accueil</span></a>";
 					$resultat = mysql_query("select * from menu order by menu_ordre");
 					if($resultat){
 						while($row=mysql_fetch_array($resultat)){
 							echo "<a href=\"plan-".$row['menu_lien'].".html\" class=\"fisheyeItem\"><img src=\"images/plans/menu_".$row['menu_lien'].".png\" /><span>".$row['menu_nom']."</span></a>";
 						}
 					}
+					echo "
+					<a href=\"meteo.html\" class=\"fisheyeItem\"><img src=\"images/menu/$menuset/meteo.gif\" /><span>Météo</span></a>
+					<a href=\"calendrier.html\" class=\"fisheyeItem\"><img src=\"images/menu/$menuset/calendrier.png\" /><span>Calendrier</span></a>
+					<a href=\"logs.html\" class=\"fisheyeItem\"><img src=\"images/menu/$menuset/logs.png\" /><span>Logs</span></a>
+					<a href=\"webcams.html\" class=\"fisheyeItem\"><img src=\"images/menu/$menuset/webcam.png\" /><span>Webcams</span></a>
+					<a href=\"divers.html\" class=\"fisheyeItem\"><img src=\"images/menu/$menuset/display.png\" /><span>Divers</span></a>
+					";
 					?>
-					<a href="meteo.html" class="fisheyeItem"><img src="images/menu/meteo.gif" /><span>Météo</span></a>
-					<a href="calendrier.html" class="fisheyeItem"><img src="images/menu/calendrier.png" /><span>Calendrier</span></a>
-					<a href="logs.html" class="fisheyeItem"><img src="images/menu/logs.png" /><span>Logs</span></a>
-					<a href="webcams.html" class="fisheyeItem"><img src="images/menu/webcam.png" /><span>Webcams</span></a>
-					<a href="divers.html" class="fisheyeItem"><img src="images/menu/display.png" /><span>Divers</span></a>
 				</div>
 		</div>
 	</td>
