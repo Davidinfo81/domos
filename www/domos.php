@@ -25,10 +25,10 @@
       <ul>
       <?php
       echo "
-        <li id=\"composants\"><img src=\"images/menu/$menuset/composants.gif\" width=28/> Composants</li>
-        <li id=\"composants_bannis\"><img src=\"images/menu/$menuset/composantsbanis.gif\" width=28/> Comp. Bannis</li>
+        <li id=\"composants\"><img src=\"images/menu/$menuset/composants.png\" width=28/> Composants</li>
+        <li id=\"composants_bannis\"><img src=\"images/menu/$menuset/composantsbanis.png\" width=28/> Comp. Bannis</li>
         <li id=\"modeles\"><img src=\"images/menu/$menuset/modele.png\" width=28/> Modéles</li>
-        <li id=\"plans\"><img src=\"images/menu/$menuset/plans.gif\" width=28 /> Plans</li>
+        <li id=\"plans\"><img src=\"images/menu/$menuset/plans.png\" width=28 /> Plans</li>
         <li id=\"macros\"><img src=\"images/menu/$menuset/macro.png\" width=28 /> Macros</li>
         <li id=\"menu\"><img src=\"images/menu/$menuset/menu.png\" width=28 /> Menu</li>
         <li id=\"users\"><img src=\"images/menu/$menuset/users.png\" width=28 /> Users</li>
@@ -73,7 +73,7 @@
 						}
 					}
 					echo "
-					<a href=\"meteo.html\" class=\"fisheyeItem\"><img src=\"images/menu/$menuset/meteo.gif\" /><span>Météo</span></a>
+					<a href=\"meteo.html\" class=\"fisheyeItem\"><img src=\"images/menu/$menuset/meteo.png\" /><span>Météo</span></a>
 					<a href=\"calendrier.html\" class=\"fisheyeItem\"><img src=\"images/menu/$menuset/calendrier.png\" /><span>Calendrier</span></a>
 					<a href=\"logs.html\" class=\"fisheyeItem\"><img src=\"images/menu/$menuset/logs.png\" /><span>Logs</span></a>
 					<a href=\"webcams.html\" class=\"fisheyeItem\"><img src=\"images/menu/$menuset/webcam.png\" /><span>Webcams</span></a>
