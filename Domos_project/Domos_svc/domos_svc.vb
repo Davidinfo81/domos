@@ -751,8 +751,9 @@ Public Class domos_svc
                     If Date.Now.ToString("yyyy-MM-dd HH:mm:ss") > tabletemp(0)("datetime").ToString Then
                         'ecrireevtlog("DBG: ca fait au moins x minutes " & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & ">" & tabletemp(0)("datetime").ToString, 3, 109)
                         'ca fait au moins x minutes qu'on a eu cette erreur, on supprime
-                        'tabletemp(0).Item("datetime") = DateAdd(DateInterval.Hour, 1, Date.Now).ToString("yyyy-MM-dd HH:mm:ss")
-                        tabletemp(0).Delete()
+                        tabletemp(0).Item("datetime") = DateAdd(DateInterval.Hour, 1, Date.Now).ToString("yyyy-MM-dd HH:mm:ss")
+                        tabletemp(0).Item("nombre") = 1
+                        'tabletemp(0).Delete()
                     ElseIf CInt(tabletemp(0).Item("nombre").ToString) >= logs_erreur_nb Then
                         'ecrireevtlog("DBG: ca fait moins de x minutes " & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & ">" & tabletemp(0)("datetime").ToString & " et plus de 2 fois : " & tabletemp(0).Item("nombre").ToString, 3, 109)
                         'ca fait moins de x minutes et + de logs_erreur_nb fois, on ne logue pas
@@ -763,7 +764,7 @@ Public Class domos_svc
                         'ecrireevtlog("DBG: ca fait moins de x minutes " & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & ">" & tabletemp(0)("datetime").ToString & " et moins de 2 fois : " & tabletemp(0).Item("nombre").ToString, 3, 109)
                         tabletemp(0).Item("nombre") = CInt(tabletemp(0).Item("nombre").ToString) + 1
                         If CInt(tabletemp(0).Item("nombre").ToString) < logs_erreur_nb Then
-                            texte = texte & " (" & tabletemp(0).Item("nombre") & "x -> erreur multiple)"
+                            texte = texte & " (" & tabletemp(0).Item("nombre") & "x)"
                         Else
                             texte = texte & " (" & tabletemp(0).Item("nombre") & "x -> erreur multiple, on ne logue plus jusqu'à " & tabletemp(0)("datetime").ToString & ")"
                         End If
