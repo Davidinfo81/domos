@@ -1,5 +1,15 @@
 <?php
 	if(isset($_SESSION['user_id'])){
+		include("./include_php/config.php");
+		$resultat = mysql_query("select config_valeur from config where config_nom='socket_ip'");
+		$adresse = mysql_result($resultat,0,"config_valeur");
+		$resultat = mysql_query("select config_valeur from config where config_nom='socket_port'");
+		$port = mysql_result($resultat,0,"config_valeur");
+		$resultat = mysql_query("select config_valeur from config where config_nom='menu_seticone'");
+		$menuset = mysql_result($resultat,0,"config_valeur");
+
+		$action=isset($_GET["action"])?$_GET["action"]:(isset($_POST["action"])?$_POST["action"]:"gerer");
+		$macro_id=isset($_GET["macro_id"])?$_GET["macro_id"]:(isset($_POST["macro_id"])?$_POST["macro_id"]:"");
 ?>
 <div class="main">
  <table border="0" width="100%">
@@ -10,7 +20,7 @@
 	<!-- TITRE -->
         <table border="0" width="100%">
             <tr>
-              <td class="titre" align="left"><img src="images/_composants.gif" width="32" height="32" border="0"> Gestion des Macros/Timers </td>
+              <td class="titre" align="left"><img src="images/menu/<?php echo "$menuset"; ?>/macro.png" width="32" height="32" border="0"> Gestion des Macros/Timers </td>
               <td align="right"> </td>
             </tr>
         </table>
@@ -22,16 +32,6 @@
               <td width="100%" align="left" valign="top">
 				<table border="0" cellspacing="0" cellpadding="0" width="100%">
 <?php
-
-include("./include_php/config.php");
-$resultat = mysql_query("select config_valeur from config where config_nom='socket_ip'");
-$adresse = mysql_result($resultat,0,"config_valeur");
-$resultat = mysql_query("select config_valeur from config where config_nom='socket_port'");
-$port = mysql_result($resultat,0,"config_valeur");
-
-$action=isset($_GET["action"])?$_GET["action"]:(isset($_POST["action"])?$_POST["action"]:"gerer");
-$macro_id=isset($_GET["macro_id"])?$_GET["macro_id"]:(isset($_POST["macro_id"])?$_POST["macro_id"]:"");
-
 switch ($action) {
 case "gerer" :
 	echo "<tr height=\"23\" bgcolor=\"#5680CB\">

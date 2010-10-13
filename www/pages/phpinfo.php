@@ -1,5 +1,9 @@
 <?php
 	if(isset($_SESSION['user_id'])){ 
+		include("./include_php/config.php");
+		$resultat = mysql_query("select config_valeur from config where config_nom='menu_seticone'");
+		$menuset = mysql_result($resultat,0,"config_valeur");
+
 ?>
 <div class="main">
  <table border="0" width="100%">
@@ -10,7 +14,7 @@
 	<!-- TITRE -->
         <table border="0" width="100%">
             <tr>
-              <td class="titre" align="left"><img src="images/_divers.gif" width="32" height="32" border="0"> PHPINFO </td>
+              <td class="titre" align="left"><img src="images/menu/<?php echo "$menuset"; ?>/info.png" width="32" height="32" border="0"> PHPINFO </td>
               <td align="right"> </td>
             </tr>
         </table>

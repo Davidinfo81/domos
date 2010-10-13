@@ -1,5 +1,13 @@
 <?php
 	if(isset($_SESSION['user_id'])){ 
+		include("./include_php/config.php");
+		$action=isset($_GET["action"])?$_GET["action"]:(isset($_POST["action"])?$_POST["action"]:"rdc");
+		
+		$resultat = mysql_query("select config_valeur from config where config_nom='socket_ip'");
+		$adresse = mysql_result($resultat,0,"config_valeur");
+		$resultat = mysql_query("select config_valeur from config where config_nom='socket_port'");
+		$port = mysql_result($resultat,0,"config_valeur");
+
 ?>
 <div class="main">
  <table border="0" width="100%">
@@ -12,19 +20,12 @@
     <div class="contextMenu" id="myMenuplan">
       <ul>
         <li id="grapher"><img src="images/graphe.gif" width=16/> Graphes</li>
-        <li id="relever"><img src="images/_releve.png" width=16 /> Relevés</li>
+        <li id="relever"><img src="images/releve.png" width=16 /> Relevés</li>
         <li id="editer"><img src="images/modif.gif" width=16 /> Edition</li>
       </ul>
     </div>
     
 <?php
-include("./include_php/config.php");
-$action=isset($_GET["action"])?$_GET["action"]:(isset($_POST["action"])?$_POST["action"]:"rdc");
-
-$resultat = mysql_query("select config_valeur from config where config_nom='socket_ip'");
-$adresse = mysql_result($resultat,0,"config_valeur");
-$resultat = mysql_query("select config_valeur from config where config_nom='socket_port'");
-$port = mysql_result($resultat,0,"config_valeur");
 
 echo "<script type=\"text/javascript\">
 	function afficherResultats_releve(obj) {

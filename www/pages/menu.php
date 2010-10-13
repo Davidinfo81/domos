@@ -1,5 +1,11 @@
 <?php
 	if(isset($_SESSION['user_id'])){
+
+		include("./include_php/config.php");
+		$action=isset($_GET["action"])?$_GET["action"]:(isset($_POST["action"])?$_POST["action"]:"gerer");
+		$resultat = mysql_query("select config_valeur from config where config_nom='menu_seticone'");
+		$menuset = mysql_result($resultat,0,"config_valeur");
+
 ?>
 <div class="main">
  <table border="0" width="100%">
@@ -10,7 +16,7 @@
 	<!-- TITRE -->
         <table border="0" width="100%">
             <tr>
-              <td class="titre" align="left"><img src="images/_composants.gif" width="32" height="32" border="0"> Gestion du menu </td>
+              <td class="titre" align="left"><img src="images/menu/<?php echo "$menuset"; ?>/menu.png" width="32" height="32" border="0"> Gestion du menu </td>
               <td align="right"> </td>
             </tr>
         </table>
@@ -23,9 +29,6 @@
 				<table border="0" cellspacing="0" cellpadding="0" width="100%">
 				
 <?php
-
-include("./include_php/config.php");
-$action=isset($_GET["action"])?$_GET["action"]:(isset($_POST["action"])?$_POST["action"]:"gerer");
 
 switch ($action) {
 case "gerer" :
