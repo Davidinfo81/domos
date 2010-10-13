@@ -1,15 +1,5 @@
 <?php
 	if(isset($_SESSION['user_id'])){
-		include("./include_php/config.php");
-		$resultat = mysql_query("select config_valeur from config where config_nom='socket_ip'");
-		$adresse = mysql_result($resultat,0,"config_valeur");
-		$resultat = mysql_query("select config_valeur from config where config_nom='socket_port'");
-		$port = mysql_result($resultat,0,"config_valeur");
-		$resultat = mysql_query("select config_valeur from config where config_nom='menu_seticone'");
-		$menuset = mysql_result($resultat,0,"config_valeur");
-
-		$action=isset($_GET["action"])?$_GET["action"]:(isset($_POST["action"])?$_POST["action"]:"gerer");
-		$composants_id=isset($_GET["composants_id"])?$_GET["composants_id"]:(isset($_POST["composants_id"])?$_POST["composants_id"]:"");
 ?>
 <div class="main">
  <table border="0" width="100%">
@@ -20,7 +10,7 @@
 	<!-- TITRE -->
         <table border="0" width="100%">
             <tr>
-              <td class="titre" align="left"><img src="images/menu/<?php echo "$menuset"; ?>/composants.gif" width="32" height="32" border="0"> Gestion des Composants </td>
+              <td class="titre" align="left"><img src="images/_composants.gif" width="32" height="32" border="0"> Gestion des Composants </td>
               <td align="right"> </td>
             </tr>
         </table>
@@ -32,6 +22,16 @@
               <td width="100%" align="left" valign="top">
 				<table border="0" cellspacing="0" cellpadding="0" width="100%">
 <?php
+
+include("./include_php/config.php");
+$resultat = mysql_query("select config_valeur from config where config_nom='socket_ip'");
+$adresse = mysql_result($resultat,0,"config_valeur");
+$resultat = mysql_query("select config_valeur from config where config_nom='socket_port'");
+$port = mysql_result($resultat,0,"config_valeur");
+
+$action=isset($_GET["action"])?$_GET["action"]:(isset($_POST["action"])?$_POST["action"]:"gerer");
+$composants_id=isset($_GET["composants_id"])?$_GET["composants_id"]:(isset($_POST["composants_id"])?$_POST["composants_id"]:"");
+
 switch ($action) {
 case "gerer" :
 	echo "<tr height=\"23\" bgcolor=\"#5680CB\">
@@ -67,10 +67,6 @@ case "gerer" :
 					x = mygrid.getSelectedId();
 					window.location.href='composants-grapherdyn-'+x+'.html'
 				}
-				function bannis() {
-					x = mygrid.getSelectedId();
-					window.location.href='composants_bannis.html'
-				}
 				function ajouter() {
 					mygrid.addRow((new Date()).valueOf(),['','','nom',1,'','',0,0,'','2000-01-01 00:00:00','','0','','0']);
 					setTimeout( \"ajouter2();\", 500);
@@ -94,7 +90,6 @@ case "gerer" :
 			<input type=\"button\" name=\"a1\" value=\"Ajouter\" onClick=\"ajouter()\" class=\"formsubmit\">
 			<input type=\"button\" name=\"a1\" value=\"Supprimer\" onClick=\"deletee()\" class=\"formsubmit\">
 			<input type=\"button\" name=\"a1\" value=\"Grapher\" onClick=\"grapher()\" class=\"formsubmit\">
-			<input type=\"button\" name=\"a1\" value=\"Bannis\" onClick=\"bannis()\" class=\"formsubmit\">
 			<input type=\"button\" name=\"a1\" value=\"Maj SVC\" onClick='sendsocket(\"([AS#maj_composants])\")' class=\"formsubmit\">
 		</div></td></tr>
 	";
@@ -111,8 +106,10 @@ case "grapher" :
 	//recup des releves
 	$resultat_jour = mysql_query("select * from releve where releve_composants='$composants_id' and releve_dateheure>'".date('Y-m-d H:i:s',time() - (1 * 24 * 60 * 60))."' order by releve_id");
 	$resultat_semaine = mysql_query("select * from releve where releve_composants='$composants_id' and releve_dateheure>'".date('Y-m-d H:i:s',time() - (7 * 24 * 60 * 60))."' order by releve_id");
-	$resultat_mois = mysql_query("select * from releve where releve_composants='$composants_id' and releve_dateheure>'".date('Y-m-d H:i:s',time() - (31 * 24 * 60 * 60))."' order by releve_id");
-	$resultat_annee = mysql_query("select * from releve where releve_composants='$composants_id' and releve_dateheure>'".date('Y-m-d H:i:s',time() - (365 * 24 * 60 * 60))."' order by releve_id");
+	//$resultat_mois = mysql_query("select * from releve where releve_composants='$composants_id' and releve_dateheure>'".date('Y-m-d H:i:s',time() - (31 * 24 * 60 * 60))."' order by releve_id");
+	$resultat_mois = mysql_query("SELECT DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d %H:%i:%s' ) as releve_dateheure , AVG(`releve_valeur`) as releve_valeur FROM releve WHERE releve_composants='$composants_id' AND releve_dateheure>'".date('Y-m-d H:i:s',time() - (31 * 24 * 60 * 60))."' GROUP BY DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d %H' )");
+	//$resultat_annee = mysql_query("select * from releve where releve_composants='$composants_id' and releve_dateheure>'".date('Y-m-d H:i:s',time() - (365 * 24 * 60 * 60))."' order by releve_id");
+	$resultat_annee = mysql_query("SELECT DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d' ) as releve_dateheure , AVG(`releve_valeur`) as releve_valeur FROM releve WHERE releve_composants='$composants_id' AND releve_dateheure>'".date('Y-m-d H:i:s',time() - (365 * 24 * 60 * 60))."' GROUP BY DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d' )");
 
 	//suppression des anciens graphes
 	if (file_exists("./images/graphes/$composants_id-jour.png")) {unlink ("./images/graphes/$composants_id-jour.png");}
@@ -141,8 +138,10 @@ case "grapher" :
 		case 3 : //Numerique
  			graphe_numerique($resultat_jour,$composants_id."-jour",dequote($composants_nom),"Dernieres 24 Heures",925,350,0,25,"H:i",45,0,1,0);
  			graphe_numerique($resultat_semaine,$composants_id."-semaine",dequote($composants_nom),"Les 7 derniers jours",925,350,0,25,"D d H:i",85,0,1,0);
- 			graphe_numerique($resultat_mois,$composants_id."-mois",dequote($composants_nom),"Le dernier mois",925,350,0,25,"m/d H:i",80,0,4,1);
- 			graphe_numerique($resultat_annee,$composants_id."-annee",dequote($composants_nom),"Cette année",925,350,0,25,"m/d H:i",80,0,8,1);		
+ 			//graphe_numerique($resultat_mois,$composants_id."-mois",dequote($composants_nom),"Le dernier mois",925,350,0,25,"m/d H:i",80,0,4,1);
+ 			graphe_numerique($resultat_mois,$composants_id."-mois",dequote($composants_nom),"Le dernier mois (Moyenne par heure)",925,350,0,25,"Y/m/d",80,0,1,1);
+ 			//graphe_numerique($resultat_annee,$composants_id."-annee",dequote($composants_nom),"Cette année",925,350,0,25,"m/d H",80,0,8,1);
+			graphe_numerique($resultat_annee,$composants_id."-annee",dequote($composants_nom),"Cette année (Moyenne par jour)",925,350,0,25,"Y/m/d",80,0,1,1);
 			break;
 	}
 	echo "<tr height=\"23\" bgcolor=\"#5680CB\">

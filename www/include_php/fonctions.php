@@ -73,6 +73,120 @@ function graphe_numerique($resultat,$gnomimage,$gtitre,$gtitrex,$glarg,$ghaut,$g
 			if ($x=="ON") {$x=1;} 
 			elseif ($x=="OFF") {$x=0;}
 			$x=floatval($x);
+			if ($x<=$datay_min) {$datay_min=ceil($x-1);}
+			if ($x>=$datay_max) {$datay_max=ceil($x+3);}
+			$datay[] = $x;
+			$datax[] = strtotime(mysql_result($resultat,$i,"releve_dateheure"));
+			If ($gmoyenne) { //si on doit faire une courbe de moyenne par jour
+				If ($dataxmoy_tmp==substr(mysql_result($resultat,$i,"releve_dateheure"),0,10)) { // si on est le même jour, on ajoute à notre moyenne
+					$dataymoy_tmp = $dataymoy_tmp+$x;
+					$nbreleveparmoy_tmp++;
+				} else { //sinon on calcul la moyenne puis on reprend le compte
+					If ($nbreleveparmoy_tmp>0) {
+						$dataymoy[] = $dataymoy_tmp/$nbreleveparmoy_tmp;
+						$dataxmoy[] = strtotime($dataxmoy_tmp." 12:00");
+					} else {
+						$dataymoy[] = $x;
+						$dataxmoy[] = strtotime($dataxmoy_tmp." 12:00");
+					}
+					$dataxmoy_tmp = substr(mysql_result($resultat,$i,"releve_dateheure"),0,10);
+					$nbreleveparmoy_tmp=0;
+					$dataymoy_tmp=0;
+				}
+			}
+			if ($gnbvaleurreel>1) {$i=$i+$gnbvaleurreel-1;} // pour ne prendre un compte que les x elements qu'on veut
+		}
+		if ($gnbvaleurreel>1) {$end = strtotime(mysql_result($resultat,$i-$gnbvaleurreel,"releve_dateheure"));}
+		$graph = new Graph($glarg,$ghaut); // Create the new graph
+		$graph->SetMargin(40,40,30,$gmarge);
+		$graph->SetScale('datlin',$datay_min,$datay_max,$start,$end);
+		$graph->title->Set($gtitre);
+		$graph->SetAlphaBlending();
+		$graph->xaxis->scale->SetDateFormat($gdateformat);
+		$graph->xaxis->SetLabelAngle(90);
+		$graph->xaxis->SetPos("min"); //positionne l'axe X au plus bas de la valeur de Y
+		$graph->ygrid->Show(true,true);
+		$graph->ygrid->SetFill(true,'#EFEFEF@0.5','#BFCFFF@0.8');
+		$graph->ygrid->SetLineStyle('dashed'); // Des tirets pour les lignes : dashed / solid
+		$graph->xgrid->Show();
+		$graph->xgrid->SetLineStyle('dashed');
+ 		$line = new LinePlot($datay,$datax);
+ 		$line->SetLegend($gtitrex);
+ 		If ($gtypegraphe==0) {$line->SetStepStyle();}
+ 		$graph->legend->SetPos(0.01,0.02,'right','top');
+ 		$line->SetFillColor('lightblue@0.5');
+ 		$line->SetColor("blue");
+		$graph->Add($line);
+		If ($gmoyenne) {
+			//$line2 = new LinePlot($dataymoy,$dataxmoy);
+			$spline = new Spline($dataxmoy, $dataymoy);
+			list($newx,$newy) = $spline->Get($num);
+			$line2 = new LinePlot($newy,$newx);
+			
+			$line2->SetColor("red");
+			$graph->Add($line2);
+			
+			$line3 = new ScatterPlot($dataymoy,$dataxmoy);
+			$line3->mark->SetFillColor('red@0.3');
+			$line3->mark->SetColor('red@0.5');
+			$graph->Add($line3);
+
+			
+		}
+		$graph->Stroke("./images/graphes/".$gnomimage.".png");
+		//$graph->Stroke();
+	}
+}
+
+function graphe_cumul($resultat,$gnomimage,$gtitre,$gtitrex,$glarg,$ghaut,$gymin,$gymax,$gdateformat,$gmarge,$gmoyenne,$gnbvaleurreel,$gtypegraphe) {
+// Affiche une courbe des valeurs dans le temps
+	//$resultat : tableau de valeur+date
+	//$gnomimage : nom de l'image
+	//$gtitre : titre du graphe
+	//$gtitrex : titre de l'axe X
+	//$glarg : largeur du graphe
+	//$ghaut : hauteur du graphe
+	//$gymin : temperature min du graphe (Scale)
+	//$gymax : temperature max du graphe (Scale)
+	//$gdateformat : Format des dates de l'axe X
+	//$gmarge : marge basse
+	//$gmoyenne : 1/0 : moyenne par jour ?
+	//$gnbvaleurreel : nombre de valeur réelle à prendre en compte : 1 = toutes les valeurs, 3 = 1 sur 3...
+	//$gtypegraphe : type de graphe : 0=stepplot, 1=line
+		
+	require_once ("./jpgraph/jpgraph.php");
+	require_once ("./jpgraph/jpgraph_line.php");
+	require_once ("./jpgraph/jpgraph_date.php");
+	require_once ("./jpgraph/jpgraph_scatter.php");
+	require_once ("./jpgraph/jpgraph_regstat.php");
+ 
+
+	$num = mysql_num_rows($resultat);
+	if ($num>2 && $num>$gnbvaleurreel) {
+		$date_debut = mysql_result($resultat,0,"releve_dateheure");
+		$date_fin = mysql_result($resultat,$num-1,"releve_dateheure");
+	
+		if (file_exists("./images/graphes/".$gnomimage.".png")) {unlink ("./images/graphes/".$gnomimage.".png");}
+			
+		$start = strtotime($date_debut);
+		$end = strtotime($date_fin);
+		$datax=array();
+		$datay=array();
+		
+		$dataxmoy=array(); //tableaux pour les moyennes
+		$dataymoy=array();
+		$dataxmoy_tmp=substr(mysql_result($resultat,0,"releve_dateheure"),0,10); //date du jour du premier releve
+		$dataymoy_tmp=0;
+		$nbreleveparmoy_tmp=0;
+		
+		$datay_min=$gymin;
+		$datay_max=$gymax;
+		$nbreleveparmoy_tmp=0;
+		$x_prev=0;
+		for ($i=0;$i<$num;$i++)	{
+			$x=mysql_result($resultat,$i,"releve_valeur");
+			$x=floatval($x-$x_prev);
+			$x_prev=$x;
 			if ($x<=$datay_min) {$datay_min=$x-1;}
 			if ($x>=$datay_max) {$datay_max=$x+3;}
 			$datay[] = $x;
@@ -152,7 +266,7 @@ function graphe_compteur($resultat,$gnomimage,$gtitre,$gtitrex,$glarg,$ghaut,$gy
 	//$gmarge : marge basse
 	
 	require_once ("./jpgraph/jpgraph.php");
-	require_once ("'jpgraph/jpgraph_bar.php");
+	require_once ("./jpgraph/jpgraph_bar.php");
 	require_once ("./jpgraph/jpgraph_date.php");
 
 	$num = mysql_num_rows($resultat);
@@ -186,7 +300,7 @@ function graphe_compteur($resultat,$gnomimage,$gtitre,$gtitrex,$glarg,$ghaut,$gy
 		$graph->SetAlphaBlending();
 		
 		$graph->xaxis->scale->SetDateFormat($gdateformat);
-		$graph->xaxis->SetTickLabels($databarx);
+		$graph->xaxis->SetTickLabels($datax);
 		$graph->xaxis->SetTextLabelInterval(1);
 		$graph->xaxis->SetTextTickInterval(3);
 		$graph->xaxis->SetLabelAngle(90); // Set the angle for the labels to 90 degrees	
