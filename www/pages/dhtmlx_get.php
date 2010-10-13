@@ -20,7 +20,7 @@ case "composants" :
 			echo ("<row id='".$row['composants_id']."'>");
 			print ("<cell><![CDATA[");
 			//if ($num_releve>0) {print("<a href='composants-relever-".$row['composants_id'].".html' title='$num_releve Relevés'><img src='images/_releve.png' width=16 style='border:0;'></a> ");}
-			print("<a href='composants-relever-".$row['composants_id'].".html' title='$num_releve Relevés'><img src='images/_releve.png' width=16 style='border:0;'></a> ");
+			print("<a href='composants-relever-".$row['composants_id'].".html' title='$num_releve Relevés'><img src='images/releve.png' width=16 style='border:0;'></a> ");
 			if ($num_releve>0 && $row['composants_modele_graphe']>0) {print("<a href='composants-grapher-".$row['composants_id'].".html' title='Graphe'><img src='images/graphe.gif' width=16 style='border:0;'></a>");}
 			print ("]]></cell>");
 			print("<cell><![CDATA[".$row['composants_id']."]]></cell>");
