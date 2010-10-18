@@ -35,7 +35,7 @@ CREATE TABLE `composants_modele` (
   `composants_modele_norme` tinytext NOT NULL,
   `composants_modele_graphe` smallint(6) unsigned NOT NULL,
   PRIMARY KEY (`composants_modele_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=43 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+) ENGINE=MyISAM AUTO_INCREMENT=57 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
 INSERT INTO `composants_modele` (`composants_modele_id`, `composants_modele_nom`, `composants_modele_description`, `composants_modele_norme`, `composants_modele_graphe`) VALUES
 ('1', 'DS18B20', 'Capteur de temp&eacute;rature', 'WIR', '3'),
 ('2', 'DS2406_relais', 'Switch pour commander un relais', 'WIR', '1'),
@@ -76,7 +76,21 @@ INSERT INTO `composants_modele` (`composants_modele_id`, `composants_modele_nom`
 ('39', 'telecommande', 'Télécommande basique', 'RFX', '1'),
 ('40', 'DS2423_A', 'Compteur A du dualcounter', 'WIR', '2'),
 ('41', 'DS2423_B', 'Compteur B du dualcounter', 'WIR', '2'),
-('42', 'RFXPower', 'Mesure tension', 'RFX', '2');
+('42', 'RFXPower', 'Mesure tension', 'RFX', '2'),
+('43', 'ZIB_THE', 'Sonde Zibase Temperature', 'ZIB', '3'),
+('44', 'ZIB_BAT', 'Sonde Zibase Batterie', 'ZIB', '0'),
+('45', 'ZIB_LEV', 'Sonde Zibase Niveau de reception', 'ZIB', '0'),
+('46', 'ZIB_HUM', 'Sonde Zibase Humidité', 'ZIB', '0'),
+('47', 'ZIB_LNK', 'Etat de la zibase', 'ZIB', '0'),
+('48', 'ZIB_STA', 'Etat d un switch zibase', 'ZIB', '0'),
+('49', 'ZIB_TEMC', 'température de consigne thermostat zibase', 'ZIB', '0'),
+('50', 'ZIB_KWH', 'Sonde Zibase Energie totale', 'ZIB', '0'),
+('51', 'ZIB_KW', 'Sonde Zibase Energie instantanee', 'ZIB', '0'),
+('52', 'ZIB_TRA', 'Sonde Zibase Pluie Total', 'ZIB', '0'),
+('53', 'ZIB_CRA', 'Sonde Zibase Pluie Courant', 'ZIB', '0'),
+('54', 'ZIB_AWI', 'Sonde Zibase Vent Force', 'ZIB', '0'),
+('55', 'ZIB_DRT', 'Sonde Zibase Vent Direction', 'ZIB', '0'),
+('56', 'ZIB_UVL', 'Sonde Zibase UV Valeur', 'ZIB', '0');
 
 CREATE TABLE `config` (
   `config_id` smallint(6) unsigned NOT NULL AUTO_INCREMENT,
@@ -84,14 +98,14 @@ CREATE TABLE `config` (
   `config_valeur` text NOT NULL,
   `config_description` text NOT NULL,
   PRIMARY KEY (`config_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=32 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=36 DEFAULT CHARSET=latin1;
 INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_description`) VALUES
-('1', 'Serv_X10', '0', '0=desactive 1=active'),
-('2', 'Serv_WIR', '1', '0=desactive 1=active'),
-('3', 'Serv_PLC', '1', '0=desactive 1=active'),
-('4', 'Serv_RFX', '1', '0=desactive 1=active'),
+('1', 'Serv_X10', '1', 'X10 : 0=desactive 1=active'),
+('2', 'Serv_WIR', '1', '1-wire : 0=desactive 1=active'),
+('3', 'Serv_PLC', '1', 'PLC-BUS : 0=desactive 1=active'),
+('4', 'Serv_RFX', '1', 'RFXCOM receiver : 0=desactive 1=active'),
 ('5', 'X10_timeout', '500', 'Timeout pour attendre que le port X10 soit disponible en ecriture (Defaut : 500 = 5 sec)'),
-('6', 'Serv_WI2', '0', '0=desactive 1=active'),
+('6', 'Serv_WI2', '0', '1-wire2 : 0=desactive 1=active'),
 ('7', 'Port_PLC', 'COM9', 'Numero du port COM du PLCBUS-1141 : COM6'),
 ('8', 'Port_RFX', 'COM8', 'Adresse IP ou numero port COM : COM4'),
 ('9', 'Port_X10', 'COM1', 'Numero du port COM du X10-CM11 : COM1'),
@@ -101,7 +115,7 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('13', 'meteo_icone', '2', 'Numero du pack d icones meteo'),
 ('14', 'meteo_codevillereleve', 'FRXX0076', 'Code Ville Releve weather.com (FRXX0076)'),
 ('15', 'logs_nbparpage', '1000', 'Nb de logs/Releves a afficher par page'),
-('16', 'Serv_VIR', '1', '0=desactive 1=active'),
+('16', 'Serv_ZIB', '0', 'Zibase : 0=desactive 1=active'),
 ('17', 'Port_WIR', 'USB1', 'Nom du port de la cle USB WIR ex: USB1 ou COM1'),
 ('18', 'Port_WI2', 'USB2', 'Nom du port de la cle USB WI2 ex: USB1 ou COM1'),
 ('19', 'rfx_tpsentrereponse', '1500', 'Temps entre deux receptions de valeurs a prendre en compte (pour eviter les doublons/triplons) (1500 par defaut  = 1.5sec)'),
@@ -119,7 +133,8 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('31', 'gps_latitude', '2.3517', 'Latitude de ta maison (calcul soleil)'),
 ('32', 'logs_erreur_nb', '3', 'Nb d erreurs identique a loguer pendant logs_erreur_duree'),
 ('33', 'logs_erreur_duree', '60', 'Duree pendant laquelle on ne logue pas plus de logs_erreur_nb erreurs identiques'),
-('34', 'menu_seticone', '1', 'Numero du set d icones pour le menu (www\\images\\menu\\x)');
+('34', 'menu_seticone', '1', 'Numero du set d icones pour le menu (www\\images\\menu\\x)'),
+('35', 'Serv_TSK', '0', 'Tellstick : 0=desactive 1=active');
 
 CREATE TABLE `logs` (
   `logs_id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -151,7 +166,7 @@ CREATE TABLE `menu` (
 `menu_ordre` int(11) NOT NULL ,
 `menu_nom` tinytext NOT NULL ,
 `menu_lien` tinytext NOT NULL
-) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 INSERT INTO `menu` (`menu_id`, `menu_ordre`, `menu_nom`, `menu_lien`) VALUES
 ('1', '1', 'test', 'test');
 
@@ -163,7 +178,7 @@ CREATE TABLE `plan` (
   `plan_left` smallint(6) NOT NULL,
   `plan_visible` tinyint(4) NOT NULL,
   PRIMARY KEY (`plan_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 INSERT INTO `plan` (`plan_id`, `plan_composant`, `plan_nomplan`, `plan_top`, `plan_left`, `plan_visible`) VALUES
 ('1', '1', 'test_jour', '20', '20', '1');
 
