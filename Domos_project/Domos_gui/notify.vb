@@ -255,41 +255,50 @@ Public Class notify
         controller.ExecuteCommand(210)
     End Sub
 
-    '---------------------- TESTS ---------------------------
-    Dim xx10 As New x10
+    ''---------------------- TESTS ---------------------------
+    'Dim xx10 As New x10
 
+    'Private Sub X10openToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10openToolStripMenuItem.Click
+    '    Try
+    '        MsgBox(xx10.ouvrir("COM1"))
+    '    Catch ex As Exception
+    '        MsgBox(ex.Message)
+    '    End Try
+    'End Sub
+
+    'Private Sub X10closeToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10closeToolStripMenuItem.Click
+    '     Try
+    '        MsgBox(xx10.fermer())
+    '    Catch ex As Exception
+    '        MsgBox(ex.Message)
+    '    End Try
+
+    'End Sub
+
+    'Private Sub X10a1onToolstripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10a1onToolstripMenuItem.Click
+    '    Try
+    '        MsgBox(xx10.ecrire("A1", "ON", 0))
+    '    Catch ex As Exception
+    '        MsgBox(ex.Message)
+    '    End Try
+
+    'End Sub
+
+    'Private Sub X10a1offToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10a1offToolStripMenuItem.Click
+    '    Try
+    '        MsgBox(xx10.ecrire("A1", "OFF", 0))
+    '    Catch ex As Exception
+    '        MsgBox(ex.Message)
+    '    End Try
+
+    'End Sub
+
+    Dim zibase As New zibasemodule
     Private Sub X10openToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10openToolStripMenuItem.Click
-        Try
-            MsgBox(xx10.ouvrir("COM1"))
-        Catch ex As Exception
-            MsgBox(ex.Message)
-        End Try
+        zibase.lancer()
     End Sub
 
     Private Sub X10closeToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10closeToolStripMenuItem.Click
-         Try
-            MsgBox(xx10.fermer())
-        Catch ex As Exception
-            MsgBox(ex.Message)
-        End Try
-
-    End Sub
-
-    Private Sub X10a1onToolstripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10a1onToolstripMenuItem.Click
-        Try
-            MsgBox(xx10.ecrire("A1", "ON", 0))
-        Catch ex As Exception
-            MsgBox(ex.Message)
-        End Try
-
-    End Sub
-
-    Private Sub X10a1offToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10a1offToolStripMenuItem.Click
-        Try
-            MsgBox(xx10.ecrire("A1", "OFF", 0))
-        Catch ex As Exception
-            MsgBox(ex.Message)
-        End Try
-
+        zibase.fermer()
     End Sub
 End Class

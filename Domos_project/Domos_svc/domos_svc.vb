@@ -15,10 +15,11 @@ Public Class domos_svc
     Shared rfxcom As New rfxcom
     Shared plcbus As New plcbus
     Shared x10 As New x10
+    Shared zibase As New zibasemodule
 
     'variable interne au script
     Public Shared table_config, table_composants, table_composants_bannis, table_macros, table_timer, table_thread, table_erreur As New DataTable
-    Public Shared Serv_DOMOS, Serv_WIR, Serv_WI2, Serv_PLC, Serv_X10, Serv_RFX, Serv_VIR, Serv_SOC As Boolean
+    Public Shared Serv_DOMOS, Serv_WIR, Serv_WI2, Serv_PLC, Serv_X10, Serv_RFX, Serv_ZIB, Serv_TSK, Serv_SOC As Boolean
     Public Shared Port_PLC, Port_X10, Port_RFX, Port_WIR, Port_WI2, socket_ip, WIR_adaptername As String
     Public Shared PLC_timeout, X10_timeout, Action_timeout, rfx_tpsentrereponse, socket_port, lastetat, WIR_res As Integer
     Public Shared heure_coucher_correction, heure_lever_correction As Integer
@@ -82,6 +83,8 @@ Public Class domos_svc
         Serv_PLC = False
         Serv_X10 = False
         Serv_RFX = False
+        Serv_ZIB = False
+        Serv_TSK = False
         Serv_DOMOS = False
         Serv_SOC = False
         log_niveau = "0-1-2-3-4-5-6-7-8-9-A-B-C-D-E-F" 'log tous les msgs
@@ -208,7 +211,8 @@ Public Class domos_svc
                 Serv_PLC = table_config.Select("config_nom = 'Serv_PLC'")(0)("config_valeur")
                 Serv_X10 = table_config.Select("config_nom = 'Serv_X10'")(0)("config_valeur")
                 Serv_RFX = table_config.Select("config_nom = 'Serv_RFX'")(0)("config_valeur")
-                Serv_VIR = table_config.Select("config_nom = 'Serv_VIR'")(0)("config_valeur")
+                Serv_ZIB = table_config.Select("config_nom = 'Serv_ZIB'")(0)("config_valeur")
+                Serv_TSK = table_config.Select("config_nom = 'Serv_TSK'")(0)("config_valeur")
                 Serv_SOC = table_config.Select("config_nom = 'Serv_SOC'")(0)("config_valeur")
                 Port_RFX = table_config.Select("config_nom = 'Port_RFX'")(0)("config_valeur")
                 Port_X10 = table_config.Select("config_nom = 'Port_X10'")(0)("config_valeur")
@@ -231,7 +235,8 @@ Public Class domos_svc
                 logs_erreur_nb = table_config.Select("config_nom = 'logs_erreur_nb'")(0)("config_valeur")
                 logs_erreur_duree = table_config.Select("config_nom = 'logs_erreur_duree'")(0)("config_valeur")
                 log("     -> LOG_NIVEAU=" & log_niveau & " LOG_DESTINATION=" & log_dest, 0)
-                log("     -> WIR=" & Serv_WIR & " WI2=" & Serv_WI2 & " PLC=" & Serv_PLC & ":" & Port_PLC & " X10=" & Serv_X10 & ":" & Port_X10 & " RFX=" & Serv_RFX & ":" & Port_RFX, 0)
+                log("     -> WIR=" & Serv_WIR & " WI2=" & Serv_WI2 & " PLC=" & Serv_PLC & ":" & Port_PLC & " X10=" & Serv_X10 & ":" & Port_X10, 0)
+                log("     -> ZIB=" & Serv_ZIB & " TSK=" & Serv_TSK & " RFX=" & Serv_RFX & ":" & Port_RFX, 0)
                 log("     -> Action_timeout=" & Action_timeout & " PLC_timeout=" & PLC_timeout & " X10_timeout=" & X10_timeout & " RFX_tpsentrereponse=" & rfx_tpsentrereponse & " Lastetat=" & lastetat, 0)
                 log("     -> heure_lever_correction=" & heure_lever_correction & " heure_coucher_correction=" & heure_coucher_correction, 0)
                 log("     -> longitude=" & gps_longitude & " latitude=" & gps_latitude, 0)
@@ -316,7 +321,7 @@ Public Class domos_svc
             log("", 0)
 
             '----- recupération de la liste des composants actifs -----
-            etape_startup = 9
+            etape_startup = 20
             log("SQL : Récupération de la liste des composants actifs :", 0)
             log("SQL : Récupération de la liste des composants actifs", -1)
             Dim Condition_service As String = ""
@@ -325,7 +330,8 @@ Public Class domos_svc
             If Not Serv_WI2 Then Condition_service &= " AND composants_modele_norme<>'WI2'"
             If Not Serv_X10 Then Condition_service &= " AND composants_modele_norme<>'X10'"
             If Not Serv_RFX Then Condition_service &= " AND composants_modele_norme<>'RFX'"
-            If Not Serv_VIR Then Condition_service &= " AND composants_modele_norme<>'VIR'"
+            If Not Serv_ZIB Then Condition_service &= " AND composants_modele_norme<>'ZIB'"
+            If Not Serv_TSK Then Condition_service &= " AND composants_modele_norme<>'TSK'"
             err = Table_maj_sql(table_composants, "SELECT composants.*,composants_modele.* FROM composants,composants_modele WHERE composants_modele=composants_modele_id AND composants_actif='1'" & Condition_service)
             If err <> "" Then
                 log("SQL : " & err, 1)
@@ -363,7 +369,7 @@ Public Class domos_svc
             End If
 
             '---------- Initialisation des heures du soleil -------
-            etape_startup = 10
+            etape_startup = 21
             log("Initialisation des heures du soleil", 0)
             'soleil.City("Algrange")
             soleil.City_gps(gps_longitude, gps_latitude)
@@ -414,7 +420,7 @@ Public Class domos_svc
 
 
             '---------- Ajout d'un handler sur la modification de l'etat d'un composant -------
-            etape_startup = 11
+            etape_startup = 22
             log("Lancement de l'handler sur l etat des composants", 0)
             AddHandler table_composants.ColumnChanged, New DataColumnChangeEventHandler(AddressOf table_composants_changed)
             log("", 0)
@@ -438,7 +444,7 @@ Public Class domos_svc
             log("", 0)
 
             '----- recupération de la liste des macros -----
-            etape_startup = 12
+            etape_startup = 23
             log("SQL : Récupération de la liste des macros :", 0)
             log("SQL : Récupération de la liste des macros", -1)
             err = Table_maj_sql(table_macros, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions NOT LIKE '%CT#%'")
@@ -461,7 +467,7 @@ Public Class domos_svc
             log("", 0)
 
             '----- recupération de la liste des timers -----
-            etape_startup = 13
+            etape_startup = 24
             log("SQL : Récupération de la liste des timers :", 0)
             log("SQL : Récupération de la liste des timers", -1)
             err = Table_maj_sql(table_timer, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions LIKE '%CT#%'")
@@ -484,11 +490,11 @@ Public Class domos_svc
                 Else
                     log("     -> Aucun timer trouvé", 0)
                 End If
+                log("", 0)
             End If
-            log("", 0)
 
             '---------- RFXCOM : Lancement du Handler et paramétrage -------
-            etape_startup = 14
+            etape_startup = 25
             If Serv_RFX Then
                 log("RFX : Lancement et paramétrage du RFXCOM", 0)
                 log("RFX : Lancement et paramétrage du RFXCOM", -1)
@@ -514,11 +520,26 @@ Public Class domos_svc
                 If STRGS.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err, 0)
                 'err = rfxcom.ecrire(&HF0, rfxcom.SWVERS)
                 'If STR.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err)
+                log("", 0)
             End If
-            log("", 0)
+
+            '---------- Lancement de la zibase -------
+            etape_startup = 26
+            If Serv_ZIB Then
+                err = zibase.lancer()
+                If STRGS.Left(err, 4) = "ERR:" Then
+                    Serv_ZIB = False 'desactivation du ZIB car erreur de lancement
+                    log("ZIB : " & err, 2)
+                    log("     -> Désactivation du servive ZIB", 0)
+                Else
+                    log("ZIB : " & err, 0)
+                End If
+                log("ZIB : " & err, -1)
+                log("", 0)
+            End If
 
             '---------- Initialisation du Socket -------
-            etape_startup = 15
+            etape_startup = 30
             If Serv_SOC Then
                 err = socket.ouvrir(socket_ip, socket_port)
                 If STRGS.Left(err, 4) = "ERR:" Then
@@ -533,7 +554,7 @@ Public Class domos_svc
             End If
 
             '---------- Lancement du pooling -------
-            etape_startup = 16
+            etape_startup = 31
             log("Lancement du Pool", 0)
             log("Lancement du Pool", -1)
             timer_pool = New System.Timers.Timer
@@ -541,7 +562,7 @@ Public Class domos_svc
             timer_pool.Interval = 1000
             timer_pool.Start()
             '---------- Lancement du timer -------
-            etape_startup = 17
+            etape_startup = 32
             log("Lancement du Timer", 0)
             log("Lancement du Timer", -1)
             timer_timer = New System.Timers.Timer
@@ -573,7 +594,7 @@ Public Class domos_svc
             log("", 0)
 
             '---------- arret du timer -------
-            If etape_startup > 17 Then
+            If etape_startup > 32 Then
                 log("Arret du Timer :", 0)
                 log("Arret du Timer", -1)
                 timer_timer.Stop()
@@ -581,7 +602,7 @@ Public Class domos_svc
                 log("     -> Arrété", 0)
             End If
             '---------- arret du pool -------
-            If etape_startup > 16 Then
+            If etape_startup > 31 Then
                 log("Arret du Pool :", 0)
                 log("Arret du Pool", -1)
                 timer_pool.Stop()
@@ -590,7 +611,7 @@ Public Class domos_svc
             End If
 
             '---------- liberation du Socket -------
-            If etape_startup > 15 Then
+            If etape_startup > 30 Then
                 If Serv_SOC Then
                     log("SOC : Fermeture de la connexion : ", 0)
                     err = socket.fermer()
@@ -688,6 +709,20 @@ Public Class domos_svc
                         log(" -> X10 Fermeture : " & err, 0)
                     End If
                     log("X10 Fermeture : " & err, -1)
+                End If
+            End If
+
+            '---------- liberation de la zibase -------
+            If etape_startup > 26 Then
+                If Serv_X10 Then
+                    log("ZIB : Fermeture de la connexion : ", 0)
+                    err = x10.fermer()
+                    If STRGS.Left(err, 4) = "ERR:" Then
+                        log(" -> ZIB Fermeture : " & err, 2)
+                    Else
+                        log(" -> ZIB Fermeture : " & err, 0)
+                    End If
+                    log("ZIB Fermeture : " & err, -1)
                 End If
             End If
 
@@ -907,7 +942,8 @@ Public Class domos_svc
                 If Not Serv_WI2 Then Condition_service &= " AND composants_modele_norme<>'WI2'"
                 If Not Serv_X10 Then Condition_service &= " AND composants_modele_norme<>'X10'"
                 If Not Serv_RFX Then Condition_service &= " AND composants_modele_norme<>'RFX'"
-                If Not Serv_VIR Then Condition_service &= " AND composants_modele_norme<>'VIR'"
+                If Not Serv_ZIB Then Condition_service &= " AND composants_modele_norme<>'ZIB'"
+                If Not Serv_TSK Then Condition_service &= " AND composants_modele_norme<>'TSK'"
                 err = Table_maj_sql(table_temp, "SELECT composants.*,composants_modele.* FROM composants,composants_modele WHERE composants_modele=composants_modele_id AND composants_actif='1'" & Condition_service)
                 If err <> "" Then
                     log("MAJ: SQL : ERR: " & err, 0)
@@ -1236,17 +1272,13 @@ Public Class domos_svc
                                 y.Name = "poll_" & tabletemp(i)("composants_id")
                                 thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "POL", y)
                                 y.Start()
-                            Case "2263-2264" 'PLC : MicroModule lampes
-                                'valeur = plcbus.ecrire(tabletemp(i)("composants_adresse").ToString, "STATUS_REQUEST", 0, 0)
-                                'If STR.Left(valeur, 4) = "ERR:" Then log("POL : " & valeur)
+                            Case "2267-2268", "2263-2264" 'PLC : MicroModule lampes ou MicroModule Appareils
                                 Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "STATUS_REQUEST", "", "", "")
                                 y = New Thread(AddressOf ecrire.action)
                                 y.Name = "ecrire_" & tabletemp(i)("composants_id")
                                 thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
                                 y.Start()
-                            Case "2267-2268" 'PLC : MicroModule Appareils
-                                'valeur = plcbus.ecrire(tabletemp(i)("composants_adresse").ToString, "STATUS_REQUEST", 0, 0)
-                                'If STR.Left(valeur, 4) = "ERR:" Then log("POL : " & valeur)
+                            Case "ZIB_STA" 'ZIB : switch
                                 Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "STATUS_REQUEST", "", "", "")
                                 y = New Thread(AddressOf ecrire.action)
                                 y.Name = "ecrire_" & tabletemp(i)("composants_id")
