@@ -42,18 +42,27 @@ echo "<script type=\"text/javascript\">
 		XHR.appendData('message', message);
 		XHR.appendData('adresse', \"$adresse\");
 		XHR.appendData('port', \"$port\");
-		XHR.sendAndLoad('pages/actions.php', 'POST', afficherResultats_socket);	
+		XHR.sendAndLoad('pages/actions.php', 'POST', afficherResultats_socket);
 	}
 	function sendtexte() {
 		document.getElementById('ack').innerHTML='In progress';
-		sendsocket(document.sendformaction.texte.value);	
+		sendsocket(document.sendformaction.texte.value);
 	}
 	function sendsql() {
 		document.getElementById('ack').innerHTML='In progress';
 		var XHR = new XHRConnection();
 		XHR.appendData('tache', \"sql\");
 		XHR.appendData('message', document.sendformsql.texte.value);
-		XHR.sendAndLoad('pages/actions.php', 'POST', afficherResultats_socket);	
+		XHR.sendAndLoad('pages/actions.php', 'POST', afficherResultats_socket);
+	}
+	function senddumpreleve(compress) {
+		document.getElementById('ack').innerHTML='In progress';
+		var XHR = new XHRConnection();
+		XHR.appendData('tache', \"dump\");
+		XHR.appendData('detail', \"composantreleve\");
+		XHR.appendData('composants_id', document.sendformreleve.texte.value);
+		XHR.appendData('compression', compress);
+		XHR.sendAndLoad('pages/actions.php', 'POST', afficherResultats_socket);
 	}
 	function senddump(message,compress) {
 		document.getElementById('ack').innerHTML='In progress';
@@ -61,7 +70,7 @@ echo "<script type=\"text/javascript\">
 		XHR.appendData('tache', \"dump\");
 		XHR.appendData('detail', message);
 		XHR.appendData('compression', compress);
-		XHR.sendAndLoad('pages/actions.php', 'POST', afficherResultats_socket);	
+		XHR.sendAndLoad('pages/actions.php', 'POST', afficherResultats_socket);
 	}
 	function refreshselectdump() {
 		document.getElementById('ack').innerHTML='In progress';
@@ -95,7 +104,7 @@ echo "<script type=\"text/javascript\">
 echo "
 Arrêt du service : <a href=javascript:sendsocket(\"([AS#stop])\")>STOP</a> <br /><br />
 Redémarrage du service : <a href=javascript:sendsocket(\"([AS#restart])\")>RESTART</a> <br /><br />
-Maj des tables : <a href=javascript:sendsocket(\"([AS#maj_all])\")>ALL</a> - <a href=javascript:sendsocket(\"([AS#maj_composants])\")>Composants</a> - <a href=javascript:sendsocket(\"([AS#maj_composants_bannis])\")>Cmp bannis</a> - <a href=javascript:sendsocket(\"([AS#maj_macro])\")>Macros</a> - <a href=javascript:sendsocket(\"([AS#maj_timer])\")>Timers</a> <br /><br />
+Maj des tables : <a href=javascript:sendsocket(\"([AS#maj])\")>MAJ</a> <br /><br />
 Affichage des tables : <a href=javascript:sendsocket(\"([AS#afftables])\")>AFFTABLES</a> <br /><br />
 Envoyer une action : <form name='sendformaction'><input type='text' name='texte' value='([AL#test])' style='width: 500px;'/> <input type=button value='Send' class=\"formsubmit\" onClick='sendtexte();'></form>
 Envoyer une requete SQL : <form name='sendformsql'><input type='text' name='texte' value=\"delete from logs where logs_description like '%empty%'\" style='width: 500px;'/> <input type=button value='Send' class=\"formsubmit\" onClick='sendsql();'></form>
@@ -104,7 +113,9 @@ Dump SQL complet : <a href=javascript:senddump(\"complet\",\"true\")>Compréssé</
 Dump SQL avec insertion complete : <a href=javascript:senddump(\"complet_insertioncomplete\",\"true\")>Compréssé</a> | <a href=javascript:senddump(\"complet_insertioncomplete\",\"false\")>Normal</a> <br /><br />
 Dump SQL complet sans les logs : <a href=javascript:senddump(\"completsanslogs\",\"true\")>Compréssé</a> | <a href=javascript:senddump(\"completsanslogs\",\"false\")>Normal</a> <br /><br />
 Dump SQL complet sans les logs et relevés : <a href=javascript:senddump(\"completsanslogsreleves\",\"true\")>Compréssé</a> | <a href=javascript:senddump(\"completsanslogsreleves\",\"false\")>Normal</a> <br /><br />
-Restaurer un backup SQL : <form name='restobackup'><div id='selectdump' class='selectdump'><select name='selecteddump' id='selecteddump'><option>Aucun</option></select></div><input type=button value='Restaurer' class=\"formsubmit\"  onClick='restaurerbackup()'> <input type='button' value='Refresh' class='formsubmit' onClick='refreshselectdump();'></form>";
+Restaurer un backup SQL : <form name='restobackup'><div id='selectdump' class='selectdump'><select name='selecteddump' id='selecteddump'><option>Aucun</option></select></div><input type=button value='Restaurer' class=\"formsubmit\"  onClick='restaurerbackup()'> <input type='button' value='Refresh' class='formsubmit' onClick='refreshselectdump();'></form>
+<br /><br />
+Dump des relevés du composant ID : <form name='sendformreleve'><input type='text' name='texte' value='1' style='width: 100px;'/> <input type=button value='Send Compress' class=\"formsubmit\" onClick='senddumpreleve(true);'><input type=button value='Send Normal' class=\"formsubmit\" onClick='senddumpreleve(false);'></form>";
 
 //Affichage du cadre ack
 echo "<div class=\"ack\" id=\"ack\">RAS</div>";

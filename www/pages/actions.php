@@ -30,13 +30,13 @@ case "releve" :
 
 case "socket" :
 	$message=!empty($_REQUEST["message"])?$_REQUEST["message"]:"([AL#Erreurtransmission])";
-	$adresse=!empty($_REQUEST["adresse"])?$_REQUEST["adresse"]:"192.168.0.1";
+	$adresse=!empty($_REQUEST["adresse"])?$_REQUEST["adresse"]:"192.168.1.20";
 	$port=!empty($_REQUEST["port"])?$_REQUEST["port"]:"3852";
 	socket($message,$adresse,$port);
 	break;
 
 case "sql" :
-	$message=!empty($_REQUEST["message"])?$_REQUEST["message"]:"";
+	$message=!empty($_REQUEST["message"])?$_REQUEST["message"]:"([AL#Erreurtransmission])";
 	mysql_query($message);
 	echo "OK";
 	break;
@@ -45,6 +45,37 @@ case "dump" :
 	$detail=!empty($_REQUEST["detail"])?$_REQUEST["detail"]:"";
 	$compression=!empty($_REQUEST["compression"])?$_REQUEST["compression"]:"false";
 	switch ($detail) {
+		case "composantreleve" :
+			$composants_id=!empty($_REQUEST["composants_id"])?$_REQUEST["composants_id"]:"1";
+			if ($compression=="true") {
+				$backup_file = '../backup/SQL_domos_releve_composant_'.$composants_id.'_'.date("Ymd").'.sql.gz';
+				$fp = gzopen($backup_file, 'w');
+			} else {
+				$backup_file = '../backup/SQL_domos_'.$composants_id.'_'.date("Ymd").'.sql';
+				$fp = fopen($backup_file, 'w');
+			}
+			$result=mysql_query("SHOW COLUMNS FROM releve");
+			$num_results=mysql_numrows($result);
+			$insertions_debut = "INSERT INTO `releve` (";
+			while($row=mysql_fetch_array($result)){if ($row[0]<>"releve_id") {$insertions_debut .= "`".$row[0]."`, ";};}
+			$insertions_debut = substr($insertions_debut, 0, -2);
+			$insertions_debut .= ") VALUES";
+			$req_table = mysql_query("SELECT * FROM releve WHERE releve_composants=".$composants_id) or die(mysql_error());
+			$nbr_champs = mysql_num_fields($req_table);
+			$nbr_ligne = mysql_num_rows($req_table);
+			$j=1;
+			while ($ligne = mysql_fetch_array($req_table)) {
+				$insertions = "(";
+				for ($i=1; $i<$nbr_champs; $i++) {$insertions .= "`" . mysql_real_escape_string($ligne[$i]) . "`, ";}
+				$insertions = substr($insertions, 0, -2);
+				$insertions .= ");\n";
+				if ($compression=="true") {gzwrite($fp, $insertions_debut.$insertions);} else {fwrite($fp, $insertions_debut.$insertions);}
+				$j=$j+1;
+			}
+			if ($compression=="true") {gzclose($fp);} else {fclose($fp);}
+			echo "OK";
+			break;
+
 		case "complet" :
 			//exec("mysqldump –opt –host=localhost –databases=domos –user=domos –password=domos > ../Domos.sql");
 			$tables = mysql_query('SHOW TABLES FROM domos') or die(mysql_error());
