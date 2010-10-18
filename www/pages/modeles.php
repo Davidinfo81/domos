@@ -50,6 +50,8 @@
 				mygrid.getCombo(0).put('PLC','PLCBUS');
 				mygrid.getCombo(0).put('RFX','RFXCOM');
 				mygrid.getCombo(0).put('X10','X10');
+				mygrid.getCombo(0).put('ZIB','ZIBASE');
+				mygrid.getCombo(0).put('TSK','TELLSTICK');
 				mygrid.getCombo(2).put(0,'Aucun');
 				mygrid.getCombo(2).put(1,'On-Off');
 				mygrid.getCombo(2).put(2,'Cumul');
