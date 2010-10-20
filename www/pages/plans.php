@@ -14,7 +14,7 @@
 	<!-- TITRE -->
         <table border="0" width="100%">
             <tr>
-              <td class="titre" align="left"><img src="images/menu/<?php echo "$menuset"; ?>/plans.gif" width="32" height="32" border="0"> Gestion des Plans </td>
+              <td class="titre" align="left"><img src="images/menu/<?php echo "$menuset"; ?>/plans.png" width="32" height="32" border="0"> Gestion des Plans </td>
               <td align="right"> </td>
             </tr>
         </table>
