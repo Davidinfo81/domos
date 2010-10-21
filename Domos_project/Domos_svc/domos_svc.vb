@@ -1242,7 +1242,8 @@ Public Class domos_svc
                     date_pooling = DateAndTime.Now.AddSeconds(tabletemp(i)("composants_polling")) 'on initilisae
                     tabletemp(i)("timer") = date_pooling.ToString("yyyy-MM-dd HH:mm:ss")
                     '--- test pour savoir si un thread est deja lancé sur ce composant ---
-                    Dim x = table_thread.Select("composant_id = '" & tabletemp(i)("composants_id") & "' AND source='POL'")
+                    'Dim x = table_thread.Select("composant_id = '" & tabletemp(i)("composants_id") & "' AND source='POL'")
+                    Dim x = table_thread.Select("composant_id = '" & tabletemp(i)("composants_id") & "'")
                     If x.GetUpperBound(0) < 0 Then
                         Select Case tabletemp(i)("composants_modele_nom").ToString() 'choix de l'action en fonction du modele
                             Case "DS18B20" 'WIR ou WI2 : capteur de temperature
@@ -1250,7 +1251,7 @@ Public Class domos_svc
                                 'POL_DS18B20.Execute()
                                 y = New Thread(AddressOf POL_DS18B20.Execute)
                                 y.Name = "poll_" & tabletemp(i)("composants_id")
-                                thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "POL", y)
+                                thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
                                 y.Start()
                             Case "DS2406_relais" 'WIR ou WI2 : etat d'un relais
                                 log("POL : ERR: DS2406_Relais pas encore géré", 2)
@@ -1258,19 +1259,19 @@ Public Class domos_svc
                                 Dim POL_DS2406_capteur As POL_DS2406_capteur = New POL_DS2406_capteur(tabletemp(i)("composants_id"))
                                 y = New Thread(AddressOf POL_DS2406_capteur.Execute)
                                 y.Name = "poll_" & tabletemp(i)("composants_id")
-                                thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "POL", y)
+                                thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
                                 y.Start()
                             Case "DS2423_A" 'WIR ou WI2 : compteur A
                                 Dim POL_DS2423 As POL_DS2423 = New POL_DS2423(tabletemp(i)("composants_id"), True)
                                 y = New Thread(AddressOf POL_DS2423.Execute)
                                 y.Name = "poll_" & tabletemp(i)("composants_id")
-                                thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "POL", y)
+                                thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
                                 y.Start()
                             Case "DS2423_B" 'WIR ou WI2 : compteur B
                                 Dim POL_DS2423 As POL_DS2423 = New POL_DS2423(tabletemp(i)("composants_id"), False)
                                 y = New Thread(AddressOf POL_DS2423.Execute)
                                 y.Name = "poll_" & tabletemp(i)("composants_id")
-                                thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "POL", y)
+                                thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
                                 y.Start()
                             Case "2267-2268", "2263-2264" 'PLC : MicroModule lampes ou MicroModule Appareils
                                 Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "STATUS_REQUEST", "", "", "")
