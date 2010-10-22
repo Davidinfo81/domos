@@ -36,7 +36,7 @@
 //
 //------------------------------------------------------------------------
 // define('CACHE_DIR','/tmp/jpgraph_cache/');
-define('TTF_DIR','C:/windows/fonts/');
+// define('TTF_DIR','/usr/share/fonts/truetype/');
 // define('MBTTF_DIR','/usr/share/fonts/truetype/');
 
 //-------------------------------------------------------------------------
