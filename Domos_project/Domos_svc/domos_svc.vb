@@ -786,7 +786,7 @@ Public Class domos_svc
                     If Date.Now.ToString("yyyy-MM-dd HH:mm:ss") > tabletemp(0)("datetime").ToString Then
                         'ecrireevtlog("DBG: ca fait au moins x minutes " & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & ">" & tabletemp(0)("datetime").ToString, 3, 109)
                         'ca fait au moins x minutes qu'on a eu cette erreur, on supprime
-                        tabletemp(0).Item("datetime") = DateAdd(DateInterval.Hour, 1, Date.Now).ToString("yyyy-MM-dd HH:mm:ss")
+                        tabletemp(0).Item("datetime") = DateAdd(DateInterval.Minute, logs_erreur_duree, DateTime.Now).ToString("yyyy-MM-dd HH:mm:ss")
                         tabletemp(0).Item("nombre") = 1
                         'tabletemp(0).Delete()
                     ElseIf CInt(tabletemp(0).Item("nombre").ToString) >= logs_erreur_nb Then
@@ -1300,8 +1300,10 @@ Public Class domos_svc
 
     Private Sub timer()
         Try
+            Dim heure As String
+            heure = DateAndTime.Now.ToString("HH:mm:ss")
             '--- HEURES DU SOLEIL --> Composant virtuel JOUR ---
-            If STRGS.Right(var_soleil_lever, 8) = DateAndTime.Now.ToString("HH:mm:ss") Then 'si lever du soleil
+            If STRGS.Right(var_soleil_lever, 8) = heure Then 'si lever du soleil
                 Dim tabletemp = table_composants.Select("composants_adresse = 'jour'")
                 If tabletemp.GetLength(0) = 1 Then
                     tabletemp(0)("composants_etat") = "1" 'maj du composant virtuel JOUR
@@ -1310,7 +1312,7 @@ Public Class domos_svc
                     log("TIMER : ERR: Maj composant virtuel JOUR=1 : Non trouvé", 2)
                     tables_aff() 'affichage des tables car pas normal qu'on est pas le composant JOUR
                 End If
-            ElseIf STRGS.Right(var_soleil_coucher, 8) = DateAndTime.Now.ToString("HH:mm:ss") Then 'si coucher du soleil
+            ElseIf STRGS.Right(var_soleil_coucher, 8) = heure Then 'si coucher du soleil
                 Dim tabletemp = table_composants.Select("composants_adresse = 'jour'")
                 If tabletemp.GetLength(0) = 1 Then
                     tabletemp(0)("composants_etat") = "0" 'maj du composant virtuel JOUR
@@ -1321,7 +1323,7 @@ Public Class domos_svc
                 End If
             End If
             '--- HEURES DU SOLEIL CORRIGEES --> Composant virtuel JOUR2 ---
-            If STRGS.Right(var_soleil_lever2, 8) = DateAndTime.Now.ToString("HH:mm:ss") Then 'si lever du soleil corrige
+            If STRGS.Right(var_soleil_lever2, 8) = heure Then 'si lever du soleil corrige
                 Dim tabletemp = table_composants.Select("composants_adresse = 'jour2'")
                 If tabletemp.GetLength(0) = 1 Then
                     tabletemp(0)("composants_etat") = "1" 'maj du composant virtuel JOUR2
@@ -1330,7 +1332,7 @@ Public Class domos_svc
                     log("TIMER : ERR: Maj composant virtuel JOUR2=1 : Non trouvé", 2)
                     tables_aff() 'affichage des tables car pas normal qu'on est pas le composant JOUR2
                 End If
-            ElseIf STRGS.Right(var_soleil_coucher2, 8) = DateAndTime.Now.ToString("HH:mm:ss") Then 'si coucher du soleil corrige
+            ElseIf STRGS.Right(var_soleil_coucher2, 8) = heure Then 'si coucher du soleil corrige
                 Dim tabletemp = table_composants.Select("composants_adresse = 'jour2'")
                 If tabletemp.GetLength(0) = 1 Then
                     tabletemp(0)("composants_etat") = "0" 'maj du composant virtuel JOUR2
@@ -1342,7 +1344,7 @@ Public Class domos_svc
             End If
 
             '--- Actions à faire chaque jour à minuit ---
-            If DateAndTime.Now.ToString("HH:mm:ss") = "00:01:00" Then
+            If heure = "00:01:00" Then
                 'Calcul de l'heure de lever et coucher du soleil
                 Me.soleil.CalculateSun()
                 var_soleil_lever = Me.soleil.Sunrise
