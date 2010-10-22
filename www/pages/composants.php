@@ -112,34 +112,34 @@ case "grapher" :
 	//dessin des graphes
 	switch ($composants_modele_graphe) {
 		case 1 : //ON/OFF
-			$resultat_jour = mysql_query("select * from releve where releve_composants='$composants_id' and releve_dateheure>'".date('Y-m-d H:i:s',time() - (1 * 24 * 60 * 60))."' order by releve_id");
-			$resultat_semaine = mysql_query("select * from releve where releve_composants='$composants_id' and releve_dateheure>'".date('Y-m-d H:i:s',time() - (7 * 24 * 60 * 60))."' order by releve_id");
-			$resultat_mois = mysql_query("SELECT DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d %H:%i:%s' ) as releve_dateheure , AVG(CASE WHEN releve_valeur='ON' THEN '1' ELSE '0' END) as releve_valeur FROM releve WHERE releve_dateheure>'".date('Y-m-d H:i:s',time() - (31 * 24 * 60 * 60))."' GROUP BY DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d %H' )");
-			$resultat_annee = mysql_query("SELECT DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d' ) as releve_dateheure , AVG(CASE WHEN releve_valeur='ON' THEN '1' ELSE '0' END) as releve_valeur FROM releve WHERE releve_dateheure>'".date('Y-m-d H:i:s',time() - (365 * 24 * 60 * 60))."' GROUP BY DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d' )");
-			graphe_numerique($resultat_jour,$composants_id."-jour",dequote($composants_nom),"Dernieres 24 Heures",925,200,0,1.3,"H:i",45,0,1,0);
-			graphe_numerique($resultat_semaine,$composants_id."-semaine",dequote($composants_nom),"Les 7 derniers jours",925,200,0,1.3,"D d H:i",85,0,1,0);
-			graphe_numerique($resultat_mois,$composants_id."-mois",dequote($composants_nom),"Le dernier mois (Moyenne par heure)",925,200,-0.1,1.01,"Y/m/d",80,0,1,0);
-			graphe_numerique($resultat_annee,$composants_id."-annee",dequote($composants_nom),"Cette année (Moyenne par jour)",925,200,-0.1,1.01,"Y/m/d",80,0,1,0);		
+			$resultat_jour = mysql_query("select releve_dateheure, IF(releve_valeur='ON','1','0') as releve_valeur from releve where releve_composants='$composants_id' and releve_dateheure>'".date('Y-m-d H:i:s',time() - (1 * 24 * 60 * 60))."' order by releve_dateheure");
+			$resultat_semaine = mysql_query("select releve_dateheure, IF(releve_valeur='ON','1','0') as releve_valeur from releve where releve_composants='$composants_id' and releve_dateheure>'".date('Y-m-d H:i:s',time() - (7 * 24 * 60 * 60))."' order by releve_dateheure");
+			$resultat_mois = mysql_query("SELECT DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d %H:%i:%s' ) as releve_dateheure , AVG(CASE WHEN releve_valeur='ON' THEN '1' ELSE '0' END) as releve_valeur FROM releve WHERE releve_dateheure>'".date('Y-m-d H:i:s',time() - (31 * 24 * 60 * 60))."' GROUP BY DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d %H' ) order by releve_dateheure");
+			$resultat_annee = mysql_query("SELECT DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d' ) as releve_dateheure , AVG(CASE WHEN releve_valeur='ON' THEN '1' ELSE '0' END) as releve_valeur FROM releve WHERE releve_dateheure>'".date('Y-m-d H:i:s',time() - (365 * 24 * 60 * 60))."' GROUP BY DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d' ) order by releve_dateheure");
+			graphe_numerique($resultat_jour,$composants_id."-jour",dequote($composants_nom),"Dernieres 24 Heures",925,140,0,1.1,"H:i",45,0,1,0);
+			graphe_numerique($resultat_semaine,$composants_id."-semaine",dequote($composants_nom),"Les 7 derniers jours",925,180,0,1.1,"D d H:i",85,0,1,0);
+			graphe_numerique($resultat_mois,$composants_id."-mois",dequote($composants_nom),"Le dernier mois (Moyenne par heure)",925,170,0,1.1,"Y/m/d",80,0,1,0);
+			graphe_numerique($resultat_annee,$composants_id."-annee",dequote($composants_nom),"Cette année (Moyenne par jour)",925,170,0,1.1,"Y/m/d",80,0,1,0);
 			break;
 		case 2 : //Cumul
-			$resultat_jour = mysql_query("select * from releve where releve_composants='$composants_id' and releve_dateheure>'".date('Y-m-d H:i:s',time() - (1 * 24 * 60 * 60))."' order by releve_id");
-			$resultat_semaine = mysql_query("select * from releve where releve_composants='$composants_id' and releve_dateheure>'".date('Y-m-d H:i:s',time() - (7 * 24 * 60 * 60))."' order by releve_id");
-			$resultat_mois = mysql_query("SELECT DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d %H:%i:%s' ) as releve_dateheure , AVG(`releve_valeur`) as releve_valeur FROM releve WHERE releve_composants='$composants_id' AND releve_dateheure>'".date('Y-m-d H:i:s',time() - (31 * 24 * 60 * 60))."' GROUP BY DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d %H' )");
-			$resultat_annee = mysql_query("SELECT DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d' ) as releve_dateheure , AVG(`releve_valeur`) as releve_valeur FROM releve WHERE releve_composants='$composants_id' AND releve_dateheure>'".date('Y-m-d H:i:s',time() - (365 * 24 * 60 * 60))."' GROUP BY DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d' )");
+			//$resultat_jour = mysql_query("select * from releve where releve_composants='$composants_id' and releve_dateheure>'".date('Y-m-d H:i:s',time() - (1 * 24 * 60 * 60))."' order by releve_dateheure");
+			$resultat_semaine = mysql_query("select DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d %H:%i' ) as releve_dateheure, ( MAX( `releve_valeur` ) - MIN( `releve_valeur` ) ) AS releve_valeur FROM releve where releve_composants='$composants_id' and releve_dateheure>'".date('Y-m-d H:i:s',time() - (7 * 24 * 60 * 60))."' GROUP BY DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d %H:%i' ) order by releve_dateheure");
+			//$resultat_mois = mysql_query("SELECT DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d %H:%i:%s' ) as releve_dateheure , AVG(`releve_valeur`) as releve_valeur FROM releve WHERE releve_composants='$composants_id' AND releve_dateheure>'".date('Y-m-d H:i:s',time() - (31 * 24 * 60 * 60))."' GROUP BY DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d %H' ) order by releve_dateheure");
+			//$resultat_annee = mysql_query("SELECT DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d' ) as releve_dateheure , AVG(`releve_valeur`) as releve_valeur FROM releve WHERE releve_composants='$composants_id' AND releve_dateheure>'".date('Y-m-d H:i:s',time() - (365 * 24 * 60 * 60))."' GROUP BY DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d' ) order by releve_dateheure");
 			//graphe_cumul($resultat_jour,$composants_id."-jour",dequote($composants_nom),"Dernieres 24 Heures",925,350,0,2,"H:i",45,0,1,1);
  			//graphe_cumul($resultat_semaine,$composants_id."-semaine",dequote($composants_nom),"Les 7 derniers jours",925,350,0,2,"D d H:i",85,0,1,0);
  			//graphe_cumul($resultat_mois,$composants_id."-mois",dequote($composants_nom),"Le dernier mois",925,350,0,2,"m/d H:i",80,0,4,1);
  			//graphe_cumul($resultat_annee,$composants_id."-annee",dequote($composants_nom),"Cette année",925,350,0,2,"m/d H:i",80,0,8,1);
-			graphe_compteur($resultat_jour,$composants_id."-jour",dequote($composants_nom),"Dernieres 24 Heures",925,350,0,2,"H:i",45);
+			//graphe_compteur($resultat_jour,$composants_id."-jour",dequote($composants_nom),"Dernieres 24 Heures",925,350,0,2,"H:i",45);
 			graphe_compteur($resultat_semaine,$composants_id."-semaine",dequote($composants_nom),"Les 7 derniers jours",925,350,0,2,"D d H:i",85);
-			graphe_compteur($resultat_mois,$composants_id."-mois",dequote($composants_nom),"Le dernier mois",925,350,0,2,"m/d H:i",80);
-			graphe_compteur($resultat_annee,$composants_id."-annee",dequote($composants_nom),"Cette année",925,350,0,2,"m/d H:i",80);
+			//graphe_compteur($resultat_mois,$composants_id."-mois",dequote($composants_nom),"Le dernier mois",925,350,0,2,"m/d H:i",80);
+			//graphe_compteur($resultat_annee,$composants_id."-annee",dequote($composants_nom),"Cette année",925,350,0,2,"m/d H:i",80);
 			break;
 		case 3 : //Numerique
-			$resultat_jour = mysql_query("select * from releve where releve_composants='$composants_id' and releve_dateheure>'".date('Y-m-d H:i:s',time() - (1 * 24 * 60 * 60))."' order by releve_id");
-			$resultat_semaine = mysql_query("select * from releve where releve_composants='$composants_id' and releve_dateheure>'".date('Y-m-d H:i:s',time() - (7 * 24 * 60 * 60))."' order by releve_id");
-			$resultat_mois = mysql_query("SELECT DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d %H:%i:%s' ) as releve_dateheure , AVG(`releve_valeur`) as releve_valeur FROM releve WHERE releve_composants='$composants_id' AND releve_dateheure>'".date('Y-m-d H:i:s',time() - (31 * 24 * 60 * 60))."' GROUP BY DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d %H' )");
-			$resultat_annee = mysql_query("SELECT DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d' ) as releve_dateheure , AVG(`releve_valeur`) as releve_valeur FROM releve WHERE releve_composants='$composants_id' AND releve_dateheure>'".date('Y-m-d H:i:s',time() - (365 * 24 * 60 * 60))."' GROUP BY DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d' )");
+			$resultat_jour = mysql_query("select * from releve where releve_composants='$composants_id' and releve_dateheure>'".date('Y-m-d H:i:s',time() - (1 * 24 * 60 * 60))."' order by releve_dateheure");
+			$resultat_semaine = mysql_query("select * from releve where releve_composants='$composants_id' and releve_dateheure>'".date('Y-m-d H:i:s',time() - (7 * 24 * 60 * 60))."' order by releve_dateheure");
+			$resultat_mois = mysql_query("SELECT DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d %H:%i:%s' ) as releve_dateheure , AVG(`releve_valeur`) as releve_valeur FROM releve WHERE releve_composants='$composants_id' AND releve_dateheure>'".date('Y-m-d H:i:s',time() - (31 * 24 * 60 * 60))."' GROUP BY DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d %H' ) order by releve_dateheure");
+			$resultat_annee = mysql_query("SELECT DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d' ) as releve_dateheure , AVG(`releve_valeur`) as releve_valeur FROM releve WHERE releve_composants='$composants_id' AND releve_dateheure>'".date('Y-m-d H:i:s',time() - (365 * 24 * 60 * 60))."' GROUP BY DATE_FORMAT(`releve_dateheure`,  '%Y/%m/%d' ) order by releve_dateheure");
 			graphe_numerique($resultat_jour,$composants_id."-jour",dequote($composants_nom),"Dernieres 24 Heures",925,350,0,25,"H:i",45,0,1,0);
 			graphe_numerique($resultat_semaine,$composants_id."-semaine",dequote($composants_nom),"Les 7 derniers jours",925,350,0,25,"D d H:i",85,0,1,0);
 			graphe_numerique($resultat_mois,$composants_id."-mois",dequote($composants_nom),"Le dernier mois (Moyenne par heure)",925,350,0,25,"Y/m/d",80,0,1,1);

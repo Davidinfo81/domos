@@ -38,21 +38,20 @@ function graphe_numerique($resultat,$gnomimage,$gtitre,$gtitrex,$glarg,$ghaut,$g
 	//$gmoyenne : 1/0 : moyenne par jour ?
 	//$gnbvaleurreel : nombre de valeur réelle à prendre en compte : 1 = toutes les valeurs, 3 = 1 sur 3...
 	//$gtypegraphe : type de graphe : 0=stepplot, 1=line
-		
+
 	require_once ("./jpgraph/jpgraph.php");
 	require_once ("./jpgraph/jpgraph_line.php");
 	require_once ("./jpgraph/jpgraph_date.php");
 	require_once ("./jpgraph/jpgraph_scatter.php");
 	require_once ("./jpgraph/jpgraph_regstat.php");
  
-
 	$num = mysql_num_rows($resultat);
 	if ($num>2 && $num>$gnbvaleurreel) {
 		$date_debut = mysql_result($resultat,0,"releve_dateheure");
 		$date_fin = mysql_result($resultat,$num-1,"releve_dateheure");
-	
+
 		if (file_exists("./images/graphes/".$gnomimage.".png")) {unlink ("./images/graphes/".$gnomimage.".png");}
-			
+
 		$start = strtotime($date_debut);
 		$end = strtotime($date_fin);
 		$datax=array();
@@ -63,17 +62,14 @@ function graphe_numerique($resultat,$gnomimage,$gtitre,$gtitrex,$glarg,$ghaut,$g
 		$dataxmoy_tmp=substr(mysql_result($resultat,0,"releve_dateheure"),0,10); //date du jour du premier releve
 		$dataymoy_tmp=0;
 		$nbreleveparmoy_tmp=0;
-		
+
 		$datay_min=$gymin;
 		$datay_max=$gymax;
 		$nbreleveparmoy_tmp=0;
 		for ($i=0;$i<$num;$i++)	{
-			//$x=floatval(mysql_result($resultat,$i,"releve_valeur"));
 			$x=mysql_result($resultat,$i,"releve_valeur");
-			if ($x=="ON") {$x=1;} 
-			elseif ($x=="OFF") {$x=0;}
 			$x=floatval($x);
-			if ($x<=$datay_min) {$datay_min=ceil($x-1);}
+			if ($x<$datay_min) {$datay_min=ceil($x-1);}
 			if ($x>=$datay_max) {$datay_max=ceil($x+3);}
 			$datay[] = $x;
 			$datax[] = strtotime(mysql_result($resultat,$i,"releve_dateheure"));
@@ -130,8 +126,6 @@ function graphe_numerique($resultat,$gnomimage,$gtitre,$gtitrex,$glarg,$ghaut,$g
 			$line3->mark->SetFillColor('red@0.3');
 			$line3->mark->SetColor('red@0.5');
 			$graph->Add($line3);
-
-			
 		}
 		$graph->Stroke("./images/graphes/".$gnomimage.".png");
 		//$graph->Stroke();
@@ -275,47 +269,55 @@ function graphe_compteur($resultat,$gnomimage,$gtitre,$gtitrex,$glarg,$ghaut,$gy
 		$date_fin = mysql_result($resultat,$num-1,"releve_dateheure");
 	
 		if (file_exists("./images/graphes/".$gnomimage.".png")) {unlink ("./images/graphes/".$gnomimage.".png");}
-			
+
 		$start = strtotime($date_debut);
 		$end = strtotime($date_fin);
 		$datax=array();
 		$datay=array();
 		$datay_min=$gymin;
 		$datay_max=$gymax;
-		for ($i=0;$i<$num;$i++)	{
+		$x_first = floatval(mysql_result($resultat,0,"releve_valeur"));
+		for ($i=1;$i<$num;$i++)	{
 			$x=floatval(mysql_result($resultat,$i,"releve_valeur"));
 			if ($x<$datay_min) {$datay_min=$x-2;}
 			if ($x>$datay_max) {$datay_max=$x+2;}
-			$datay[] = $x;
+			$datay[] = $x-$x_first;
 			$datax[] = strtotime(mysql_result($resultat,$i,"releve_dateheure"));
 		}
-		
-		//$data=array(10,32,23,22,15,15,-5,23,25,32,20,12);
-		//$xdata=array($start+100,$start+110,$start+135,$start+175,$start+225,$start+275,$start+315,$start+350,$start+395,$start+400,$start+412,$start+525);
-		
-		$graph = new Graph($glarg,$ghaut); // Create the new graph
+
+//		$datay_min=-10;
+//		$datay_max=50;
+//		$start = strtotime($date_debut);
+//		$end = $start+400;
+//		$datay=array(10,32,23,22,15,15,5,23,25,32);
+//		$datax=array($start,$start+110,$start+135,$start+175,$start+225,$start+275,$start+315,$start+350,$start+395,$start+400);
+
+		$graph = new Graph($glarg,$ghaut);
 		$graph->SetMargin(40,40,30,$gmarge);
-		$graph->SetScale('datlin',$datay_min,$datay_max,$start,$end);
+		//$graph->SetScale('datlin',$datay_min,$datay_max,$start,$end);
+		$graph->SetScale('datlin',$datay_min,$datay_max);
 		$graph->title->Set($gtitre);
 		$graph->SetAlphaBlending();
-		
-		$graph->xaxis->scale->SetDateFormat($gdateformat);
+
+		$graph->xaxis->SetPos("min");
+		//$graph->xaxis->scale->SetDateFormat($gdateformat);
+		$graph->xaxis->scale->SetDateFormat("d H:i:s");
+		//$graph->xaxis->scale->ticks->Set(60,10);
+		$graph->xaxis->SetLabelAngle(90);
 		$graph->xaxis->SetTickLabels($datax);
 		$graph->xaxis->SetTextLabelInterval(1);
-		$graph->xaxis->SetTextTickInterval(3);
-		$graph->xaxis->SetLabelAngle(90); // Set the angle for the labels to 90 degrees	
-		//$graph->xaxis->scale->ticks->Set(60,10); // Set the labels every 60s  and minor ticks every 5 sec
-		
+		$graph->xaxis->SetTextTickInterval(20);
+
 		$graph->ygrid->Show(true,true);
 		$graph->ygrid->SetFill(true,'#EFEFEF@0.5','#BFCFFF@0.8');
 		$graph->ygrid->SetLineStyle('dashed'); // Des tirets pour les lignes : dashed / solid
-		$graph->ygrid->SetLineStyle('dashed');
-		
+
 		$bar = new BarPlot($datay);
-		$bar->SetLegend($gtitrex);
-		$bar->SetFillColor('lightblue@0.5');
-		$bar->SetColor("blue");
-		$bar->SetWidth(0.4);
+		//$bar->SetLegend($gtitrex);
+		$bar->SetFillColor('#cc1111lightblue@0.1');
+		$bar->SetColor("#cc1111lightblue@0.5");
+		//$bar->SetWidth(0.4);
+
 		$graph->Add($bar);
 		$graph->Stroke("./images/graphes/".$gnomimage.".png");
 	}
