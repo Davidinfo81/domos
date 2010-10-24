@@ -16,7 +16,7 @@
 	<!-- TITRE -->
         <table border="0" width="100%">
             <tr>
-              <td class="titre" align="left"><img src="images/menu/<?php echo "$menuset"; ?>/composants.gif" width="32" height="32" border="0"> Gestion des Composants bannis </td>
+              <td class="titre" align="left"><img src="images/menu/<?php echo "$menuset"; ?>/composants.png" width="32" height="32" border="0"> Gestion des Composants bannis </td>
               <td align="right"> </td>
             </tr>
         </table>
