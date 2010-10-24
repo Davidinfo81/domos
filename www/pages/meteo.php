@@ -46,6 +46,11 @@ if ($days) {
 echo "</div><div class=\"meteo\"><br />";
 echo "Paris <a href='http://fr.weather.com/weather/today-Paris-75000'><img src='./images/weathercom.gif' title='Weather.com' border='0' style='vertical-align:middle;' /></a> <a href='http://www.pleinchamp.com/meteo/meteoDept.aspx?dpt_id=75&menu_id=35'><img src='./images/pleinchamp.gif' title='pleinchamp.com' border='0' style='vertical-align:middle;' /></a> | ";
 echo "Guadeloupe <a href='http://fr.weather.com/weather/today-Pointe-%E0-Pitre-GPXX0003'><img src='./images/weathercom.gif' title='Weather.com' border='0' style='vertical-align:middle;' /></a> <a href='http://www.pleinchamp.com/meteo/meteoDept.aspx?dpt_id=971&menu_id=35'><img src='./images/pleinchamp.gif' title='pleinchamp.com' border='0' style='vertical-align:middle;' /></a><br />";
+echo "<br /></div><div class=\"meteo\">";
+echo "Matin &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Aprés-midi <br />";
+echo "<img src='http://www.pleinchamp.com/images/meteo/national/frsymb1.png' class='imagesimple'><img src='http://www.pleinchamp.com/images/meteo/national/frtemp1.png' class='imagesimple'>";
+echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+echo "<img src='http://www.pleinchamp.com/images/meteo/national/frsymb2.png' class='imagesimple'><img src='http://www.pleinchamp.com/images/meteo/national/frtemp2.png' class='imagesimple'>";
 echo "<br /></div></div></td></tr>";
 echo "<script type=\"text/javascript\">loadData();</script>";
 

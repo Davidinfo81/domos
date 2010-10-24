@@ -481,9 +481,8 @@ html * .popup:hover{z-index:1;}
 .plan .cadresl td, .plan .cadresr td {border:0px;padding:1px;margin:0;}
 .plan .lien {position:absolute; bottom:0px;right:0px;margin:4px;}
 .plan .cadres_webcam {width:292px;float: left;margin:5px;}
-.plan .cadres_webcam img {width:280px;height:210px;border:0px;}
-
-
+.plan .imagewebcam {width:280px;height:210px;border: 1px solid #d5d5d5;}
+.plan .imagesimple {border: 1px solid #d5d5d5;margin:5px;}
 
 /*################### fisheye ###################*/
 
