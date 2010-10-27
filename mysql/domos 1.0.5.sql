@@ -128,7 +128,7 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('26', 'Action_timeout', '500', 'TimeOut quand un thread est deja actif sur un composant lors d une action.'),
 ('27', 'heure_coucher_correction', '0', 'Ajout de x minutes a l heure de couche du soleil'),
 ('28', 'heure_lever_correction', '0', 'Ajout de x minutes a l heure de leve du soleil'),
-('29', 'WIR_adaptername', '{DS9490}', 'Nom de l adaptateur onewire usb:{DS9490} serie:{DS9097U}'),
+('29', 'WIR_adaptername', '{DS9490}', 'Nom de l adaptateur onewire usb:{DS9490} serie:{DS9097U} autre:{DS9097U_DS9480}'),
 ('30', 'gps_longitude', '48.8616', 'longitude de ta maison (calcul soleil)'),
 ('31', 'gps_latitude', '2.3517', 'Latitude de ta maison (calcul soleil)'),
 ('32', 'logs_erreur_nb', '3', 'Nb d erreurs identique a loguer pendant logs_erreur_duree'),
