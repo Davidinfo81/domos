@@ -203,7 +203,7 @@ case "logs" :
 			print("<cell><![CDATA[".$row['logs_source']."]]></cell>");
 			print("<cell><![CDATA[".$row['logs_date']."]]></cell>");
 			print("<cell><![CDATA[");
-			$description=quote($row['logs_description']);
+			$description=quote(dequote($row['logs_description']));
 			//If (strpos(strtoupper($row['logs_description']),"ERR:")>0) {print("<b>".$description."</b>");}
 			//ElseIf (strpos(strtoupper($row['logs_description']),"ALERT")>0) {print("<b style='color:red;'>".$description."</b>");}
 			If (strpos(strtoupper($row['logs_description']),"ALERT")>0) {print("<b style='color:red;'>".$description."</b>");}
