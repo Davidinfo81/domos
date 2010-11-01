@@ -50,9 +50,9 @@ case "composants_bannis" :
 			//create xml tag for grid's row
 			echo ("<row id='".$row['composants_bannis_id']."'>");
 			print("<cell><![CDATA[".$row['composants_bannis_id']."]]></cell>");
-			print("<cell><![CDATA[".dequote($row['composants_bannis_norme'])."]]></cell>");
-			print("<cell><![CDATA[".$row['composants_bannis_adresse']."]]></cell>");
-			print("<cell><![CDATA[".dequote($row['composants_description'])."]]></cell>");
+			print("<cell><![CDATA[".$row['composants_bannis_norme']."]]></cell>");
+			print("<cell><![CDATA[".dequote($row['composants_bannis_adresse'])."]]></cell>");
+			print("<cell><![CDATA[".dequote($row['composants_bannis_description'])."]]></cell>");
 			print("</row>");
 		}
 	}else{echo mysql_errno().": ".mysql_error()." at ".__LINE__." line in ".__FILE__." file<br>";}
@@ -190,7 +190,7 @@ case "users" :
 case "logs" :
 	$limitmin=isset($_GET["limitmin"])?$_GET["limitmin"]:0;
 	$limitmax=isset($_GET["limitmax"])?$_GET["limitmax"]:10000;
-	$nbjour=isset($_GET["nbjour"])?$_GET["nbjour"]:0;
+	$nbjour=isset($_GET["nbjour"])?$_GET["nbjour"]:1;
 	$Timestamp = strtotime (date("Y/m/d"))-(($nbjour-1)*24*60*60); // on enleve logs_jours jours a la date actuelle
 	$datejours = date ('Y-m-d', $Timestamp); // on reconverti en date = date actuelle - 7 jours
 
@@ -203,14 +203,15 @@ case "logs" :
 			print("<cell><![CDATA[".$row['logs_source']."]]></cell>");
 			print("<cell><![CDATA[".$row['logs_date']."]]></cell>");
 			print("<cell><![CDATA[");
-			//If (strpos(strtoupper($row['logs_description']),"ERR:")>0) {print("<b>".$row['logs_description']."</b>");}
-			//ElseIf (strpos(strtoupper($row['logs_description']),"ALERT")>0) {print("<b style='color:red;'>".$row['logs_description']."</b>");}
-			If (strpos(strtoupper($row['logs_description']),"ALERT")>0) {print("<b style='color:red;'>".$row['logs_description']."</b>");}
-			ElseIf ($row['logs_source']=="2" || $row['logs_source']=="1") {print("<b>".$row['logs_description']."</b>");}
-			ElseIf ($row['logs_source']=="5") {print(" -> ".$row['logs_description']);}
-			ElseIf ($row['logs_source']=="4") {print(" --> ".$row['logs_description']);}
-			ElseIf ($row['logs_source']=="3") {print(" <- ".$row['logs_description']);}
-			else {print($row['logs_description']);}
+			$description=quote($row['logs_description']);
+			//If (strpos(strtoupper($row['logs_description']),"ERR:")>0) {print("<b>".$description."</b>");}
+			//ElseIf (strpos(strtoupper($row['logs_description']),"ALERT")>0) {print("<b style='color:red;'>".$description."</b>");}
+			If (strpos(strtoupper($row['logs_description']),"ALERT")>0) {print("<b style='color:red;'>".$description."</b>");}
+			ElseIf ($row['logs_source']=="2" || $row['logs_source']=="1") {print("<b>".$description."</b>");}
+			ElseIf ($row['logs_source']=="5") {print(" -> ".$description);}
+			ElseIf ($row['logs_source']=="4") {print(" --> ".$description);}
+			ElseIf ($row['logs_source']=="3") {print(" <- ".$description);}
+			else {print($description);}
 			print("]]></cell>");
 			print("</row>");
 		}

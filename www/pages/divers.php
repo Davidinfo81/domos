@@ -104,7 +104,7 @@ echo "<script type=\"text/javascript\">
 echo "
 Arrêt du service : <a href=javascript:sendsocket(\"([AS#stop])\")>STOP</a> <br /><br />
 Redémarrage du service : <a href=javascript:sendsocket(\"([AS#restart])\")>RESTART</a> <br /><br />
-Maj des tables : <a href=javascript:sendsocket(\"([AS#maj])\")>MAJ</a> <br /><br />
+Maj des tables : <a href=javascript:sendsocket(\"([AS#maj_all])\")>ALL</a> - <a href=javascript:sendsocket(\"([AS#maj_composants])\")>Composants</a> - <a href=javascript:sendsocket(\"([AS#maj_composants_bannis])\")>Cmp bannis</a> - <a href=javascript:sendsocket(\"([AS#maj_macro])\")>Macros</a> - <a href=javascript:sendsocket(\"([AS#maj_timer])\")>Timers</a> <br /><br />
 Affichage des tables : <a href=javascript:sendsocket(\"([AS#afftables])\")>AFFTABLES</a> <br /><br />
 Envoyer une action : <form name='sendformaction'><input type='text' name='texte' value='([AL#test])' style='width: 500px;'/> <input type=button value='Send' class=\"formsubmit\" onClick='sendtexte();'></form>
 Envoyer une requete SQL : <form name='sendformsql'><input type='text' name='texte' value=\"delete from logs where logs_description like '%empty%'\" style='width: 500px;'/> <input type=button value='Send' class=\"formsubmit\" onClick='sendsql();'></form>

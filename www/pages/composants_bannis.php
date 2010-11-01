@@ -52,6 +52,7 @@ case "gerer" :
 				mygrid.getCombo(1).put('PLC','PLCBUS');
 				mygrid.getCombo(1).put('RFX','RFXCOM');
 				mygrid.getCombo(1).put('X10','X10');
+				mygrid.getCombo(1).put('ZIB','ZIBASE');
 				mygrid.init();
 				mygrid.loadXML(\"pages/dhtmlx_get.php?action=composants_bannis\");
 				myDataProcessor = new dataProcessor(\"pages/dhtmlx_update_composants_bannis.php\");
@@ -61,7 +62,7 @@ case "gerer" :
 					if (confirm('Supprimer ?')) {mygrid.deleteRow(mygrid.getSelectedId());}
 				}
 			</script>
-			<input type=\"button\" name=\"a1\" value=\"Ajouter\" onClick=\"mygrid.addRow((new Date()).valueOf(),['','','',''],0)\" class=\"formsubmit\">
+			<input type=\"button\" name=\"a1\" value=\"Ajouter\" onClick=\"mygrid.addRow((new Date()).valueOf(),['','RFX','xxxx','description'],0)\" class=\"formsubmit\">
 			<input type=\"button\" name=\"a1\" value=\"Supprimer\" onClick=\"deletee()\" class=\"formsubmit\">
 		</div></td></tr>
 	";
