@@ -714,9 +714,9 @@ Public Class domos_svc
 
             '---------- liberation de la zibase -------
             If etape_startup > 26 Then
-                If Serv_X10 Then
+                If Serv_ZIB Then
                     log("ZIB : Fermeture de la connexion : ", 0)
-                    err = x10.fermer()
+                    err = zibase.fermer()
                     If STRGS.Left(err, 4) = "ERR:" Then
                         log(" -> ZIB Fermeture : " & err, 2)
                     Else
@@ -819,7 +819,7 @@ Public Class domos_svc
 
             'si on peut loguer
             If erreur_log = 1 Then
-                If niveau <> "-1" And STRGS.InStr(log_niveau, niveau) > 0 Then
+                If niveau <> "-1" And STRGS.InStr("-" & log_niveau, niveau) > 0 Then
                     fichierlog = install_dir & "logs\log_" & DateAndTime.Now.ToString("yyyyMMdd") & ".txt"
                     dateheure = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                     If Not Directory.Exists(install_dir & "logs") Then
