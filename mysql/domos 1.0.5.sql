@@ -109,7 +109,7 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('7', 'Port_PLC', 'COM9', 'Numero du port COM du PLCBUS-1141 : COM6'),
 ('8', 'Port_RFX', 'COM8', 'Adresse IP ou numero port COM : COM4'),
 ('9', 'Port_X10', 'COM1', 'Numero du port COM du X10-CM11 : COM1'),
-('10', 'log_niveau', '0-1-2-3-4-5-6-9', '0-Prog,1-Err crit,2-Err general,3-Msg recues,4-Lancement macro/timer,5-Actions macro/timer,6-Valeurs ayant change,7-Valeurs n ayant pas change,8-Valeurs inchange precision/lastetat,9-Divers'),
+('10', 'log_niveau', '-0-1-2-3-4-5-6-9', '0-Prog,1-Err crit,2-Err general,3-Msg recues,4-Lancement macro/timer,5-Actions macro/timer,6-Valeurs ayant change,7-Valeurs n ayant pas change,8-Valeurs inchange precision/lastetat,9-Divers,10-Debug'),
 ('11', 'log_dest', '2', '0=txt, 1=sql, 2=txt sql'),
 ('12', 'meteo_codeville', 'FRXX0076', 'Code Ville Prevision weather.com (FRXX0076)'),
 ('13', 'meteo_icone', '2', 'Numero du pack d icones meteo'),
