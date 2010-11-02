@@ -892,7 +892,7 @@ div.gridbox_dhx_skyblue table.obj.row20px tr.rowselected td{background-repeat:re
 }
 div.gridbox_dhx_skyblue table.obj tr.rowselected td.cellselected {background-color:#FFF1CC}
 div.gridbox_dhx_skyblue .odd_dhx_skyblue{background-color:#E3EFFF}
-.dhx_combo_select, .gridbox_dhx_skyblue .dhx_combo_edit, .gridbox_dhx_skyblue .dhx_textarea{font-family:Tahoma; font-size:11px}
+.dhx_combo_select, .gridbox_dhx_skyblue .dhx_combo_edit, .gridbox_dhx_skyblue .dhx_textarea{font-family:Tahoma; font-size:10px}
 .gridbox_dhx_skyblue .dhx_combo_edit{padding:1px 0px 1px 1px}
 .gridbox_dhx_skyblue .dhx_sub_row {background-color:transparent}
 table.dhtmlxLayoutPolyContainer_dhx_skyblue {width: 100%; height: 100%; abackground-color: #D3E2E5}

@@ -47,7 +47,7 @@ case "gerer" :
 				mygrid.setImagePath(\"./dhtmlx/imgs/\");
 				mygrid.setSkin(\"dhx_skyblue\");
 				mygrid.setHeader(\"&nbsp;,ID,Nom,Modele,Adresse,Description,Poll,On,Valeur,Etat Date,Correction,Precision,Divers,Maj\");
-				mygrid.setInitWidths(\"45,30,180,105,105,*,30,30,45,110,30,30,30,30\");
+				mygrid.setInitWidths(\"40,28,175,120,105,*,28,25,45,110,28,28,28,28\");
 				mygrid.setColAlign(\"left,left,left,left,left,left,center,center,center,center,center,center,left,center\");
 				mygrid.setColTypes(\"link,ro,ed,co,ed,txt,ed,ch,ed,ro,ed,ed,ed,ed\"); 
 				mygrid.setColSorting(\"na,int,str,str,str,str,int,int,str,str,str,str,str,int\");
