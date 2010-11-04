@@ -84,12 +84,12 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
     'reception d'une valeur -> analyse
     Private Sub zba_UpdateSensorInfo(ByVal seInfo As ZibaseDll.ZiBase.SensorInfo) Handles zba.UpdateSensorInfo
         'WriteLog("DBG: " & seInfo.sID & "_" & seInfo.sType & " ----> " & seInfo.sValue)
-        traitement(seInfo.sID, seInfo.sType, seInfo.sValue)
+        traitement(seInfo.sID, seInfo.sType, seInfo.dwValue)
     End Sub
     Private Sub zba_NewSensorDetected(ByVal seInfo As ZibaseDll.ZiBase.SensorInfo) Handles zba.NewSensorDetected
         'si on detecte une nouveau device
         'WriteLog("DBG: " & seInfo.sID & "_" & seInfo.sType & " ----> " & seInfo.sValue)
-        traitement(seInfo.sID, seInfo.sType, seInfo.sValue)
+        traitement(seInfo.sID, seInfo.sType, seInfo.dwValue)
     End Sub
 
     'nouvelle zibase detecté -> Log
@@ -112,16 +112,22 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
             If tabletmp.GetUpperBound(0) >= 0 Then
                 adressetype = Split(tabletmp(0)("composants_addresse"), "_")
                 sei = zba.GetSensorInfo(adressetype(0), adressetype(1))
-                Return sei.sValue
+                If STRGS.UCase(sei.sType) = "TEM" Then
+                    Return sei.dwValue / 100 'si c'est une temperature on / par 100
+                Else
+                    Return sei.dwValue
+                End If
             Else
                 'erreur d'adresse composant
-                tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_id = '" & composants_id.ToString & "'")
-                If tabletmp.GetUpperBound(0) >= 0 Then
-                    'on ne logue pas car c'est une adresse bannie
-                    Return ("")
-                Else
-                    Return ("ERR: GetSensorInfo : Composant non trouvé : " & composants_id.ToString)
-                End If
+                'tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_id = '" & composants_id.ToString & "'")
+                'If tabletmp.GetUpperBound(0) >= 0 Then
+                ''on ne logue pas car c'est une adresse bannie
+                '    Return ("")
+                'Else
+                'Return ("ERR: GetSensorInfo : Composant non trouvé : " & composants_id.ToString)
+                'End If
+                Return ("ERR: GetSensorInfo : Composant non trouvé : " & composants_id.ToString)
+
             End If
         Catch ex As Exception
             Return "ERR: GetSensorInfo : " & ex.Message
@@ -137,21 +143,39 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
         Dim adresse(), modele() As String
         Dim tabletmp() As DataRow
 
+
+        'WriteLog("Ecrirecommand 1")
+
+
+
         Try
             tabletmp = domos_svc.table_composants.Select("composants_id = '" & composants_id.ToString & "'")
             If tabletmp.GetUpperBound(0) >= 0 Then
+
+
+
+                'WriteLog("Ecrirecommand 2 first" & composants_id)
+
+
+
                 modele = Split(tabletmp(0)("composants_modele_nom"), "_")
-                adresse = Split(tabletmp(0)("composants_addresse"), "_")
+                adresse = Split(tabletmp(0)("composants_adresse"), "_")
                 Select Case UCase(modele(0))
-                    Case "BROADCAST" : protocole = ZiBase.Protocol.PROTOCOL_BROADCAST
+                    Case "BROADC" : protocole = ZiBase.Protocol.PROTOCOL_BROADCAST
                     Case "CHACON" : protocole = ZiBase.Protocol.PROTOCOL_CHACON
                     Case "DOMIA" : protocole = ZiBase.Protocol.PROTOCOL_DOMIA
-                    Case "VISONIC433" : protocole = ZiBase.Protocol.PROTOCOL_VISONIC433
-                    Case "VISONIC868" : protocole = ZiBase.Protocol.PROTOCOL_VISONIC868
+                    Case "VIS433" : protocole = ZiBase.Protocol.PROTOCOL_VISONIC433
+                    Case "VIS868" : protocole = ZiBase.Protocol.PROTOCOL_VISONIC868
                     Case "X10" : protocole = ZiBase.Protocol.PROTOCOL_X10
-                    Case Else
-                        Return ("ERR: protocole incorrect : " & adresse(1))
+                    Case Else : Return ("ERR: protocole incorrect : " & modele(0))
                 End Select
+
+
+
+                ' WriteLog("Ecrirecommand 2" & protocole.ToString & "-" & adresse(0) & "-" & modele(0))
+
+
+
                 'ecriture sur la zibase
                 Select Case UCase(ordre)
                     Case "ON"
@@ -167,22 +191,28 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
                     Case Else
                         Return ("ERR: ordre incorrect : " & ordre)
                 End Select
+
+
+                'WriteLog("Ecrirecommand 3")
+
+
                 'modification de l'etat en memoire
                 tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
-                tabletmp(0)("composants_etat") = ordre
+                tabletmp(0)("composants_etat") = ordre & "" & iDim
                 tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                 Return (" -> ecrit " & adresse(0) & " -> " & ordre)
             Else
                 'erreur d'adresse composant
-                tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_id = '" & composants_id.ToString & "'")
-                If tabletmp.GetUpperBound(0) >= 0 Then
-                    'on ne logue pas car c'est une adresse bannie
-                Else
-                    Return ("ERR: Composant non trouvé : " & composants_id.ToString & " : " & ordre)
-                End If
+                'tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_id = '" & composants_id.ToString & "'")
+                'If tabletmp.GetUpperBound(0) >= 0 Then
+                '    'on ne logue pas car c'est une adresse bannie
+                'Else
+                '    Return ("ERR: Composant non trouvé : " & composants_id.ToString & " : " & ordre)
+                'End If
+                Return ("ERR: Composant non trouvé : " & composants_id.ToString & " : " & ordre)
             End If
 
-            Return " -> zibase write Composants_id: " & composants_id & " -> " & ordre
+            'Return " -> zibase write Composants_id: " & composants_id & " -> " & ordre
         Catch ex As Exception
             Return "ERR: Ecrirecommand" & ex.Message
         End Try
@@ -218,20 +248,23 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
         'modification des informations suivant le type
         Select Case type
             Case "tem"
-                valeur = STRGS.Left(valeur, (valeur.Length - 2))
+                'valeur = STRGS.Left(valeur, (valeur.Length - 2))
+                valeur = valeur / 100
                 type = "THE" 'tem Température (°C)
-            Case "hum"
-                valeur = STRGS.Left(valeur, (valeur.Length - 1))
+                'Case "hum"
+                'valeur = STRGS.Left(valeur, (valeur.Length - 1))
             Case "temc"
-                valeur = STRGS.Left(valeur, (valeur.Length - 2))
-                type = "THEC" 'Température de consigne (Thermostat : °C)
+                'valeur = STRGS.Left(valeur, (valeur.Length - 2))
+                valeur = valeur / 100
+                type = "THC" 'Température de consigne (Thermostat : °C)
         End Select
 
         'Action suivant le type
         Select Case type
-            Case "bat" : If STRGS.UCase(valeur) <> "OK" Then WriteRetour(adresse & "_THE", "ERR: battery empty") 'Niveau de batterie (Ok / Low)
+            Case "bat" : If STRGS.UCase(valeur) = "LOW" Then WriteRetour(adresse & "_THE", "ERR: battery empty") 'Niveau de batterie (Ok / Low)
             Case "lev" 'on envoie rien : Niveau de réception RF (1 à 5)
             Case "lnk" : WriteLog("DBG: Etat de la connexion avec la Zibase " & adresse & " : " & valeur) 'Etat de la connexion Zibase
+            Case "" : WriteRetour(adresse, valeur) ' si pas de type particulier
             Case Else
                 'tem Température (°C)
                 'temc Température de consigne (Thermostat : °C)
@@ -252,10 +285,10 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
 
     Public Sub WriteLog(ByVal message As String)
         'utilise la fonction de base pour loguer un event
-        If STRGS.InStr(message, "ERR:") > 0 Then
-            domos_svc.log("ZIB : " & message, 2)
-        ElseIf STRGS.InStr(message, "DBG:") > 0 Then
+        If STRGS.InStr(message, "DBG:") > 0 Then
             domos_svc.log("ZIB : " & message, 10)
+        ElseIf STRGS.InStr(message, "ERR:") > 0 Then
+            domos_svc.log("ZIB : " & message, 2)
         Else
             domos_svc.log("ZIB : " & message, 9)
         End If

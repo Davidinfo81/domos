@@ -5,6 +5,7 @@ Imports System.IO
 Imports System.Globalization
 Imports Microsoft.Win32
 Imports System.ServiceProcess
+Imports System.Net.Mail
 
 Public Class domos_svc
     'declaration de mes classes_
@@ -24,7 +25,7 @@ Public Class domos_svc
     Public Shared PLC_timeout, X10_timeout, Action_timeout, rfx_tpsentrereponse, socket_port, lastetat, WIR_res As Integer
     Public Shared heure_coucher_correction, heure_lever_correction As Integer
     Public Shared logs_erreur_nb, logs_erreur_duree As Integer
-    Public Shared gps_longitude, gps_latitude As String
+    Public Shared gps_longitude, gps_latitude, mail_smtp, mail_from, mail_to As String
     Dim WithEvents timer_pool, timer_timer As New System.Timers.Timer
     Dim err As String = ""
     Public Shared log_niveau As String
@@ -880,6 +881,43 @@ Public Class domos_svc
         End Try
     End Sub
 
+    Public Shared Sub SendMessage(ByVal subject As String, ByVal messageBody As String)
+        Dim message As New MailMessage()
+        Dim client As New SmtpClient()
+
+        Dim fromAddress As String = mail_from
+        Dim toAddress As String = mail_to
+        Dim ccAddress As String = ""
+        Dim smtpserver As String = mail_smtp
+
+        'Set the sender's address
+        message.From = New MailAddress(fromAddress)
+
+        'Allow multiple "To" addresses to be separated by a semi-colon
+        If (toAddress.Trim.Length > 0) Then
+            For Each addr As String In toAddress.Split(";"c)
+                message.To.Add(New MailAddress(addr))
+            Next
+        End If
+
+        'Allow multiple "Cc" addresses to be separated by a semi-colon
+        If (ccAddress.Trim.Length > 0) Then
+            For Each addr As String In ccAddress.Split(";"c)
+                message.CC.Add(New MailAddress(addr))
+            Next
+        End If
+
+        'Set the subject and message body text
+        message.Subject = subject
+        message.Body = messageBody
+
+        'Set the SMTP server to be used to send the message
+        client.Host = smtpserver
+
+        'Send the e-mail message
+        client.Send(message)
+    End Sub
+
     Public Shared Sub wait(ByVal msec As Integer)
         '100msec = 1 secondes
         Try
@@ -1504,7 +1542,7 @@ Public Class domos_svc
                 End While
             End If
 
-            
+
         Catch ex As Exception
             resultat = False
             log("MACRO: ERR: analyse_cond:exception : " & ex.ToString & " --> " & liste, 2)
@@ -1871,6 +1909,10 @@ Public Class domos_svc
                             '???
                         Case "WI2"
                             '???
+                        Case "VIR"
+                            '???
+                        Case "RFX"
+                            '???
                         Case "X10"
                             'verification si on a pas déjà un thread qui ecrit sur le x10 sinon on boucle pour attendre X10_timeout/10 = 5 sec par défaut
                             Dim tblthread = table_thread.Select("norme='X10' AND source='ECR_X10' AND composant_id<>'" & compid & "'")
@@ -1901,8 +1943,38 @@ Public Class domos_svc
                             Else
                                 log("ECR: Le port X10 nest pas disponible pour une ecriture : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
                             End If
+                        Case "ZIB"
+                            'verification si on a pas déjà un thread qui ecrit sur le zib sinon on boucle pour attendre ZIB_timeout/10 = 5 sec par défaut
+                            Dim tblthread = table_thread.Select("norme='ZIB' AND source='ECR_ZIB' AND composant_id<>'" & compid & "'")
+                            While (tblthread.GetLength(0) > 0 And limite < (X10_timeout / 10))
+                                wait(10)
+                                tblthread = table_thread.Select("norme='ZIB' AND source='ECR_ZIB' AND composant_id<>'" & compid & "'")
+                                limite = limite + 1
+                            End While
+                            If (limite < (X10_timeout / 10)) Then 'on a attendu moins que le timeout
+                                'maj du thread pour dire qu'on ecrit sur le bus
+                                tblthread = table_thread.Select("norme='ZIB' AND source='ECR' AND composant_id='" & compid & "'")
+                                If tblthread.GetLength(0) = 1 Then
+                                    tblthread(0)("source") = "ECR_ZIB"
+                                Else
+                                    log("ECR: Thread non trouvé (pour ZIB)!", 2)
+                                End If
+                                If valeur2 <> "" Then
+                                    err = zibase.Ecrirecommand(tabletmp(0)("composants_id"), valeur, valeur2)
+                                Else
+                                    err = zibase.Ecrirecommand(tabletmp(0)("composants_id"), valeur, 0)
+                                End If
+                                If STRGS.Left(err, 4) = "ERR:" Then
+                                    log(err, 2)
+                                Else
+                                    log(err, 5)
+                                End If
+                                wait(100) 'pause de 1sec pour recevoir le ack et libérer le bus correctement
+                            Else
+                                log("ECR: Le port ZIB nest pas disponible pour une ecriture : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
+                            End If
                         Case Else
-                            'log("ECR: norme non gérée : " & tabletmp(0)("composants_modele_norme").ToString & " comp: " & tabletmp(0)("composants_adresse").ToString)
+                            log("ECR: norme non gérée : " & tabletmp(0)("composants_modele_norme").ToString & " comp: " & tabletmp(0)("composants_adresse").ToString, 2)
                     End Select
                 Else
                     log("ECR: Composant non trouvé dans la table : " & compid, 2)

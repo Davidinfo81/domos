@@ -595,11 +595,11 @@ Public Class rfxcom
                 End Select
                 WriteLog(valeur)
             ElseIf recbits = 48 Then
-                WriteLog("ERR: Processx : noise or a 1-Wire sensor internal address")
+                WriteLog("DBG: Processx : noise or a 1-Wire sensor internal address")
             ElseIf (((recbuf(2) And &HF0) = &H10) Or ((recbuf(2) And &HF0) = &H20)) And recbits = 44 Then
                 processdigimax()
             Else
-                WriteLog("ERR: Processx : noise or an unknown data packet received")
+                WriteLog("DBG: Processx : noise or an unknown data packet received")
             End If
         Else
             WriteLog("ERR: Processx : Unknown data packet received")
@@ -2309,7 +2309,9 @@ Public Class rfxcom
 
     Public Sub WriteLog(ByVal message As String)
         'utilise la fonction de base pour loguer un event
-        If STRGS.InStr(message, "ERR:") > 0 Then
+        If STRGS.InStr(message, "DBG:") > 0 Then
+            domos_svc.log("RFX : " & message, 10)
+        ElseIf STRGS.InStr(message, "ERR:") > 0 Then
             domos_svc.log("RFX : " & message, 2)
         Else
             domos_svc.log("RFX : " & message, 9)
@@ -2324,6 +2326,10 @@ Public Class rfxcom
         Dim tabletmp() As DataRow
         Dim dateheure, Err As String
         Try
+            'log tous les paquets en mode debug
+            WriteLog("DBG: receive from " & adresse & " -> " & valeur)
+
+            'on verifie si un composant correspond à cette adresse
             tabletmp = domos_svc.table_composants.Select("composants_adresse = '" & adresse.ToString & "' AND composants_modele_norme = 'RFX'")
             If tabletmp.GetUpperBound(0) >= 0 Then
                 '--- On attend au moins x seconde entre deux receptions de valeur pour le meme composant (x sec = rfx_tpsentrereponse/100)
