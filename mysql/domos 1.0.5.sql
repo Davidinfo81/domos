@@ -98,7 +98,7 @@ CREATE TABLE `config` (
   `config_valeur` text NOT NULL,
   `config_description` text NOT NULL,
   PRIMARY KEY (`config_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=37 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=39 DEFAULT CHARSET=latin1;
 INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_description`) VALUES
 ('1', 'Serv_X10', '1', 'X10 : 0=desactive 1=active'),
 ('2', 'Serv_WIR', '1', '1-wire : 0=desactive 1=active'),
@@ -122,7 +122,7 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('20', 'PLC_timeout', '500', 'Timeout pour attendre que le port PLCBUS soit disponible en ecriture (Defaut : 500 = 5 sec)'),
 ('21', 'socket_ip', '127.0.0.1', 'Socket : Adresse IP du serveur'),
 ('22', 'socket_port', '3852', 'Socket : Port du serveur (3852)'),
-('23', 'Serv_SOC', '1', 'Active la connexion Socket domos-php'),
+('23', 'socket_portgui', '3853', 'Socket : Port du serveur GUI (3853)'),
 ('24', 'lastetat', '1', '0=desactive 1=active : ne pas prendre en compte les variations 19.1 19.2 19.1...'),
 ('25', 'WIR_res', '0.1', 'resolution 1-wire : 0.1 / 0.5'),
 ('26', 'Action_timeout', '500', 'TimeOut quand un thread est deja actif sur un composant lors d une action.'),
@@ -134,8 +134,10 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('32', 'logs_erreur_nb', '3', 'Nb d erreurs identique a loguer pendant logs_erreur_duree'),
 ('33', 'logs_erreur_duree', '60', 'Duree pendant laquelle on ne logue pas plus de logs_erreur_nb erreurs identiques'),
 ('34', 'menu_seticone', '1', 'Numero du set d icones pour le menu (www\\images\\menu\\x)'),
-('35', 'Serv_TSK', '0', 'Tellstick : 0=desactive 1=active'), 
-('36', 'socket_portgui', '3853', 'Socket : Port du serveur GUI (3853)');
+('35', 'Serv_TSK', '0', 'Tellstick : 0=desactive 1=active'),
+('36', 'mail_smtp', '', 'Adresse du serveur smtp'),
+('37', 'mail_from', '', 'Adresse mail qui enverra le mail'),
+('38', 'mail_to', '', 'Ton adresse email');
 
 CREATE TABLE `logs` (
   `logs_id` bigint(20) NOT NULL AUTO_INCREMENT,
