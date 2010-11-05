@@ -87,7 +87,7 @@ Public Class domos_svc
         Serv_ZIB = False
         Serv_TSK = False
         Serv_DOMOS = False
-        Serv_SOC = False
+        Serv_SOC = True
         log_niveau = "0-1-2-3-4-5-6-7-8-9-A-B-C-D-E-F" 'log tous les msgs
         log_dest = 2 '0=txt, 1=sql, 2=txt+sql
         X10_timeout = 500
@@ -144,12 +144,18 @@ Public Class domos_svc
     End Sub
 
     Private Sub svc_start()
+        Dim resumemail, texte As String
         Try
+            'Forcer le . 
+            Thread.CurrentThread.CurrentCulture = New CultureInfo("en-US")
+            My.Application.ChangeCulture("en-US")
+
             log("-------------------------------------------------------------------------------", 0)
             Dim x As New DataColumn
 
             '---------- Récupération configuration Registry ----------
             etape_startup = 1
+            resumemail = "Récupération configuration Registry"
             Dim regKey, regKey2 As RegistryKey
             regKey = Registry.LocalMachine.OpenSubKey("SOFTWARE")
             If regKey Is Nothing Then
@@ -180,6 +186,7 @@ Public Class domos_svc
 
             '---------- Connexion MySQL ----------
             etape_startup = 2
+            resumemail = resumemail & Chr(10) & "Connexion au serveur Mysql : " & mysql_ip & "-" & mysql_db & " " & mysql_login & ":" & mysql_mdp
             err = mysql.mysql_connect(mysql_ip, mysql_db, mysql_login, mysql_mdp)
             If err <> "" Then
                 log("", 1)
@@ -197,12 +204,14 @@ Public Class domos_svc
             log("SQL : Connexion au serveur " & mysql_ip & " :", 0)
             log("     -> Connecté à " & mysql_ip & ":" & mysql_db & " avec " & mysql_login & "/" & mysql_mdp, 0)
             log("SQL : Connecté à " & mysql_ip & ":" & mysql_db & " avec " & mysql_login & "/" & mysql_mdp, -1)
+            resumemail = resumemail & Chr(10) & Chr(10) & " -> connecté"
             log("", 0)
 
             '----- recupération de la config -----
             etape_startup = 3
             log("SQL : Récupération de la configuration :", 0)
             log("SQL : Récupération de la configuration", -1)
+            resumemail = resumemail & Chr(10) & "Récupération de la configuration"
             err = Table_maj_sql(table_config, "SELECT config_nom,config_valeur FROM config")
             If table_config.Rows.Count() > 0 Then
                 log_niveau = table_config.Select("config_nom = 'log_niveau'")(0)("config_valeur")
@@ -214,7 +223,6 @@ Public Class domos_svc
                 Serv_RFX = table_config.Select("config_nom = 'Serv_RFX'")(0)("config_valeur")
                 Serv_ZIB = table_config.Select("config_nom = 'Serv_ZIB'")(0)("config_valeur")
                 Serv_TSK = table_config.Select("config_nom = 'Serv_TSK'")(0)("config_valeur")
-                Serv_SOC = table_config.Select("config_nom = 'Serv_SOC'")(0)("config_valeur")
                 Port_RFX = table_config.Select("config_nom = 'Port_RFX'")(0)("config_valeur")
                 Port_X10 = table_config.Select("config_nom = 'Port_X10'")(0)("config_valeur")
                 Port_PLC = table_config.Select("config_nom = 'Port_PLC'")(0)("config_valeur")
@@ -233,6 +241,9 @@ Public Class domos_svc
                 heure_coucher_correction = table_config.Select("config_nom = 'heure_coucher_correction'")(0)("config_valeur")
                 gps_longitude = table_config.Select("config_nom = 'gps_longitude'")(0)("config_valeur")
                 gps_latitude = table_config.Select("config_nom = 'gps_latitude'")(0)("config_valeur")
+                mail_smtp = table_config.Select("config_nom = 'mail_smtp'")(0)("config_valeur")
+                mail_from = table_config.Select("config_nom = 'mail_from'")(0)("config_valeur")
+                mail_to = table_config.Select("config_nom = 'mail_to'")(0)("config_valeur")
                 logs_erreur_nb = table_config.Select("config_nom = 'logs_erreur_nb'")(0)("config_valeur")
                 logs_erreur_duree = table_config.Select("config_nom = 'logs_erreur_duree'")(0)("config_valeur")
                 log("     -> LOG_NIVEAU=" & log_niveau & " LOG_DESTINATION=" & log_dest, 0)
@@ -241,6 +252,7 @@ Public Class domos_svc
                 log("     -> Action_timeout=" & Action_timeout & " PLC_timeout=" & PLC_timeout & " X10_timeout=" & X10_timeout & " RFX_tpsentrereponse=" & rfx_tpsentrereponse & " Lastetat=" & lastetat, 0)
                 log("     -> heure_lever_correction=" & heure_lever_correction & " heure_coucher_correction=" & heure_coucher_correction, 0)
                 log("     -> longitude=" & gps_longitude & " latitude=" & gps_latitude, 0)
+                log("     -> Mail smtp=" & mail_smtp & " From=" & mail_from & " To=" & mail_to, 0)
                 log("     -> WIR_res=" & WIR_res & " WIR_adaptername=" & WIR_adaptername, 0)
                 log("     -> Socket Activé=" & Serv_SOC & " IP=" & socket_ip & " Port=" & socket_port, 0)
                 log("     -> Logs erreur NB=" & logs_erreur_nb & " Logs erreur Duree=" & logs_erreur_duree, 0)
@@ -255,6 +267,7 @@ Public Class domos_svc
             '---------- Initialisation de la clé USB 1-wire -------
             etape_startup = 4
             If Serv_WIR Then
+                resumemail = resumemail & Chr(10) & "Initialisation 1-wire"
                 err = onewire.initialisation(WIR_adaptername, Port_WIR)
                 If STRGS.Left(err, 4) = "ERR:" Then
                     Serv_WIR = False 'desactivation du onewire car la clé USB n'est pas dispo
@@ -268,6 +281,7 @@ Public Class domos_svc
             '---------- Initialisation de la clé USB 1-wire 2 -------
             etape_startup = 5
             If Serv_WI2 Then
+                resumemail = resumemail & Chr(10) & "Initialisation 1-wire 2"
                 err = onewire2.initialisation(WIR_adaptername, Port_WI2)
                 If STRGS.Left(err, 4) = "ERR:" Then
                     Serv_WI2 = False 'desactivation du onewire car la clé USB n'est pas dispo
@@ -281,6 +295,7 @@ Public Class domos_svc
             '---------- Initialisation du RFXCOM -------
             etape_startup = 6
             If Serv_RFX Then
+                resumemail = resumemail & Chr(10) & "Initialisation RFXCOM"
                 err = rfxcom.ouvrir(Port_RFX)
                 If STRGS.Left(err, 4) = "ERR:" Then
                     Serv_RFX = False 'desactivation du RFXCOM car erreur d'ouverture
@@ -294,6 +309,7 @@ Public Class domos_svc
             '---------- Initialisation du PLCBUS -------
             etape_startup = 7
             If Serv_PLC Then
+                resumemail = resumemail & Chr(10) & "Initialisation PLC"
                 err = plcbus.ouvrir(Port_PLC)
                 If STRGS.Left(err, 4) = "ERR:" Then
                     Serv_PLC = False 'desactivation du PLCBUS car erreur d'ouverture
@@ -309,6 +325,7 @@ Public Class domos_svc
             '---------- Initialisation du X10 -------
             etape_startup = 8
             If Serv_X10 Then
+                resumemail = resumemail & Chr(10) & "Initialisation X10"
                 err = x10.ouvrir(Port_X10)
                 If STRGS.Left(err, 4) = "ERR:" Then
                     Serv_X10 = False 'desactivation du X10 car erreur d'ouverture
@@ -323,6 +340,7 @@ Public Class domos_svc
 
             '----- recupération de la liste des composants actifs -----
             etape_startup = 20
+            resumemail = resumemail & Chr(10) & "Récupération liste des composants"
             log("SQL : Récupération de la liste des composants actifs :", 0)
             log("SQL : Récupération de la liste des composants actifs", -1)
             Dim Condition_service As String = ""
@@ -359,10 +377,13 @@ Public Class domos_svc
                     Next
                     'affichage
                     For i = 0 To table_composants.Rows.Count() - 1
-                        log("     -> Id : " & table_composants.Rows(i).Item("composants_id") & " -- Nom : " & table_composants.Rows(i).Item("composants_nom") & " -- Adresse : " & table_composants.Rows(i).Item("composants_adresse") & " -- Valeur : " & table_composants.Rows(i).Item("composants_etat") & " -- Polling : " & table_composants.Rows(i).Item("composants_polling") & " -- Type : " & table_composants.Rows(i).Item("composants_modele_norme") & "-" & table_composants.Rows(i).Item("composants_modele_nom"), 0)
+                        texte = "     -> Id : " & table_composants.Rows(i).Item("composants_id") & " -- Nom : " & table_composants.Rows(i).Item("composants_nom") & " -- Adresse : " & table_composants.Rows(i).Item("composants_adresse") & " -- Valeur : " & table_composants.Rows(i).Item("composants_etat") & " -- Polling : " & table_composants.Rows(i).Item("composants_polling") & " -- Type : " & table_composants.Rows(i).Item("composants_modele_norme") & "-" & table_composants.Rows(i).Item("composants_modele_nom")
+                        resumemail = resumemail & Chr(10) & texte
+                        log(texte, 0)
                     Next
                 Else
                     log("     -> Aucun composant trouvé : fermeture du programme", 1)
+                    resumemail = resumemail & Chr(10) & "     -> Aucun composant trouvé"
                     'svc_stop()
                     [Stop]()
                     Exit Sub
@@ -371,6 +392,7 @@ Public Class domos_svc
 
             '---------- Initialisation des heures du soleil -------
             etape_startup = 21
+            resumemail = resumemail & Chr(10) & Chr(10) & "Initialisation des heures du soleil"
             log("Initialisation des heures du soleil", 0)
             'soleil.City("Algrange")
             soleil.City_gps(gps_longitude, gps_latitude)
@@ -379,6 +401,8 @@ Public Class domos_svc
             var_soleil_coucher = soleil.Sunset
             var_soleil_coucher2 = DateAdd(DateInterval.Minute, heure_coucher_correction, var_soleil_coucher)
             var_soleil_lever2 = DateAdd(DateInterval.Minute, heure_lever_correction, var_soleil_lever)
+            resumemail = resumemail & Chr(10) & "     -> Heure du lever : " & var_soleil_lever & " (" & var_soleil_lever2 & ")"
+            resumemail = resumemail & Chr(10) & "     -> Heure du coucher : " & var_soleil_coucher & " (" & var_soleil_coucher2 & ")"
             log("     -> Heure du lever : " & var_soleil_lever & " (" & var_soleil_lever2 & ")", 0)
             log("     -> Heure du coucher : " & var_soleil_coucher & " (" & var_soleil_coucher2 & ")", 0)
             log("Initialisation des heures du soleil : " & var_soleil_lever & " (" & var_soleil_lever2 & ") - " & var_soleil_coucher & " (" & var_soleil_coucher2 & ")", -1)
@@ -422,6 +446,7 @@ Public Class domos_svc
 
             '---------- Ajout d'un handler sur la modification de l'etat d'un composant -------
             etape_startup = 22
+            resumemail = resumemail & Chr(10) & "Lancement Handler sur la table composants"
             log("Lancement de l'handler sur l etat des composants", 0)
             AddHandler table_composants.ColumnChanged, New DataColumnChangeEventHandler(AddressOf table_composants_changed)
             log("", 0)
@@ -429,6 +454,7 @@ Public Class domos_svc
             '----- recupération de la liste des composants bannis -----
             log("SQL : Récupération de la liste des composants bannis :", 0)
             log("SQL : Récupération de la liste des composants bannis", -1)
+            resumemail = resumemail & Chr(10) & "Récupération de la liste des composants bannis"
             err = Table_maj_sql(table_composants_bannis, "SELECT * FROM composants_bannis")
             If err <> "" Then
                 log("SQL : " & err, 2)
@@ -436,10 +462,13 @@ Public Class domos_svc
                 If table_composants_bannis.Rows.Count() > 0 Then
                     'affichage de la liste des composants bannis
                     For i = 0 To table_composants_bannis.Rows.Count() - 1
-                        log("     -> Id : " & table_composants_bannis.Rows(i).Item("composants_bannis_id") & " -- Norme : " & table_composants_bannis.Rows(i).Item("composants_bannis_norme") & " -- Adresse : " & table_composants_bannis.Rows(i).Item("composants_bannis_adresse") & " -- Description : " & table_composants_bannis.Rows(i).Item("composants_bannis_description"), 0)
+                        texte = "     -> Id : " & table_composants_bannis.Rows(i).Item("composants_bannis_id") & " -- Norme : " & table_composants_bannis.Rows(i).Item("composants_bannis_norme") & " -- Adresse : " & table_composants_bannis.Rows(i).Item("composants_bannis_adresse") & " -- Description : " & table_composants_bannis.Rows(i).Item("composants_bannis_description")
+                        resumemail = resumemail & Chr(10) & texte
+                        log(texte, 0)
                     Next
                 Else
                     log("     -> Aucun composant banni trouvé", 0)
+                    resumemail = resumemail & Chr(10) & "     -> Aucun composant banni trouvé"
                 End If
             End If
             log("", 0)
@@ -448,6 +477,7 @@ Public Class domos_svc
             etape_startup = 23
             log("SQL : Récupération de la liste des macros :", 0)
             log("SQL : Récupération de la liste des macros", -1)
+            resumemail = resumemail & Chr(10) & Chr(10) & "Récupération de la liste des macros"
             err = Table_maj_sql(table_macros, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions NOT LIKE '%CT#%'")
             If err <> "" Then
                 log("SQL : " & err, 2)
@@ -459,10 +489,13 @@ Public Class domos_svc
                     'affichage de la liste des macros
                     For i = 0 To table_macros.Rows.Count() - 1
                         table_macros.Rows(i).Item("verrou") = False
-                        log("     -> Id : " & table_macros.Rows(i).Item("macro_id") & " -- Nom : " & table_macros.Rows(i).Item("macro_nom") & " -- Condition : " & table_macros.Rows(i).Item("macro_conditions") & " -- Action : " & table_macros.Rows(i).Item("macro_actions"), 0)
+                        texte = "     -> Id : " & table_macros.Rows(i).Item("macro_id") & " -- Nom : " & table_macros.Rows(i).Item("macro_nom") & " -- Condition : " & table_macros.Rows(i).Item("macro_conditions") & " -- Action : " & table_macros.Rows(i).Item("macro_actions")
+                        resumemail = resumemail & Chr(10) & texte
+                        log(texte, 0)
                     Next
                 Else
                     log("     -> Aucune macro trouvée", 0)
+                    resumemail = resumemail & Chr(10) & "     -> Aucune macro trouvée"
                 End If
             End If
             log("", 0)
@@ -471,6 +504,7 @@ Public Class domos_svc
             etape_startup = 24
             log("SQL : Récupération de la liste des timers :", 0)
             log("SQL : Récupération de la liste des timers", -1)
+            resumemail = resumemail & Chr(10) & Chr(10) & "Récupération de la liste des timers"
             err = Table_maj_sql(table_timer, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions LIKE '%CT#%'")
             If err <> "" Then
                 log("SQL : " & err, 2)
@@ -480,17 +514,16 @@ Public Class domos_svc
                 table_timer.Columns.Add(x)
                 If table_timer.Rows.Count() > 0 Then
                     'affichage de la liste des timers
-                    If table_timer.Rows.Count() > 0 Then
-                        For i = 0 To table_timer.Rows.Count() - 1
-                            table_timer.Rows(i).Item("timer") = timer_convertendate(table_timer.Rows(i).Item("macro_conditions"))
-                            log("     -> Id : " & table_timer.Rows(i).Item("macro_id") & " -- Nom : " & table_timer.Rows(i).Item("macro_nom") & " -- Condition : " & table_timer.Rows(i).Item("macro_conditions") & " -- Action : " & table_timer.Rows(i).Item("macro_actions") & " -- Timer : " & table_timer.Rows(i).Item("timer"), 0)
-                        Next
-                    Else
-                        log("     -> Aucun timer trouvé", 0)
-                    End If
+                    For i = 0 To table_timer.Rows.Count() - 1
+                        table_timer.Rows(i).Item("timer") = timer_convertendate(table_timer.Rows(i).Item("macro_conditions"))
+                        texte = "     -> Id : " & table_timer.Rows(i).Item("macro_id") & " -- Nom : " & table_timer.Rows(i).Item("macro_nom") & " -- Condition : " & table_timer.Rows(i).Item("macro_conditions") & " -- Action : " & table_timer.Rows(i).Item("macro_actions") & " -- Timer : " & table_timer.Rows(i).Item("timer")
+                        resumemail = resumemail & Chr(10) & texte
+                        log(texte, 0)
+                    Next
                 Else
                     log("     -> Aucun timer trouvé", 0)
-                End If
+                    resumemail = resumemail & Chr(10) & "     -> Aucun timer trouvé"
+            End If
                 log("", 0)
             End If
 
@@ -499,6 +532,7 @@ Public Class domos_svc
             If Serv_RFX Then
                 log("RFX : Lancement et paramétrage du RFXCOM", 0)
                 log("RFX : Lancement et paramétrage du RFXCOM", -1)
+                resumemail = resumemail & Chr(10) & Chr(10) & "Lancement et paramétrage du RFXCOM"
                 log("     -> " & rfxcom.lancer(), 0)
                 ' ENALL / DISARC / DISKOP / DISX10 / DISHE / DISOREGON / DISATI / DISVIS / DISSOMFY
                 err = rfxcom.ecrire(&HF0, rfxcom.MODEVAR)
@@ -527,6 +561,7 @@ Public Class domos_svc
             '---------- Lancement de la zibase -------
             etape_startup = 26
             If Serv_ZIB Then
+                resumemail = resumemail & Chr(10) & "Lancement de la Zibase"
                 err = zibase.lancer()
                 If STRGS.Left(err, 4) = "ERR:" Then
                     Serv_ZIB = False 'desactivation du ZIB car erreur de lancement
@@ -542,6 +577,7 @@ Public Class domos_svc
             '---------- Initialisation du Socket -------
             etape_startup = 30
             If Serv_SOC Then
+                resumemail = resumemail & Chr(10) & "Initialisation du socket"
                 err = socket.ouvrir(socket_ip, socket_port)
                 If STRGS.Left(err, 4) = "ERR:" Then
                     Serv_SOC = False
@@ -558,6 +594,7 @@ Public Class domos_svc
             etape_startup = 31
             log("Lancement du Pool", 0)
             log("Lancement du Pool", -1)
+            resumemail = resumemail & Chr(10) & "Lancement du pool"
             timer_pool = New System.Timers.Timer
             AddHandler timer_pool.Elapsed, AddressOf pool
             timer_pool.Interval = 1000
@@ -566,6 +603,7 @@ Public Class domos_svc
             etape_startup = 32
             log("Lancement du Timer", 0)
             log("Lancement du Timer", -1)
+            resumemail = resumemail & Chr(10) & "Lancement du Timer"
             timer_timer = New System.Timers.Timer
             AddHandler timer_timer.Elapsed, AddressOf timer
             timer_timer.Interval = 1000
@@ -577,6 +615,7 @@ Public Class domos_svc
             log("", 0)
             log("--- Service démarré ---", 0)
             log("--- Service démarré ---", -1)
+            SendMessage("Service started", "Domos Service a été démarré à " & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & Chr(10) & Chr(10) & Chr(10) & resumemail)
             log("", 0)
         Catch ex As Exception
             log("ERR: Init exception : Fermeture du programme : " & ex.ToString, 1)
@@ -588,16 +627,19 @@ Public Class domos_svc
 
     Private Sub svc_stop()
         Try
+            Dim resumemail As String
             log_niveau = 0
             log("", 0)
             log("--- Arret du Service ---", 0)
             log("--- Arret du Service ---", -1)
+            resumemail = ""
             log("", 0)
 
             '---------- arret du timer -------
             If etape_startup > 32 Then
                 log("Arret du Timer :", 0)
                 log("Arret du Timer", -1)
+                resumemail = resumemail & Chr(10) & "Arret du timer"
                 timer_timer.Stop()
                 timer_timer.Dispose()
                 log("     -> Arrété", 0)
@@ -606,6 +648,7 @@ Public Class domos_svc
             If etape_startup > 31 Then
                 log("Arret du Pool :", 0)
                 log("Arret du Pool", -1)
+                resumemail = resumemail & Chr(10) & "Arret du pool"
                 timer_pool.Stop()
                 timer_pool.Dispose()
                 log("     -> Arrété", 0)
@@ -615,6 +658,7 @@ Public Class domos_svc
             If etape_startup > 30 Then
                 If Serv_SOC Then
                     log("SOC : Fermeture de la connexion : ", 0)
+                    resumemail = resumemail & Chr(10) & "SOC : Fermeture de la connexion"
                     err = socket.fermer()
                     If STRGS.Left(err, 4) = "ERR:" Then
                         log(" -> SOC Fermeture : " & err, 2)
@@ -628,6 +672,7 @@ Public Class domos_svc
             '---------- attente fin des threads : 5 secondes -------
             log("Attente fin des threads :", 0)
             log("Attente fin des threads", -1)
+            resumemail = resumemail & Chr(10) & "Attente fin des threads"
             Dim i As Integer = 0
             While table_thread.Rows.Count() > 0 And i < 10
                 Try
@@ -647,6 +692,7 @@ Public Class domos_svc
             If etape_startup > 4 Then
                 If Serv_WIR Then
                     log("WIR : Fermeture de la clé USB : ", 0)
+                    resumemail = resumemail & Chr(10) & "WIR : Fermeture de la clé USB"
                     err = onewire.close()
                     If STRGS.Left(err, 4) = "ERR:" Then
                         log(" -> WIR Fermeture : " & err, 2)
@@ -661,6 +707,7 @@ Public Class domos_svc
             If etape_startup > 5 Then
                 If Serv_WI2 Then
                     log("WI2 : Fermeture de la clé USB : ", 0)
+                    resumemail = resumemail & Chr(10) & "WI2 : Fermeture de la clé USB"
                     err = onewire2.close()
                     If STRGS.Left(err, 4) = "ERR:" Then
                         log(" -> WI2 Fermeture : " & err, 2)
@@ -675,6 +722,7 @@ Public Class domos_svc
             If etape_startup > 6 Then
                 If Serv_RFX Then
                     log("RFX : Fermeture de la connexion : ", 0)
+                    resumemail = resumemail & Chr(10) & "RFX : Fermeture de la connexion"
                     err = rfxcom.fermer()
                     If STRGS.Left(err, 4) = "ERR:" Then
                         log(" -> RFX Fermeture : " & err, 2)
@@ -689,6 +737,7 @@ Public Class domos_svc
             If etape_startup > 7 Then
                 If Serv_PLC Then
                     log("PLC : Fermeture de la connexion : ", 0)
+                    resumemail = resumemail & Chr(10) & "PLC : Fermeture de la connexion"
                     err = plcbus.fermer()
                     If STRGS.Left(err, 4) = "ERR:" Then
                         log(" -> PLC Fermeture : " & err, 2)
@@ -703,6 +752,7 @@ Public Class domos_svc
             If etape_startup > 8 Then
                 If Serv_X10 Then
                     log("X10 : Fermeture de la connexion : ", 0)
+                    resumemail = resumemail & Chr(10) & "X10 : Fermeture de la connexion"
                     err = x10.fermer()
                     If STRGS.Left(err, 4) = "ERR:" Then
                         log(" -> X10 Fermeture : " & err, 2)
@@ -717,6 +767,7 @@ Public Class domos_svc
             If etape_startup > 26 Then
                 If Serv_ZIB Then
                     log("ZIB : Fermeture de la connexion : ", 0)
+                    resumemail = resumemail & Chr(10) & "ZIB : Fermeture de la connexion"
                     err = zibase.fermer()
                     If STRGS.Left(err, 4) = "ERR:" Then
                         log(" -> ZIB Fermeture : " & err, 2)
@@ -730,6 +781,7 @@ Public Class domos_svc
             '---------- deconnexion mysql -------
             If etape_startup > 2 Then
                 log("SQL : Déconnexion du serveur", 0)
+                resumemail = resumemail & Chr(10) & "SQL : Fermeture de la connexion"
                 log("", 0)
                 err = mysql.mysql_close()
                 log("SQL : Déconnexion du serveur " & err, -1)
@@ -744,8 +796,10 @@ Public Class domos_svc
             Serv_DOMOS = False
             etape_startup = 0
             log("", 0)
+            resumemail = resumemail & Chr(10) & Chr(10) & "Service arrété"
             log("--- Service arrété ---", 0)
             log("--- Service arrété ---", -1)
+            SendMessage("Service stopped", "Domos Service a été arrêté à " & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & Chr(10) & Chr(10) & Chr(10) & resumemail)
             log("", 0)
         Catch ex As Exception
             log("ERR: Close exception : " & ex.ToString, 1)
@@ -762,6 +816,7 @@ Public Class domos_svc
         'log les infos dans un fichier texte et/ou sql
         ' texte : string contenant le texte à logger
         ' niveau : int contenant le type de log
+        '   -2 : uniquement mail
         '   -1 : uniquement pour les eventslogs
         '    0 : Programme : Lancement / Arrêt / redémarrage...
         '    1 : Erreurs critiques : erreurs faisant ou pouvant planter le programme ou bloquant le fonctionnement
@@ -804,6 +859,8 @@ Public Class domos_svc
                             texte = texte & " (" & tabletemp(0).Item("nombre") & "x)"
                         Else
                             texte = texte & " (" & tabletemp(0).Item("nombre") & "x -> erreur multiple, on ne logue plus jusqu'à " & tabletemp(0)("datetime").ToString & ")"
+                            'envoi d'un mail car erreur redondante
+                            SendMessage("Erreur redondante", texte)
                         End If
                     End If
                 Else
@@ -836,10 +893,13 @@ Public Class domos_svc
                         mysql.mysql_nonquery("INSERT INTO logs(logs_source,logs_description,logs_date) VALUES('" & niveau & "', '" & texte & "', '" & dateheure & "')")
                     End If
                 End If
-                'Log dans les events logs
+                'Log dans les events logs / mail
                 Select Case niveau
+                    Case "-2" : SendMessage("Message", texte)
                     Case "-1" : ecrireevtlog(texte, 3, 100)
-                    Case "1" : ecrireevtlog(texte, 1, 101)
+                    Case "1"
+                        ecrireevtlog(texte, 1, 101)
+                        SendMessage("Erreur critique", texte)
                     Case "3" : ecrireevtlog(texte, 3, 103)
                     Case "4" : ecrireevtlog(texte, 3, 104)
                 End Select
@@ -883,40 +943,43 @@ Public Class domos_svc
     End Sub
 
     Public Shared Sub SendMessage(ByVal subject As String, ByVal messageBody As String)
+        'envoi un email
         Dim message As New MailMessage()
         Dim client As New SmtpClient()
 
-        Dim fromAddress As String = mail_from
-        Dim toAddress As String = mail_to
-        Dim ccAddress As String = ""
-        Dim smtpserver As String = mail_smtp
+        If mail_from <> "" And mail_smtp <> "" And mail_to <> "" Then
+            Dim fromAddress As String = mail_from
+            Dim toAddress As String = mail_to
+            Dim ccAddress As String = ""
+            Dim smtpserver As String = mail_smtp
 
-        'Set the sender's address
-        message.From = New MailAddress(fromAddress)
+            'Set the sender's address
+            message.From = New MailAddress(fromAddress)
 
-        'Allow multiple "To" addresses to be separated by a semi-colon
-        If (toAddress.Trim.Length > 0) Then
-            For Each addr As String In toAddress.Split(";"c)
-                message.To.Add(New MailAddress(addr))
-            Next
+            'Allow multiple "To" addresses to be separated by a semi-colon
+            If (toAddress.Trim.Length > 0) Then
+                For Each addr As String In toAddress.Split(";"c)
+                    message.To.Add(New MailAddress(addr))
+                Next
+            End If
+
+            'Allow multiple "Cc" addresses to be separated by a semi-colon
+            If (ccAddress.Trim.Length > 0) Then
+                For Each addr As String In ccAddress.Split(";"c)
+                    message.CC.Add(New MailAddress(addr))
+                Next
+            End If
+
+            'Set the subject and message body text
+            message.Subject = "[DOMOS] " & subject
+            message.Body = messageBody
+
+            'Set the SMTP server to be used to send the message
+            client.Host = smtpserver
+
+            'Send the e-mail message
+            client.Send(message)
         End If
-
-        'Allow multiple "Cc" addresses to be separated by a semi-colon
-        If (ccAddress.Trim.Length > 0) Then
-            For Each addr As String In ccAddress.Split(";"c)
-                message.CC.Add(New MailAddress(addr))
-            Next
-        End If
-
-        'Set the subject and message body text
-        message.Subject = subject
-        message.Body = messageBody
-
-        'Set the SMTP server to be used to send the message
-        client.Host = smtpserver
-
-        'Send the e-mail message
-        client.Send(message)
     End Sub
 
     Public Shared Sub wait(ByVal msec As Integer)
