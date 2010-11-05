@@ -777,6 +777,7 @@ Public Class domos_svc
         Dim dateheure, fichierlog As String
         Dim erreur_log As Integer = 1
         Try
+            texte = texte.Replace("'", "")
             'gestion de la table des erreurs si on doit loguer une erreur
             If niveau = "2" Then
                 'si c'est une erreur générale

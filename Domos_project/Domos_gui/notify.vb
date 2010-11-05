@@ -6,8 +6,15 @@ Imports System.Globalization
 
 Public Class notify
 
+    Private mysql As New mysql
+    Private socket As New sockets
+
+    Private table_config As New DataTable
     Private controller As New ServiceController("DOMOS", ".")
-    Dim mysql_ip, mysql_db, mysql_login, mysql_mdp, install_dir As String
+    Dim mysql_ip, mysql_db, mysql_login, mysql_mdp, install_dir, err As String
+    Dim socket_gui_ip As String
+    Dim socket_gui_port As Integer
+
     '----------------- FORM MANAGEMENT BUTTONS ----------------------
     'chargement du GUI
     Private Sub notify_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
@@ -15,6 +22,7 @@ Public Class notify
         Thread.CurrentThread.CurrentCulture = New CultureInfo("en-US")
         My.Application.ChangeCulture("en-US")
 
+        'creation de l'objet service
         Try
             Dim x = controller.ServiceName
         Catch ex As Exception
@@ -22,6 +30,7 @@ Public Class notify
             Application.Exit()
         End Try
 
+        'recup info registry
         Try
             Dim regKey, regKey2 As RegistryKey
             regKey = Registry.LocalMachine.OpenSubKey("SOFTWARE")
@@ -47,15 +56,65 @@ Public Class notify
             MsgBox("Error while loading Domos GUI !" & Chr(10) & Chr(10) & ex.ToString, MsgBoxStyle.Critical, "ERROR")
             Application.Exit()
         End Try
+
+        'recup configuration from sql database
+        Try
+            'connexion SQL
+            err = mysql.mysql_connect(mysql_ip, mysql_db, mysql_login, mysql_mdp)
+            If err <> "" Then
+                MsgBox("Error while connecting to mysql database" & err)
+                Application.Exit()
+            End If
+            'recup config
+            err = mysql.mysql_query(table_config, "SELECT config_nom,config_valeur FROM config")
+            If table_config.Rows.Count() > 0 Then
+                socket_gui_ip = table_config.Select("config_nom = 'socket_ip'")(0)("config_valeur")
+                socket_gui_port = table_config.Select("config_nom = 'socket_portgui'")(0)("config_valeur")
+            Else
+                MsgBox("Error while connecting to mysql database : pas de données récupérées")
+                Application.Exit()
+            End If
+            'fermeture connexion
+            err = mysql.mysql_close()
+            If err <> "" Then
+                MsgBox("Error while closing mysql connexion")
+            End If
+        Catch ex As Exception
+            MsgBox("Error while loading configuration from SQL database !" & Chr(10) & Chr(10) & ex.ToString, MsgBoxStyle.Critical, "ERROR")
+            Application.Exit()
+        End Try
+
+        'lancement du socket
+        Try
+            err = socket.ouvrir(socket_gui_ip, socket_gui_port)
+            If STRGS.Left(err, 4) = "ERR:" Then
+                MsgBox("Error while loading socket !" & Chr(10) & Chr(10) & err, MsgBoxStyle.Critical, "ERROR")
+                Application.Exit()
+            End If
+        Catch ex As Exception
+            MsgBox("Error while loading socket !" & Chr(10) & Chr(10) & ex.ToString, MsgBoxStyle.Critical, "ERROR")
+            Application.Exit()
+        End Try
     End Sub
     'Exit GUI
     Private Sub ExitToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles ExitToolStripMenuItem.Click
-        Application.Exit()
+        notify_exit()
     End Sub
     Private Sub BTN_exit_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles BTN_exit.Click
+        notify_exit()
+    End Sub
+    Private Sub notify_exit()
+        Try
+            err = socket.fermer()
+            If STRGS.Left(err, 4) = "ERR:" Then
+                MsgBox("Error while closing socket !" & Chr(10) & Chr(10) & err, MsgBoxStyle.Critical, "ERROR")
+            End If
+        Catch ex As Exception
+            MsgBox("Error while closing socket !" & Chr(10) & Chr(10) & ex.ToString, MsgBoxStyle.Critical, "ERROR")
+        End Try
+
         Application.Exit()
     End Sub
-    'minimize GUI
     Private Sub BTN_minimize_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles BTN_minimize.Click
         Me.WindowState = FormWindowState.Minimized
         Me.Hide()
@@ -255,6 +314,82 @@ Public Class notify
         controller.ExecuteCommand(210)
     End Sub
 
+    '------------------- ACTIONS SOCKET ---------------------------
+    'actions sur reception message par socket
+    Sub action(ByVal texte As String)
+        If texte = "stop" Then 'arret du service
+            'STOP Service
+            Try
+                controller.Refresh()
+                If controller.Status.Equals(ServiceControllerStatus.StartPending) Or controller.Status.Equals(ServiceControllerStatus.PausePending) Then
+                    WriteLog("WAR: Wait that Domos service to be completely started/paused before stoping it !")
+                ElseIf controller.Status.Equals(ServiceControllerStatus.Stopped) Or controller.Status.Equals(ServiceControllerStatus.StopPending) Then
+                    WriteLog("WAR: Domos service is already stopped/stoping !")
+                ElseIf controller.Status.Equals(ServiceControllerStatus.Running) Or controller.Status.Equals(ServiceControllerStatus.Paused) Then
+                    controller.Stop()
+                End If
+                'controller.Refresh()
+                WriteLog("Stopping Domos service")
+            Catch ex As Exception
+                WriteLog("ERR: Error while stoping Domos service" & ex.ToString)
+            End Try
+        ElseIf texte = "restart" Then 'restart du service
+            'RESTART Service
+            Try
+                controller.Refresh()
+                If controller.Status.Equals(ServiceControllerStatus.StartPending) Or controller.Status.Equals(ServiceControllerStatus.PausePending) Then
+                    WriteLog("WAR: Wait that Domos service to be completely started/paused before restarting it")
+                ElseIf controller.Status.Equals(ServiceControllerStatus.StopPending) Then
+                    WriteLog("WAR: Wait that Domos service to be completely stoped before restarting it")
+                ElseIf controller.Status.Equals(ServiceControllerStatus.Running) Or controller.Status.Equals(ServiceControllerStatus.Paused) Then
+                    controller.Stop()
+                    controller.Refresh()
+                    controller.WaitForStatus(ServiceControllerStatus.Stopped)
+                    controller.Refresh()
+                    controller.Start()
+                ElseIf controller.Status.Equals(ServiceControllerStatus.Stopped) Then
+                    controller.Start()
+                End If
+                'controller.Refresh()
+                WriteLog("Starting Domos service")
+            Catch ex As Exception
+                WriteLog("ERR: Error while restarting Domos service" & ex.ToString)
+            End Try
+        ElseIf texte = "start" Then 'start du service
+            'START Service
+            Try
+                controller.Refresh()
+                If controller.Status.Equals(ServiceControllerStatus.StopPending) Or controller.Status.Equals(ServiceControllerStatus.PausePending) Then
+                    WriteLog("WAR: Wait that Domos service to be completely stopped/paused before starting it !")
+                ElseIf controller.Status.Equals(ServiceControllerStatus.Running) Then
+                    WriteLog("WAR: Domos service is already started !")
+                ElseIf controller.Status.Equals(ServiceControllerStatus.Paused) Then
+                    controller.Continue()
+                ElseIf controller.Status.Equals(ServiceControllerStatus.Stopped) Then
+                    controller.Start()
+                End If
+                'controller.Refresh()
+                WriteLog("Restarting Domos service")
+            Catch ex As Exception
+                WriteLog("ERR: Error while starting Domos service" & ex.ToString)
+            End Try
+        End If
+    End Sub
+
+    '---------------------- EVENT LOG ---------------------------
+    Public Sub WriteLog(ByVal message As String)
+        'utilise la fonction de base pour loguer un event
+        Dim myEventLog = New EventLog()
+        myEventLog.Source = "Domos"
+        If STRGS.InStr(message, "ERR:") > 0 Then
+            myEventLog.WriteEntry("GUI: " & message, EventLogEntryType.Error, 90)
+        ElseIf STRGS.InStr(message, "WAR:") > 0 Then
+            myEventLog.WriteEntry("GUI: " & message, EventLogEntryType.Warning, 91)
+        Else
+            myEventLog.WriteEntry("GUI: " & message, EventLogEntryType.Information, 92)
+        End If
+    End Sub
+
     ''---------------------- TESTS ---------------------------
     'Dim xx10 As New x10
 
@@ -293,12 +428,11 @@ Public Class notify
 
     'End Sub
 
-    Dim zibase As New zibasemodule
-    Private Sub X10openToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10openToolStripMenuItem.Click
-        zibase.lancer()
-    End Sub
+    'Private Sub X10openToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10openToolStripMenuItem.Click
 
-    Private Sub X10closeToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10closeToolStripMenuItem.Click
-        zibase.fermer()
-    End Sub
+    'End Sub
+
+    'Private Sub X10closeToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10closeToolStripMenuItem.Click
+
+    'End Sub
 End Class

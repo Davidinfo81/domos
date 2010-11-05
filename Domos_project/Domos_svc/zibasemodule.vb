@@ -324,7 +324,7 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
                                     '--- Modification de la date dans la base SQL ---
                                     dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                                     Err = domos_svc.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-                                    If Err <> "" Then Log("SQL: table_comp_changed " & Err, 2)
+                                    If Err <> "" Then WriteLog("ERR: inchange lastetat : " & Err)
                                 Else
                                     'on vérifie que la valeur a changé de plus de composants_precision sinon inchangé
                                     If (CDbl(valeur) + CDbl(tabletmp(0)("composants_precision"))) >= CDbl(tabletmp(0)("composants_etat")) And (CDbl(valeur) - CDbl(tabletmp(0)("composants_precision"))) <= CDbl(tabletmp(0)("composants_etat")) Then
@@ -333,7 +333,7 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
                                         '--- Modification de la date dans la base SQL ---
                                         dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                                         Err = domos_svc.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-                                        If Err <> "" Then Log("SQL: table_comp_changed " & Err, 2)
+                                        If Err <> "" Then WriteLog("ERR: inchange precision : " & Err)
                                     Else
                                         domos_svc.log("ZIB : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString, 6)
                                         '  --- modification de l'etat du composant dans la table en memoire ---
@@ -361,7 +361,7 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
                             '--- Modification de la date dans la base SQL ---
                             dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                             Err = domos_svc.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-                            If Err <> "" Then WriteLog("ERR: SQL: table_comp_changed " & Err)
+                            If Err <> "" Then WriteLog("ERR: inchange : " & Err)
                         End If
                     Else
                         'erreur d'acquisition
@@ -374,7 +374,7 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
                 'erreur d'adresse composant
                 tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_adresse = '" & adresse.ToString & "' AND composants_bannis_norme = 'ZIB'")
                 If tabletmp.GetUpperBound(0) >= 0 Then
-                    'on ne logue pas car c'est une adresse bannie
+                    'on logue en debug car c'est une adresse bannie
                     WriteLog("DBG: IGNORE : Adresse Bannie : " & adresse.ToString & " : " & valeur.ToString)
                 Else
                     WriteLog("ERR: Adresse composant : " & adresse.ToString & " : " & valeur.ToString)
