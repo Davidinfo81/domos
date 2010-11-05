@@ -30,6 +30,8 @@ $resultat = mysql_query("select config_valeur from config where config_nom='sock
 $adresse = mysql_result($resultat,0,"config_valeur");
 $resultat = mysql_query("select config_valeur from config where config_nom='socket_port'");
 $port = mysql_result($resultat,0,"config_valeur");
+$resultat = mysql_query("select config_valeur from config where config_nom='socket_portgui'");
+$portgui = mysql_result($resultat,0,"config_valeur");
 
 echo "<script type=\"text/javascript\">
 	function afficherResultats_socket(obj) {
@@ -42,6 +44,15 @@ echo "<script type=\"text/javascript\">
 		XHR.appendData('message', message);
 		XHR.appendData('adresse', \"$adresse\");
 		XHR.appendData('port', \"$port\");
+		XHR.sendAndLoad('pages/actions.php', 'POST', afficherResultats_socket);
+	}
+	function sendsocketgui(message) {
+		document.getElementById('ack').innerHTML='In progress';
+		var XHR = new XHRConnection();
+		XHR.appendData('tache', \"socket\");
+		XHR.appendData('message', message);
+		XHR.appendData('adresse', \"$adresse\");
+		XHR.appendData('port', \"$portgui\");
 		XHR.sendAndLoad('pages/actions.php', 'POST', afficherResultats_socket);
 	}
 	function sendtexte() {
@@ -104,6 +115,7 @@ echo "<script type=\"text/javascript\">
 echo "
 Arrêt du service : <a href=javascript:sendsocket(\"([AS#stop])\")>STOP</a> <br /><br />
 Redémarrage du service : <a href=javascript:sendsocket(\"([AS#restart])\")>RESTART</a> <br /><br />
+GUI :  Domos service : <a href=javascript:sendsocketgui(\"start\")>Start</a> / <a href=javascript:sendsocketgui(\"stop\")>Stop</a> / <a href=javascript:sendsocketgui(\"restart\")>Restart</a> <br /><br />
 Maj des tables : <a href=javascript:sendsocket(\"([AS#maj_all])\")>ALL</a> - <a href=javascript:sendsocket(\"([AS#maj_composants])\")>Composants</a> - <a href=javascript:sendsocket(\"([AS#maj_composants_bannis])\")>Cmp bannis</a> - <a href=javascript:sendsocket(\"([AS#maj_macro])\")>Macros</a> - <a href=javascript:sendsocket(\"([AS#maj_timer])\")>Timers</a> <br /><br />
 Affichage des tables : <a href=javascript:sendsocket(\"([AS#afftables])\")>AFFTABLES</a> <br /><br />
 Envoyer une action : <form name='sendformaction'><input type='text' name='texte' value='([AL#test])' style='width: 500px;'/> <input type=button value='Send' class=\"formsubmit\" onClick='sendtexte();'></form>
