@@ -98,7 +98,7 @@ CREATE TABLE `config` (
   `config_valeur` text NOT NULL,
   `config_description` text NOT NULL,
   PRIMARY KEY (`config_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=36 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=37 DEFAULT CHARSET=latin1;
 INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_description`) VALUES
 ('1', 'Serv_X10', '1', 'X10 : 0=desactive 1=active'),
 ('2', 'Serv_WIR', '1', '1-wire : 0=desactive 1=active'),
@@ -134,7 +134,8 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('32', 'logs_erreur_nb', '3', 'Nb d erreurs identique a loguer pendant logs_erreur_duree'),
 ('33', 'logs_erreur_duree', '60', 'Duree pendant laquelle on ne logue pas plus de logs_erreur_nb erreurs identiques'),
 ('34', 'menu_seticone', '1', 'Numero du set d icones pour le menu (www\\images\\menu\\x)'),
-('35', 'Serv_TSK', '0', 'Tellstick : 0=desactive 1=active');
+('35', 'Serv_TSK', '0', 'Tellstick : 0=desactive 1=active'), 
+('36', 'socket_portgui', '3853', 'Socket : Port du serveur GUI (3853)');
 
 CREATE TABLE `logs` (
   `logs_id` bigint(20) NOT NULL AUTO_INCREMENT,
