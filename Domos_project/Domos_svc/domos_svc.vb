@@ -23,7 +23,7 @@ Public Class domos_svc
     Public Shared Serv_DOMOS, Serv_WIR, Serv_WI2, Serv_PLC, Serv_X10, Serv_RFX, Serv_ZIB, Serv_TSK, Serv_SOC As Boolean
     Public Shared Port_PLC, Port_X10, Port_RFX, Port_WIR, Port_WI2, socket_ip, WIR_adaptername As String
     Public Shared PLC_timeout, X10_timeout, Action_timeout, rfx_tpsentrereponse, socket_port, lastetat, WIR_res As Integer
-    Public Shared WIR_timeout, ZIB_timeout, heure_coucher_correction, heure_lever_correction As Integer
+    Public Shared WIR_timeout, ZIB_timeout, TSK_timeout, heure_coucher_correction, heure_lever_correction As Integer
     Public Shared logs_erreur_nb, logs_erreur_duree As Integer
     Public Shared gps_longitude, gps_latitude, mail_smtp, mail_from, mail_to As String
     Dim WithEvents timer_pool, timer_timer As New System.Timers.Timer
@@ -94,6 +94,7 @@ Public Class domos_svc
         PLC_timeout = 500
         WIR_timeout = 500
         ZIB_timeout = 500
+        TSK_timeout = 500
         Action_timeout = 500
         rfx_tpsentrereponse = 1500
         lastetat = 1
@@ -116,31 +117,32 @@ Public Class domos_svc
 
     Protected Overrides Sub OnCustomCommand(ByVal command As Integer)
         If command = 200 Then
-            EventLog.WriteEntry("Custom Command 200 : SQL-optimise")
+            'EventLog.WriteEntry("Custom Command 200 : SQL-optimise")
+            log("Custom Command 200 : SQL-optimise", -1)
             action("([AN#SQL#optimise])")
         ElseIf command = 201 Then
-            EventLog.WriteEntry("Custom Command 201 : SQL-purgelogs")
+            log("Custom Command 201 : SQL-purgelogs", -1)
             action("([AN#SQL#purgelogs])")
         ElseIf command = 202 Then
-            EventLog.WriteEntry("Custom Command 202 : SQL-reconnect")
+            log("Custom Command 202 : SQL-reconnect", -1)
             action("([AN#SQL#reconnect])")
         ElseIf command = 210 Then
-            EventLog.WriteEntry("Custom Command 210 : AFFICHE-tables")
+            log("Custom Command 210 : AFFICHE-tables", -1)
             action("([AS#afftables])")
         ElseIf command = 211 Then
-            EventLog.WriteEntry("Custom Command 211 : MAJ-tables")
+            log("Custom Command 211 : MAJ-tables", -1)
             action("([AS#maj_all])")
         ElseIf command = 212 Then
-            EventLog.WriteEntry("Custom Command 212 : MAJ-table_composants")
+            log("Custom Command 212 : MAJ-table_composants", -1)
             action("([AS#maj_composants])")
         ElseIf command = 213 Then
-            EventLog.WriteEntry("Custom Command 213 : MAJ-table_composants_bannis")
+            log("Custom Command 213 : MAJ-table_composants_bannis", -1)
             action("([AS#maj_composants_bannis])")
         ElseIf command = 214 Then
-            EventLog.WriteEntry("Custom Command 214 : MAJ-table_macros")
+            log("Custom Command 214 : MAJ-table_macros", -1)
             action("([AS#maj_macro])")
         ElseIf command = 215 Then
-            EventLog.WriteEntry("Custom Command 215 : MAJ-table_timer")
+            log("Custom Command 215 : MAJ-table_timer", -1)
             action("([AS#maj_timer])")
         End If
     End Sub
@@ -232,6 +234,9 @@ Public Class domos_svc
                 Port_WI2 = table_config.Select("config_nom = 'Port_WI2'")(0)("config_valeur")
                 X10_timeout = table_config.Select("config_nom = 'X10_timeout'")(0)("config_valeur")
                 PLC_timeout = table_config.Select("config_nom = 'PLC_timeout'")(0)("config_valeur")
+                WIR_timeout = table_config.Select("config_nom = 'WIR_timeout'")(0)("config_valeur")
+                ZIB_timeout = table_config.Select("config_nom = 'ZIB_timeout'")(0)("config_valeur")
+                TSK_timeout = table_config.Select("config_nom = 'TSK_timeout'")(0)("config_valeur")
                 Action_timeout = table_config.Select("config_nom = 'Action_timeout'")(0)("config_valeur")
                 rfx_tpsentrereponse = table_config.Select("config_nom = 'rfx_tpsentrereponse'")(0)("config_valeur")
                 socket_ip = table_config.Select("config_nom = 'socket_ip'")(0)("config_valeur")
@@ -251,7 +256,8 @@ Public Class domos_svc
                 log("     -> LOG_NIVEAU=" & log_niveau & " LOG_DESTINATION=" & log_dest, 0)
                 log("     -> WIR=" & Serv_WIR & " WI2=" & Serv_WI2 & " PLC=" & Serv_PLC & ":" & Port_PLC & " X10=" & Serv_X10 & ":" & Port_X10, 0)
                 log("     -> ZIB=" & Serv_ZIB & " TSK=" & Serv_TSK & " RFX=" & Serv_RFX & ":" & Port_RFX, 0)
-                log("     -> Action_timeout=" & Action_timeout & " PLC_timeout=" & PLC_timeout & " X10_timeout=" & X10_timeout & " RFX_tpsentrereponse=" & rfx_tpsentrereponse & " Lastetat=" & lastetat, 0)
+                log("     -> Action_timeout=" & Action_timeout & " PLC_timeout=" & PLC_timeout & " X10_timeout=" & X10_timeout & " WIR_timeout=" & WIR_timeout & " ZIB_timeout=" & ZIB_timeout & " TSK_timeout=" & TSK_timeout, 0)
+                log("     -> RFX_tpsentrereponse=" & rfx_tpsentrereponse & " Lastetat=" & lastetat, 0)
                 log("     -> heure_lever_correction=" & heure_lever_correction & " heure_coucher_correction=" & heure_coucher_correction, 0)
                 log("     -> longitude=" & gps_longitude & " latitude=" & gps_latitude, 0)
                 log("     -> Mail smtp=" & mail_smtp & " From=" & mail_from & " To=" & mail_to, 0)
@@ -831,32 +837,30 @@ Public Class domos_svc
         '    7 : Valeurs de composant n'ayant pas changé (inchangé)
         '    8 : Valeurs de composant ayant changé mais < à précision (inchangé precision)
         '    9 : Divers
+        '   10 : DEBUG
 
         Dim dateheure, fichierlog As String
         Dim erreur_log As Integer = 1
         Try
             texte = texte.Replace("'", "")
-            'gestion de la table des erreurs si on doit loguer une erreur
-            If niveau = "2" Then
+            'si on doit loguer une erreur : gestion de la table des erreurs 
+            'mais si on affiche le debug, on log quand meme et on ne gere pas la table des erreurs
+            If niveau = "2" And STRGS.InStr("-10", niveau) <= 0 Then
                 'si c'est une erreur générale
                 Dim tabletemp = table_erreur.Select("texte = '" & texte & "'")
                 If tabletemp.GetLength(0) >= 1 Then
-                    'ecrireevtlog("DBG: on a deja en memoire " & texte & " --> " & tabletemp(0)("datetime").ToString, 3, 109)
                     'on a déjà une erreur de ce type en memoire
                     If Date.Now.ToString("yyyy-MM-dd HH:mm:ss") > tabletemp(0)("datetime").ToString Then
-                        'ecrireevtlog("DBG: ca fait au moins x minutes " & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & ">" & tabletemp(0)("datetime").ToString, 3, 109)
                         'ca fait au moins x minutes qu'on a eu cette erreur, on supprime
                         tabletemp(0).Item("datetime") = DateAdd(DateInterval.Minute, logs_erreur_duree, DateTime.Now).ToString("yyyy-MM-dd HH:mm:ss")
                         tabletemp(0).Item("nombre") = 1
                         'tabletemp(0).Delete()
                     ElseIf CInt(tabletemp(0).Item("nombre").ToString) >= logs_erreur_nb Then
-                        'ecrireevtlog("DBG: ca fait moins de x minutes " & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & ">" & tabletemp(0)("datetime").ToString & " et plus de 2 fois : " & tabletemp(0).Item("nombre").ToString, 3, 109)
                         'ca fait moins de x minutes et + de logs_erreur_nb fois, on ne logue pas
                         tabletemp(0).Item("nombre") = CInt(tabletemp(0).Item("nombre").ToString) + 1
                         erreur_log = 0
                     Else
                         'ca fait moins de x minutes et - de logs_erreur_nb fois, on logue (repeat)
-                        'ecrireevtlog("DBG: ca fait moins de x minutes " & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & ">" & tabletemp(0)("datetime").ToString & " et moins de 2 fois : " & tabletemp(0).Item("nombre").ToString, 3, 109)
                         tabletemp(0).Item("nombre") = CInt(tabletemp(0).Item("nombre").ToString) + 1
                         If CInt(tabletemp(0).Item("nombre").ToString) < logs_erreur_nb Then
                             texte = texte & " (" & tabletemp(0).Item("nombre") & "x)"
@@ -867,7 +871,6 @@ Public Class domos_svc
                         End If
                     End If
                 Else
-                    'ecrireevtlog("DBG: on a pas en memoire " & texte, 3, 109)
                     'cet erreur n'est pas encore présente, on l'ajoute
                     Dim newRow As DataRow
                     newRow = table_erreur.NewRow()
@@ -875,13 +878,12 @@ Public Class domos_svc
                     newRow.Item("nombre") = 1
                     newRow.Item("datetime") = DateAdd(DateInterval.Minute, logs_erreur_duree, DateTime.Now).ToString("yyyy-MM-dd HH:mm:ss")
                     table_erreur.Rows.Add(newRow)
-                    'ecrireevtlog("DBG: ajout en memoire de " & texte & " --> " & DateAdd(DateInterval.Minute, 60, Date.Now).ToString("yyyy-MM-dd HH:mm:ss"), 3, 109)
                 End If
             End If
 
-            'si on peut loguer
+            'si on peut loguer ou si c'est un debug
             If erreur_log = 1 Then
-                If niveau <> "-1" And STRGS.InStr("-" & log_niveau, niveau) > 0 Then
+                If niveau <> "-1" And niveau <> "-2" And STRGS.InStr("-" & log_niveau, niveau) > 0 Then
                     fichierlog = install_dir & "logs\log_" & DateAndTime.Now.ToString("yyyyMMdd") & ".txt"
                     dateheure = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                     If Not Directory.Exists(install_dir & "logs") Then
@@ -910,7 +912,7 @@ Public Class domos_svc
         Catch ex As Exception
             'texte = "LOG: Err exeption : " & ex.ToString
             'mysql.mysql_nonquery("INSERT INTO logs(logs_source,logs_description,logs_date) VALUES('" & niveau & "', '" & texte & "', '" & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & "')")
-            ecrireevtlog("LOG: Err exeption : " & ex.ToString & " --> " & texte, 1, 109)
+            ecrireevtlog("LOG: Exeption : " & ex.ToString & " --> " & texte, 1, 109)
         End Try
     End Sub
 
@@ -918,13 +920,17 @@ Public Class domos_svc
         'message = text to write to event log
         'type = 1:error, 2:warning, 3:information 
         Dim myEventLog = New EventLog()
-        myEventLog.Source = "Domos"
-        Select Case type
-            Case 1 : myEventLog.WriteEntry(message, EventLogEntryType.Error, evtid)
-            Case 2 : myEventLog.WriteEntry(message, EventLogEntryType.Warning, evtid)
-            Case 3 : myEventLog.WriteEntry(message, EventLogEntryType.Information, evtid)
-        End Select
-        'Diagnostics.EventLog.WriteEntry("Domos", message)
+        Try
+            myEventLog.Source = "Domos"
+            Select Case type
+                Case 1 : myEventLog.WriteEntry(message, EventLogEntryType.Error, evtid)
+                Case 2 : myEventLog.WriteEntry(message, EventLogEntryType.Warning, evtid)
+                Case 3 : myEventLog.WriteEntry(message, EventLogEntryType.Information, evtid)
+            End Select
+            'Diagnostics.EventLog.WriteEntry("Domos", message)
+        Catch ex As Exception
+            log("Ecrireevtlog : Execption : " & ex.ToString, 2)
+        End Try
     End Sub
 
     Private Shared Sub EcrireFichier(ByVal CheminFichier As String, ByVal Texte As String)
@@ -941,7 +947,7 @@ Public Class domos_svc
             EcrireFichier(CheminFichier, Texte)
         Catch ex As Exception
             wait(500)
-            log("ERR: Ecrire_fichier exception : " & Texte & " ::: " & ex.ToString, 2)
+            log("Ecrire_fichier : Exception : " & Texte & " ::: " & ex.ToString, 2)
         End Try
     End Sub
 
@@ -949,40 +955,43 @@ Public Class domos_svc
         'envoi un email
         Dim message As New MailMessage()
         Dim client As New SmtpClient()
+        Try
+            If mail_from <> "" And mail_smtp <> "" And mail_to <> "" Then
+                Dim fromAddress As String = mail_from
+                Dim toAddress As String = mail_to
+                Dim ccAddress As String = ""
+                Dim smtpserver As String = mail_smtp
 
-        If mail_from <> "" And mail_smtp <> "" And mail_to <> "" Then
-            Dim fromAddress As String = mail_from
-            Dim toAddress As String = mail_to
-            Dim ccAddress As String = ""
-            Dim smtpserver As String = mail_smtp
+                'Set the sender's address
+                message.From = New MailAddress(fromAddress)
 
-            'Set the sender's address
-            message.From = New MailAddress(fromAddress)
+                'Allow multiple "To" addresses to be separated by a semi-colon
+                If (toAddress.Trim.Length > 0) Then
+                    For Each addr As String In toAddress.Split(";"c)
+                        message.To.Add(New MailAddress(addr))
+                    Next
+                End If
 
-            'Allow multiple "To" addresses to be separated by a semi-colon
-            If (toAddress.Trim.Length > 0) Then
-                For Each addr As String In toAddress.Split(";"c)
-                    message.To.Add(New MailAddress(addr))
-                Next
+                'Allow multiple "Cc" addresses to be separated by a semi-colon
+                If (ccAddress.Trim.Length > 0) Then
+                    For Each addr As String In ccAddress.Split(";"c)
+                        message.CC.Add(New MailAddress(addr))
+                    Next
+                End If
+
+                'Set the subject and message body text
+                message.Subject = "[DOMOS] " & subject
+                message.Body = messageBody
+
+                'Set the SMTP server to be used to send the message
+                client.Host = smtpserver
+
+                'Send the e-mail message
+                client.Send(message)
             End If
-
-            'Allow multiple "Cc" addresses to be separated by a semi-colon
-            If (ccAddress.Trim.Length > 0) Then
-                For Each addr As String In ccAddress.Split(";"c)
-                    message.CC.Add(New MailAddress(addr))
-                Next
-            End If
-
-            'Set the subject and message body text
-            message.Subject = "[DOMOS] " & subject
-            message.Body = messageBody
-
-            'Set the SMTP server to be used to send the message
-            client.Host = smtpserver
-
-            'Send the e-mail message
-            client.Send(message)
-        End If
+        Catch ex As Exception
+            log("Send_message : Execption : " & ex.ToString, 2)
+        End Try
     End Sub
 
     Public Shared Sub wait(ByVal msec As Integer)
@@ -994,7 +1003,7 @@ Public Class domos_svc
                 If ticks <= Date.Now.Ticks Then limite = 1
             End While
         Catch ex As Exception
-            log("ERR: Wait : " & ex.ToString, 2)
+            log("Wait : Execption : " & ex.ToString, 2)
         End Try
     End Sub
 
@@ -1005,7 +1014,7 @@ Public Class domos_svc
             Table_maj_sql = mysql.mysql_query(table, requete)
         Catch ex As Exception
             Table_maj_sql = Nothing
-            log("ERR: table_maj exception : " & ex.ToString, 2)
+            log("Table_maj : Exception : " & ex.ToString, 2)
         End Try
     End Function
 
@@ -1032,6 +1041,7 @@ Public Class domos_svc
     End Function
 
     Private Sub tables_maj(ByVal table As String)
+        'fonction permettant de rafraichir le contenu des tables en memoire depuis les tables mysql
         'table = ALL / COMPOSANTS / COMPOSANTS_BANNIS / MACRO / TIMER
         Dim table_temp As New DataTable
         Dim result
@@ -1265,8 +1275,8 @@ Public Class domos_svc
     End Sub
 
     Private Sub tables_aff()
+        'fonction affichant (log) le contenu de toutes les tables en memoire
         Dim temp As String
-
         'Affiche la table composant
         log("AFF: table_composants", 0)
         For i = 0 To table_composants.Rows.Count() - 1
@@ -1276,7 +1286,6 @@ Public Class domos_svc
             Next
             log("     -> " & temp, 0)
         Next
-
         'Affiche la table composant bannis
         log("AFF: table_composants_bannis", 0)
         For i = 0 To table_composants_bannis.Rows.Count() - 1
@@ -1286,7 +1295,6 @@ Public Class domos_svc
             Next
             log("     -> " & temp, 0)
         Next
-
         'Affiche la table Macro
         log("AFF: table_macros", 0)
         For i = 0 To table_macros.Rows.Count() - 1
@@ -1296,7 +1304,6 @@ Public Class domos_svc
             Next
             log("     -> " & temp, 0)
         Next
-
         'Affiche la table Timer
         log("AFF: table_timer", 0)
         For i = 0 To table_timer.Rows.Count() - 1
@@ -1306,7 +1313,6 @@ Public Class domos_svc
             Next
             log("     -> " & temp, 0)
         Next
-
         'Affiche la table Thread
         log("AFF: table_thread", 0)
         For i = 0 To table_thread.Rows.Count() - 1
@@ -1316,7 +1322,6 @@ Public Class domos_svc
             Next
             log("     -> " & temp, 0)
         Next
-
     End Sub
 
     Private Sub thread_ajout(ByVal composant_id As String, ByVal norme As String, ByVal source As String, ByRef mythread As Thread)
@@ -1331,11 +1336,13 @@ Public Class domos_svc
             newRow.Item("thread") = mythread
             table_thread.Rows.Add(newRow)
         Catch ex As Exception
-            log("ERR: Thread_ajout exception : " & ex.ToString, 2)
+            log("Thread_ajout : Exception : " & ex.ToString, 2)
         End Try
     End Sub
 
     Private Sub pool(ByVal sender As System.Object, ByVal e As System.EventArgs)
+        'fonction s'executant toutes les secondes
+        'on verifie si un composant doit etre checker : si colonne timer= dateheure
         Dim y As Thread
         'Dim valeur As String
         Try
@@ -1351,32 +1358,7 @@ Public Class domos_svc
                     Dim x = table_thread.Select("composant_id = '" & tabletemp(i)("composants_id") & "'")
                     If x.GetUpperBound(0) < 0 Then
                         Select Case tabletemp(i)("composants_modele_nom").ToString() 'choix de l'action en fonction du modele
-                            'Case "DS18B20" 'WIR ou WI2 : capteur de temperature
-                            '    'Dim POL_DS18B20 As POL_DS18B20 = New POL_DS18B20(tabletemp(i)("composants_id"))
-                            '    ''POL_DS18B20.Execute()
-                            '    'y = New Thread(AddressOf POL_DS18B20.Execute)
-                            '    'y.Name = "poll_" & tabletemp(i)("composants_id")
-                            '    'thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
-                            '    'y.Start()
-                            '    Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "", "", "", "")
-                            '    y = New Thread(AddressOf ecrire.action)
-                            '    y.Name = "ecrire_" & tabletemp(i)("composants_id")
-                            '    thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
-                            '    y.Start()
-                            'Case "DS2406_relais" 'WIR ou WI2 : etat d'un relais
-                            '    log("POL : ERR: DS2406_Relais pas encore géré", 2)
-                            'Case "DS2406_capteur" 'WIR ou WI2 : capteur d'ouverture d'un switch
-                            '    Dim POL_DS2406_capteur As POL_DS2406_capteur = New POL_DS2406_capteur(tabletemp(i)("composants_id"))
-                            '    y = New Thread(AddressOf POL_DS2406_capteur.Execute)
-                            '    y.Name = "poll_" & tabletemp(i)("composants_id")
-                            '    thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
-                            '    y.Start()
                             Case "DS18B20", "DS2423_A", "DS2423_B", "DS2406_capteur", "DS2406_relais" 'WIR ou WI2 : compteur, temperature, switch, relais
-                                'Dim POL_DS2423 As POL_DS2423 = New POL_DS2423(tabletemp(i)("composants_id"), True)
-                                'y = New Thread(AddressOf POL_DS2423.Execute)
-                                'y.Name = "poll_" & tabletemp(i)("composants_id")
-                                'thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
-                                'y.Start()
                                 Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "", "", "", "")
                                 y = New Thread(AddressOf ecrire.action)
                                 y.Name = "ecrire_" & tabletemp(i)("composants_id")
@@ -1395,19 +1377,21 @@ Public Class domos_svc
                                 thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
                                 y.Start()
                             Case Else
-                                log("POL : ERR: Pas de fonction associé à " & tabletemp(i)("composants_modele_nom").ToString() & ":" & tabletemp(i)("composants_nom").ToString(), 2)
+                                log("POL: Pas de fonction associé à " & tabletemp(i)("composants_modele_nom").ToString() & ":" & tabletemp(i)("composants_nom").ToString(), 2)
                         End Select
                     Else
-                        log("POL : ERR: Un thread est déjà associé à " & tabletemp(i)("composants_nom").ToString(), 2)
+                        log("POL: Un thread est déjà associé à " & tabletemp(i)("composants_nom").ToString(), 2)
                     End If
                 End If
             Next
         Catch ex As Exception
-            log("POL : ERR: exception : " & ex.ToString, 2)
+            log("POL: Exception : " & ex.ToString, 2)
         End Try
     End Sub
 
     Private Sub timer()
+        'fonction s'executant toutes les secondes
+        'on verifie si un timer doit s'executer
         Try
             Dim heure As String
             heure = DateAndTime.Now.ToString("HH:mm:ss")
@@ -1416,18 +1400,18 @@ Public Class domos_svc
                 Dim tabletemp = table_composants.Select("composants_adresse = 'jour'")
                 If tabletemp.GetLength(0) = 1 Then
                     tabletemp(0)("composants_etat") = "1" 'maj du composant virtuel JOUR
-                    log("TIMER : lever du soleil -> Maj composant virtuel JOUR=1", 4)
+                    log("TIMER: lever du soleil -> Maj composant virtuel JOUR=1", 4)
                 Else
-                    log("TIMER : ERR: Maj composant virtuel JOUR=1 : Non trouvé", 2)
+                    log("TIMER: ERR: Maj composant virtuel JOUR=1 : Non trouvé", 2)
                     tables_aff() 'affichage des tables car pas normal qu'on est pas le composant JOUR
                 End If
             ElseIf STRGS.Right(var_soleil_coucher, 8) = heure Then 'si coucher du soleil
                 Dim tabletemp = table_composants.Select("composants_adresse = 'jour'")
                 If tabletemp.GetLength(0) = 1 Then
                     tabletemp(0)("composants_etat") = "0" 'maj du composant virtuel JOUR
-                    log("TIMER : coucher du soleil -> Maj composant virtuel JOUR=0", 4)
+                    log("TIMER: coucher du soleil -> Maj composant virtuel JOUR=0", 4)
                 Else
-                    log("TIMER : ERR: Maj composant virtuel JOUR=0 : Non trouvé", 2)
+                    log("TIMER: ERR: Maj composant virtuel JOUR=0 : Non trouvé", 2)
                     tables_aff() 'affichage des tables car pas normal qu'on est pas le composant JOUR
                 End If
             End If
@@ -1436,18 +1420,18 @@ Public Class domos_svc
                 Dim tabletemp = table_composants.Select("composants_adresse = 'jour2'")
                 If tabletemp.GetLength(0) = 1 Then
                     tabletemp(0)("composants_etat") = "1" 'maj du composant virtuel JOUR2
-                    log("TIMER : lever du soleil corrigé -> Maj composant virtuel JOUR2=1", 4)
+                    log("TIMER: lever du soleil corrigé -> Maj composant virtuel JOUR2=1", 4)
                 Else
-                    log("TIMER : ERR: Maj composant virtuel JOUR2=1 : Non trouvé", 2)
+                    log("TIMER: ERR: Maj composant virtuel JOUR2=1 : Non trouvé", 2)
                     tables_aff() 'affichage des tables car pas normal qu'on est pas le composant JOUR2
                 End If
             ElseIf STRGS.Right(var_soleil_coucher2, 8) = heure Then 'si coucher du soleil corrige
                 Dim tabletemp = table_composants.Select("composants_adresse = 'jour2'")
                 If tabletemp.GetLength(0) = 1 Then
                     tabletemp(0)("composants_etat") = "0" 'maj du composant virtuel JOUR2
-                    log("TIMER : coucher du soleil corrigé -> Maj composant virtuel JOUR2=0", 4)
+                    log("TIMER: coucher du soleil corrigé -> Maj composant virtuel JOUR2=0", 4)
                 Else
-                    log("TIMER : ERR: Maj composant virtuel JOUR2=0 : Non trouvé", 2)
+                    log("TIMER: ERR: Maj composant virtuel JOUR2=0 : Non trouvé", 2)
                     tables_aff() 'affichage des tables car pas normal qu'on est pas le composant JOUR2
                 End If
             End If
@@ -1460,7 +1444,7 @@ Public Class domos_svc
                 var_soleil_coucher = Me.soleil.Sunset
                 var_soleil_coucher2 = DateAdd(DateInterval.Minute, heure_coucher_correction, var_soleil_coucher)
                 var_soleil_lever2 = DateAdd(DateInterval.Minute, heure_lever_correction, var_soleil_lever)
-                log("TIMER : maj Heure du soleil : ", 0)
+                log("TIMER: maj Heure du soleil : ", 0)
                 log("     -> Heure du lever : " & var_soleil_lever & " (" & var_soleil_lever2 & ")", 0)
                 log("     -> Heure du coucher : " & var_soleil_coucher & " (" & var_soleil_coucher2 & ")", 0)
             End If
@@ -1477,7 +1461,7 @@ Public Class domos_svc
             Next
 
         Catch ex As Exception
-            log("TIMER : ERR: exception : " & ex.ToString, 2)
+            log("TIMER: Exception : " & ex.ToString, 2)
         End Try
     End Sub
 
@@ -1522,7 +1506,7 @@ Public Class domos_svc
                 Next
             End If
         Catch ex As Exception
-            log("MACRO: ERR: exception : " & ex.ToString, 2)
+            log("MAC: Macro Exception : " & ex.ToString, 2)
         End Try
     End Sub
 
@@ -1616,7 +1600,7 @@ Public Class domos_svc
 
         Catch ex As Exception
             resultat = False
-            log("MACRO: ERR: analyse_cond:exception : " & ex.ToString & " --> " & liste, 2)
+            log("MAC: analyse_cond Exception : " & ex.ToString & " --> " & liste, 2)
         End Try
         Return resultat
     End Function
@@ -1709,7 +1693,7 @@ Public Class domos_svc
                 resultat = True
             End If
         Catch ex As Exception
-            log("MACRO: ERR: test-cond:exception : " & ex.ToString & " --> " & text, 2)
+            log("MAC: test_cond exception : " & ex.ToString & " --> " & text, 2)
         End Try
         Return resultat
     End Function
@@ -1850,7 +1834,6 @@ Public Class domos_svc
                             controller.Stop()
                             [Stop]() 'svc_stop()
                         End If
-
                     ElseIf contenu(1) = "restart" Then 'restart du service
                         If Serv_DOMOS Then
                             svc_restart()
@@ -1885,11 +1868,11 @@ Public Class domos_svc
                             If err <> "" Then log("MAC: " & err, 2)
                         ElseIf contenu(2) = "reconnect" Then 'deco/reco a la base SQL
                             log("MAC:  -> Déco/Reco à la base SQL", 5)
-                            log("SQL:  Déco", 5)
+                            log("  -> Déco", 5)
                             err = mysql.mysql_close()
                             If err <> "" Then log("MAC: " & err, 2)
                             err = mysql.mysql_connect(mysql_ip, mysql_db, mysql_login, mysql_mdp)
-                            log("SQL:  Reco", 5)
+                            log("  -> Reco", 5)
                             If err <> "" Then log("MAC: " & err, 2)
                         End If
                     End If
@@ -1920,7 +1903,7 @@ Public Class domos_svc
                 wait(10)
             End While
         Catch ex As Exception
-            log("MACRO: ERR: Action:exception : " & ex.ToString & " --> " & liste, 2)
+            log("MAC: ERR: Action:exception : " & ex.ToString & " --> " & liste, 2)
         End Try
     End Sub
 
@@ -1964,7 +1947,7 @@ Public Class domos_svc
                                 If tblthread.GetLength(0) = 1 Then
                                     tblthread(0)("source") = "ECR_PLC"
                                 Else
-                                    log("ECR: Thread non trouvé (pour PLC)!", 2)
+                                    log("PLC (ECR): Thread non trouvé !", 2)
                                 End If
                                 If valeur2 <> "" Then
                                     err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, valeur2, 0)
@@ -1972,13 +1955,13 @@ Public Class domos_svc
                                     err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, 0, 0)
                                 End If
                                 If STRGS.Left(err, 4) = "ERR:" Then
-                                    log(err, 2)
+                                    log("PLC (ECR): " & err, 2)
                                 Else
-                                    log(err, 5)
+                                    log("PLC (ECR): " & err, 5)
                                 End If
                                 wait(100) 'pause de 1sec pour recevoir le ack et libérer le bus correctement
                             Else
-                                log("ECR: Le port PLCBUS nest pas disponible pour une ecriture : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
+                                log("PLC (ECR):  Le port PLCBUS nest pas disponible pour une ecriture : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
                             End If
                         Case "WIR"
                             Dim modelewir As String = tabletmp(0)("composants_modele_nom").ToString
@@ -2001,7 +1984,7 @@ Public Class domos_svc
                                     If tblthread.GetLength(0) = 1 Then
                                         tblthread(0)("source") = "ECR_WIR"
                                     Else
-                                        log("ECR: Thread non trouvé (pour WIR)!", 2)
+                                        log("WIR (ECR): Thread non trouvé !", 2)
                                     End If
 
                                     Dim wirvaleur, wirvaleur_etat, wirvaleur_activite As String
@@ -2029,17 +2012,17 @@ Public Class domos_svc
                                             If wirvaleur2.ToString <> tabletmp(0)("composants_etat").ToString() Then
                                                 'on verifie si valeur=lastetat
                                                 If lastetat And wirvaleur2.ToString = tabletmp(0)("lastetat").ToString() Then
-                                                    log("ECR : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur2 & "°C (inchangé lastetat)", 8)
+                                                    log("WIR (ECR): DS18B20 : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur2 & "°C (inchangé lastetat)", 8)
                                                     '--- Modification de la date dans la base SQL ---
                                                     err = mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & wirdateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-                                                    If err <> "" Then log("ECR: inchange lastetat : " & err, 2)
+                                                    If err <> "" Then log("WIR (ECR):  inchange lastetat : " & err, 2)
                                                 Else
                                                     'on vérifie que la valeur a changé de plus de composants_precision sinon inchangé
                                                     If (CDbl(wirvaleur2) + CDbl(tabletmp(0)("composants_precision"))) >= CDbl(tabletmp(0)("composants_etat")) And (CDbl(wirvaleur2) - CDbl(tabletmp(0)("composants_precision"))) <= CDbl(tabletmp(0)("composants_etat")) Then
                                                         log("ECR : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur2 & "°C (inchangé precision)", 8)
                                                         '--- Modification de la date dans la base SQL ---
                                                         err = mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & wirdateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-                                                        If err <> "" Then log("ECR : inchange precision : " & err, 2)
+                                                        If err <> "" Then log("WIR (ECR): inchange precision : " & err, 2)
                                                     Else
                                                         'la valeur a changé, on modifie le composant
                                                         log("ECR : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur2 & "°C ", 6)
@@ -2051,14 +2034,14 @@ Public Class domos_svc
                                                 End If
                                             Else
                                                 'la valeur n a pas changé
-                                                log("ECR : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur2 & "°C (inchangé)", 7)
+                                                log("WIR (ECR): DS18B20 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur2 & "°C (inchangé)", 7)
                                                 '--- Modification de la date dans la base SQL ---
                                                 err = mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & wirdateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-                                                If err <> "" Then log("ECR : DS18B20 : inchange : " & err, 2)
+                                                If err <> "" Then log("WIR (ECR): DS18B20 : inchange : " & err, 2)
                                             End If
                                         Else
                                             'erreur
-                                            log("ECR : DS18B20 : erreur acquisition valeur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur, 2)
+                                            log("WIR (ECR): DS18B20 : erreur acquisition valeur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur, 2)
                                         End If
                                     ElseIf modelewir = "DS2423_A" Or modelewir = "DS2423_B" Then
                                         'traitement des compteurs DS2423
@@ -2070,20 +2053,20 @@ Public Class domos_svc
                                         If STRGS.Left(wirvaleur, 4) <> "ERR:" And IsNumeric(wirvaleur) Then 'si y a pas erreur d'acquisition, action
                                             '--- comparaison du relevé avec le dernier etat ---
                                             If wirvaleur <> tabletmp(0)("composants_etat").ToString() Then
-                                                log("ECR :  DS2423 : " & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur & " ", 6)
+                                                log("WIR (ECR):  DS2423 : " & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur & " ", 6)
                                                 '--- modification de l'etat du composant dans la table en memoire ---
                                                 tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
                                                 tabletmp(0)("composants_etat") = wirvaleur
                                                 tabletmp(0)("composants_etatdate") = wirdateheure
                                             Else
                                                 'la valeur n a pas changé
-                                                log("ECR : DS2423 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur & " (inchangé)", 7)
+                                                log("WIR (ECR): DS2423 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur & " (inchangé)", 7)
                                                 err = mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & wirdateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-                                                If err <> "" Then log("ECR : DS2423 : inchange : " & err, 2)
+                                                If err <> "" Then log("WIR (ECR): DS2423 : inchange : " & err, 2)
                                             End If
                                         Else
                                             'erreur
-                                            log("ECR : DS2423 : erreur acquisition valeur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur, 2)
+                                            log("WIR (ECR): DS2423 : erreur acquisition valeur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur, 2)
                                         End If
                                     ElseIf modelewir = "DS2406_capteur" Then
                                         'traitement des switch DS2406_capteur
@@ -2093,31 +2076,31 @@ Public Class domos_svc
                                             wirvaleur_etat = STRGS.Left(wirvaleur, 1)
                                             wirvaleur_activite = STRGS.Right(wirvaleur, 1)
                                             If wirvaleur_activite <> tabletmp(0)("composants_etat").ToString() Then
-                                                log("ECR : DS2406_capteur : " & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur_activite & " ", 6)
+                                                log("WIR (ECR): DS2406_capteur : " & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur_activite & " ", 6)
                                                 '--- modification de l'etat du composant dans la table en memoire ---
                                                 tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
                                                 tabletmp(0)("composants_etat") = wirvaleur_activite
                                                 tabletmp(0)("composants_etatdate") = wirdateheure
                                             Else
                                                 'la valeur n a pas changé
-                                                log("ECR : DS2406_capteur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur_activite & " (inchangé)", 7)
+                                                log("WIR (ECR): DS2406_capteur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur_activite & " (inchangé)", 7)
                                                 err = mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & wirdateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-                                                If err <> "" Then log("ECR : DS2406_capteur : inchange : " & err, 2)
+                                                If err <> "" Then log("WIR (ECR): DS2406_capteur : inchange : " & err, 2)
                                             End If
                                         Else
                                             'erreur
-                                            log("ECR : DS2406_capteur : erreur acquisition valeur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur, 2)
+                                            log("WIR (ECR): DS2406_capteur : erreur acquisition valeur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur, 2)
                                         End If
                                     ElseIf modelewir = "DS2406_relais" Then
                                         'traitement des switch DS2406_relais
-                                        log("ECR : DS2406_relais : pas encore géré", 2)
+                                        log("WIR (ECR): DS2406_relais : pas encore géré", 2)
                                     End If
                                     wait(50) 'pause de 0.5sec libérer le bus correctement
                                 Else
-                                    log("ECR: Le bus 1-wire nest pas disponible pour une ecriture : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
+                                    log("WIR (ECR): Le bus 1-wire nest pas disponible pour une ecriture : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
                                 End If
                             Else
-                                log("ECR: Modele 1-wire non géré : " & modelewir & " comp: " & tabletmp(0)("composants_adresse").ToString, 2)
+                                log("WIR (ECR): Modele 1-wire non géré : " & modelewir & " comp: " & tabletmp(0)("composants_adresse").ToString, 2)
                             End If
                         Case "WI2"
                             '???
@@ -2139,7 +2122,7 @@ Public Class domos_svc
                                 If tblthread.GetLength(0) = 1 Then
                                     tblthread(0)("source") = "ECR_X10"
                                 Else
-                                    log("ECR: Thread non trouvé (pour X10)!", 2)
+                                    log("X10 (ECR): Thread non trouvé !", 2)
                                 End If
                                 If valeur2 <> "" Then
                                     err = x10.ecrire(tabletmp(0)("composants_adresse"), valeur, valeur2)
@@ -2147,13 +2130,13 @@ Public Class domos_svc
                                     err = x10.ecrire(tabletmp(0)("composants_adresse"), valeur, 0)
                                 End If
                                 If STRGS.Left(err, 4) = "ERR:" Then
-                                    log(err, 2)
+                                    log("X10 (ECR): " & err, 2)
                                 Else
-                                    log(err, 5)
+                                    log("X10 (ECR): " & err, 5)
                                 End If
                                 wait(100) 'pause de 1sec pour recevoir le ack et libérer le bus correctement
                             Else
-                                log("ECR: Le port X10 nest pas disponible pour une ecriture : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
+                                log("X10 (ECR): Le port X10 nest pas disponible pour une ecriture : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
                             End If
                         Case "ZIB"
                             'verification si on a pas déjà un thread qui ecrit sur le zib sinon on boucle pour attendre ZIB_timeout/10 = 5 sec par défaut
@@ -2169,7 +2152,7 @@ Public Class domos_svc
                                 If tblthread.GetLength(0) = 1 Then
                                     tblthread(0)("source") = "ECR_ZIB"
                                 Else
-                                    log("ECR: Thread non trouvé (pour ZIB)!", 2)
+                                    log("ZIB (ECR): Thread non trouvé !", 2)
                                 End If
                                 If valeur2 <> "" Then
                                     err = zibase.Ecrirecommand(tabletmp(0)("composants_id"), valeur, valeur2)
@@ -2177,13 +2160,13 @@ Public Class domos_svc
                                     err = zibase.Ecrirecommand(tabletmp(0)("composants_id"), valeur, 0)
                                 End If
                                 If STRGS.Left(err, 4) = "ERR:" Then
-                                    log(err, 2)
+                                    log("ZIB (ECR): " & err, 2)
                                 Else
-                                    log(err, 5)
+                                    log("ZIB (ECR): " & err, 5)
                                 End If
                                 wait(100) 'pause de 1sec pour recevoir le ack et libérer le bus correctement
                             Else
-                                log("ECR: Le port ZIB nest pas disponible pour une ecriture : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
+                                log("ZIB (ECR): Le port ZIB nest pas disponible pour une ecriture : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
                             End If
                         Case Else
                             log("ECR: norme non gérée : " & tabletmp(0)("composants_modele_norme").ToString & " comp: " & tabletmp(0)("composants_adresse").ToString, 2)
@@ -2193,7 +2176,7 @@ Public Class domos_svc
                 End If
 
             Catch ex As Exception
-                log("Ecrire.action exception : " & ex.ToString, 2)
+                log("ECR: Exception : " & ex.ToString, 2)
             End Try
             Try
                 '--- suppresion du thread de la liste des thread lancé ---
@@ -2204,7 +2187,7 @@ Public Class domos_svc
                     log("ECR: Thread non trouvé (pour delete) !", 2)
                 End If
             Catch ex As Exception
-                log("Ecrire.action Suppression thread liste : exception : " & ex.ToString, 2)
+                log("ECR: Exeption : Suppression thread liste : " & ex.ToString, 2)
             End Try
 
         End Sub

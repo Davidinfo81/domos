@@ -140,7 +140,7 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
         'ordre : ordre à envoyer
         'iDim: nombre de 0 à 100 pour l'ordre DIM sur chacon
         Dim protocole As ZiBase.Protocol
-        Dim adresse(), modele() As String
+        Dim adresse, modele() As String
         Dim tabletmp() As DataRow
 
 
@@ -159,7 +159,8 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
 
 
                 modele = Split(tabletmp(0)("composants_modele_nom"), "_")
-                adresse = Split(tabletmp(0)("composants_adresse"), "_")
+                'adresse = Split(tabletmp(0)("composants_adresse"), "_")(0)
+                adresse = tabletmp(0)("composants_divers")
                 Select Case UCase(modele(0))
                     Case "BROADC" : protocole = ZiBase.Protocol.PROTOCOL_BROADCAST
                     Case "CHACON" : protocole = ZiBase.Protocol.PROTOCOL_CHACON
@@ -179,14 +180,14 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
                 'ecriture sur la zibase
                 Select Case UCase(ordre)
                     Case "ON"
-                        zba.SendCommand(adresse(0), ZiBase.State.STATE_ON, 0, protocole, 1)
+                        zba.SendCommand(adresse, ZiBase.State.STATE_ON, 0, protocole, 1)
                     Case "OFF"
-                        zba.SendCommand(adresse(0), ZiBase.State.STATE_OFF, 0, protocole, 1)
+                        zba.SendCommand(adresse, ZiBase.State.STATE_OFF, 0, protocole, 1)
                     Case "DIM"
                         If UCase(adresse(1)) <> "CHACON" Then
-                            zba.SendCommand(adresse(0), ZiBase.State.STATE_DIM, 0, protocole, 1)
+                            zba.SendCommand(adresse, ZiBase.State.STATE_DIM, 0, protocole, 1)
                         Else
-                            zba.SendCommand(adresse(0), ZiBase.State.STATE_DIM, iDim, protocole, 1)
+                            zba.SendCommand(adresse, ZiBase.State.STATE_DIM, iDim, protocole, 1)
                         End If
                     Case Else
                         Return ("ERR: ordre incorrect : " & ordre)
