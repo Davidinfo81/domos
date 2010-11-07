@@ -35,7 +35,7 @@ CREATE TABLE `composants_modele` (
   `composants_modele_norme` tinytext NOT NULL,
   `composants_modele_graphe` smallint(6) unsigned NOT NULL,
   PRIMARY KEY (`composants_modele_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=57 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+) ENGINE=MyISAM AUTO_INCREMENT=64 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
 INSERT INTO `composants_modele` (`composants_modele_id`, `composants_modele_nom`, `composants_modele_description`, `composants_modele_norme`, `composants_modele_graphe`) VALUES
 ('1', 'DS18B20', 'Capteur de temp&eacute;rature', 'WIR', '3'),
 ('2', 'DS2406_relais', 'Switch pour commander un relais', 'WIR', '1'),
@@ -96,7 +96,8 @@ INSERT INTO `composants_modele` (`composants_modele_id`, `composants_modele_nom`
 ('59', 'X10_divers', 'Actionneurs X10', 'ZIB', 1),
 ('60', 'BROADC_action', 'Actionneurs BROADCAST', 'ZIB', 1),
 ('61', 'DOMIA_action', 'Actionneurs DOMIA', 'ZIB', 1),
-('62', 'VIS433_action', 'Actionneurs VISONIC 433', 'ZIB', 1);
+('62', 'VIS433_action', 'Actionneurs VISONIC 433', 'ZIB', 1),
+('63', 'VIS868_action', 'Actionneurs VISONIC 868', 'ZIB', 1);
 
 CREATE TABLE `config` (
   `config_id` smallint(6) unsigned NOT NULL AUTO_INCREMENT,
@@ -143,7 +144,10 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('35', 'Serv_TSK', '0', 'Tellstick : 0=desactive 1=active'),
 ('36', 'mail_smtp', '', 'Adresse du serveur smtp'),
 ('37', 'mail_from', '', 'Adresse mail qui enverra le mail'),
-('38', 'mail_to', '', 'Ton adresse email');
+('38', 'mail_to', '', 'Ton adresse email'),
+('39', 'WIR_timeout', '500', 'Timeout pour attendre que le port WIR soit disponible en ecriture (Defaut : 500 = 5 sec)'),
+('40', 'ZIB_timeout', '500', 'Timeout pour attendre que le port ZIB soit disponible en ecriture (Defaut : 500 = 5 sec)'),
+('41', 'TSK_timeout', '500', 'Timeout pour attendre que le port TSK soit disponible en ecriture (Defaut : 500 = 5 sec)');
 
 CREATE TABLE `logs` (
   `logs_id` bigint(20) NOT NULL AUTO_INCREMENT,
