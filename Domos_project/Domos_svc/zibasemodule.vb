@@ -84,12 +84,12 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
     'reception d'une valeur -> analyse
     Private Sub zba_UpdateSensorInfo(ByVal seInfo As ZibaseDll.ZiBase.SensorInfo) Handles zba.UpdateSensorInfo
         'WriteLog("DBG: " & seInfo.sID & "_" & seInfo.sType & " ----> " & seInfo.sValue)
-        traitement(seInfo.sID, seInfo.sType, seInfo.dwValue)
+        traitement(seInfo.sID, seInfo.sType, seInfo.dwValue, seInfo.sValue)
     End Sub
     Private Sub zba_NewSensorDetected(ByVal seInfo As ZibaseDll.ZiBase.SensorInfo) Handles zba.NewSensorDetected
         'si on detecte une nouveau device
         'WriteLog("DBG: " & seInfo.sID & "_" & seInfo.sType & " ----> " & seInfo.sValue)
-        traitement(seInfo.sID, seInfo.sType, seInfo.dwValue)
+        traitement(seInfo.sID, seInfo.sType, seInfo.dwValue, seInfo.sValue)
     End Sub
 
     'nouvelle zibase detecté -> Log
@@ -119,13 +119,6 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
                 End If
             Else
                 'erreur d'adresse composant
-                'tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_id = '" & composants_id.ToString & "'")
-                'If tabletmp.GetUpperBound(0) >= 0 Then
-                ''on ne logue pas car c'est une adresse bannie
-                '    Return ("")
-                'Else
-                'Return ("ERR: GetSensorInfo : Composant non trouvé : " & composants_id.ToString)
-                'End If
                 Return ("ERR: GetSensorInfo : Composant non trouvé : " & composants_id.ToString)
 
             End If
@@ -143,27 +136,16 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
         Dim adresse, modele() As String
         Dim tabletmp() As DataRow
 
-
-        'WriteLog("Ecrirecommand 1")
-
-
-
         Try
             tabletmp = domos_svc.table_composants.Select("composants_id = '" & composants_id.ToString & "'")
             If tabletmp.GetUpperBound(0) >= 0 Then
-
-
-
-                'WriteLog("Ecrirecommand 2 first" & composants_id)
-
-
-
                 modele = Split(tabletmp(0)("composants_modele_nom"), "_")
-                'adresse = Split(tabletmp(0)("composants_adresse"), "_")(0)
-                adresse = tabletmp(0)("composants_divers")
+                adresse = Split(tabletmp(0)("composants_adresse"), "_")(0)
                 Select Case UCase(modele(0))
                     Case "BROADC" : protocole = ZiBase.Protocol.PROTOCOL_BROADCAST
-                    Case "CHACON" : protocole = ZiBase.Protocol.PROTOCOL_CHACON
+                    Case "CHACON"
+                        protocole = ZiBase.Protocol.PROTOCOL_CHACON
+                        adresse = tabletmp(0)("composants_divers") 'on a 2 adres pour chacon : reception et emission dans le champ divers
                     Case "DOMIA" : protocole = ZiBase.Protocol.PROTOCOL_DOMIA
                     Case "VIS433" : protocole = ZiBase.Protocol.PROTOCOL_VISONIC433
                     Case "VIS868" : protocole = ZiBase.Protocol.PROTOCOL_VISONIC868
@@ -171,11 +153,10 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
                     Case Else : Return ("ERR: protocole incorrect : " & modele(0))
                 End Select
 
-
-
-                ' WriteLog("Ecrirecommand 2" & protocole.ToString & "-" & adresse(0) & "-" & modele(0))
-
-
+                'verification Adresse
+                If adresse = "" Then
+                    Return ("ERR: pas d'adresse renseignée")
+                End If
 
                 'ecriture sur la zibase
                 Select Case UCase(ordre)
@@ -184,7 +165,7 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
                     Case "OFF"
                         zba.SendCommand(adresse, ZiBase.State.STATE_OFF, 0, protocole, 1)
                     Case "DIM"
-                        If UCase(adresse(1)) <> "CHACON" Then
+                        If UCase(modele(0)) <> "CHACON" Then
                             zba.SendCommand(adresse, ZiBase.State.STATE_DIM, 0, protocole, 1)
                         Else
                             zba.SendCommand(adresse, ZiBase.State.STATE_DIM, iDim, protocole, 1)
@@ -193,27 +174,14 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
                         Return ("ERR: ordre incorrect : " & ordre)
                 End Select
 
-
-                'WriteLog("Ecrirecommand 3")
-
-
                 'modification de l'etat en memoire
                 tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
                 tabletmp(0)("composants_etat") = ordre & "" & iDim
                 tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                 Return (" -> ecrit " & adresse(0) & " -> " & ordre)
             Else
-                'erreur d'adresse composant
-                'tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_id = '" & composants_id.ToString & "'")
-                'If tabletmp.GetUpperBound(0) >= 0 Then
-                '    'on ne logue pas car c'est une adresse bannie
-                'Else
-                '    Return ("ERR: Composant non trouvé : " & composants_id.ToString & " : " & ordre)
-                'End If
                 Return ("ERR: Composant non trouvé : " & composants_id.ToString & " : " & ordre)
             End If
-
-            'Return " -> zibase write Composants_id: " & composants_id & " -> " & ordre
         Catch ex As Exception
             Return "ERR: Ecrirecommand" & ex.Message
         End Try
@@ -244,20 +212,24 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
 
 #Region "Write"
 
-    Public Sub traitement(ByVal adresse As String, ByVal type As String, ByVal valeur As String)
+    Public Sub traitement(ByVal adresse As String, ByVal type As String, ByVal valeurentiere As String, ByVal valeurstring As String)
+        Dim valeur As String = valeurentiere
+
+
 
         'modification des informations suivant le type
-        Select Case type
-            Case "tem"
+        Select Case UCase(type)
+            Case "TEM"
                 'valeur = STRGS.Left(valeur, (valeur.Length - 2))
                 valeur = valeur / 100
                 type = "THE" 'tem Température (°C)
                 'Case "hum"
                 'valeur = STRGS.Left(valeur, (valeur.Length - 1))
-            Case "temc"
+            Case "TEMC"
                 'valeur = STRGS.Left(valeur, (valeur.Length - 2))
                 valeur = valeur / 100
                 type = "THC" 'Température de consigne (Thermostat : °C)
+            Case "XSE", "BAT", "LNK", "STA" : valeur = valeurstring 'on utilise la valeur normale et non l'entier
         End Select
 
         'Action suivant le type
@@ -279,6 +251,7 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
                 'drt Direction du vent
                 'uvl Niveau d’UV
                 'sta Status pour un switch (ON/OFF)
+                'xse detecteurs fumées/co... (Alert, Normal)
                 WriteRetour(adresse & "_" & STRGS.UCase(type), valeur)
         End Select
 

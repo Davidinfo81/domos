@@ -1675,9 +1675,9 @@ Public Class rfxcom
             End If
             WriteRetour(adresse & "_THE", valeur)
             valeur = CStr(VB.Right(Hex(((recbuf(7) << 4) And &HF0) + ((recbuf(6) >> 4) And &HF)), 2))
-            WriteRetour(adresse & "_HYG", valeur)
-            valeur = wrhum(recbuf(7) And &HC0)
             WriteRetour(adresse & "_HUM", valeur)
+            'valeur = wrhum(recbuf(7) And &HC0)
+            'WriteRetour(adresse & "_HUM", valeur)
             If (recbuf(4) And &H4) = &H4 Then WriteRetour(adresse & "_THE", "ERR: battery empty")
             'checksum8()
 
@@ -1693,9 +1693,9 @@ Public Class rfxcom
             End If
             WriteRetour(adresse & "_THE", valeur)
             valeur = CStr(VB.Right(Hex(((recbuf(7) << 4) And &HF0) + ((recbuf(6) >> 4) And &HF)), 2))
-            WriteRetour(adresse & "_HYG", valeur)
-            valeur = wrhum(recbuf(7) And &HC0)
             WriteRetour(adresse & "_HUM", valeur)
+            'valeur = wrhum(recbuf(7) And &HC0)
+            'WriteRetour(adresse & "_HUM", valeur)
             If (recbuf(4) And &H4) = &H4 Then WriteRetour(adresse & "_THE", "ERR: battery empty")
             'checksum8()
 
@@ -1712,9 +1712,9 @@ Public Class rfxcom
             End If
             WriteRetour(adresse & "_THE", valeur)
             valeur = CStr(VB.Right(Hex(((recbuf(7) << 4) And &HF0) + ((recbuf(6) >> 4) And &HF)), 2))
-            WriteRetour(adresse & "_HYG", valeur)
-            valeur = wrhum(recbuf(7) And &HC0)
             WriteRetour(adresse & "_HUM", valeur)
+            'valeur = wrhum(recbuf(7) And &HC0)
+            'WriteRetour(adresse & "_HUM", valeur)
             If (recbuf(4) And &H4) = &H4 Then WriteRetour(adresse & "_THE", "ERR: battery empty")
             'checksum8()
 
@@ -1731,9 +1731,9 @@ Public Class rfxcom
             End If
             WriteRetour(adresse & "_THE", valeur)
             valeur = CStr(VB.Right(Hex(((recbuf(7) << 4) And &HF0) + ((recbuf(6) >> 4) And &HF)), 2))
-            WriteRetour(adresse & "_HYG", valeur)
-            valeur = wrhum(recbuf(7) And &HC0)
             WriteRetour(adresse & "_HUM", valeur)
+            'valeur = wrhum(recbuf(7) And &HC0)
+            'WriteRetour(adresse & "_HUM", valeur)
             If (recbuf(4) And &H4) = &H4 Then WriteRetour(adresse & "_THE", "ERR: battery empty")
             'checksum8()
 
@@ -1748,9 +1748,9 @@ Public Class rfxcom
             End If
             WriteRetour(adresse & "_THE", valeur)
             valeur = CStr(VB.Right(Hex(((recbuf(7) << 4) And &HF0) + ((recbuf(6) >> 4) And &HF)), 2))
-            WriteRetour(adresse & "_HYG", valeur)
-            valeur = wrhum(recbuf(7) And &HC0)
             WriteRetour(adresse & "_HUM", valeur)
+            'valeur = wrhum(recbuf(7) And &HC0)
+            'WriteRetour(adresse & "_HUM", valeur)
             valeur = wrbattery()
             WriteRetour(adresse & "_BAT", valeur)
             'checksum8()
@@ -1767,9 +1767,9 @@ Public Class rfxcom
             End If
             WriteRetour(adresse & "_THE", valeur)
             valeur = CStr(VB.Right(Hex(((recbuf(7) << 4) And &HF0) + ((recbuf(6) >> 4) And &HF)), 2))
-            WriteRetour(adresse & "_HYG", valeur)
-            valeur = wrhum(recbuf(7) And &HC0)
             WriteRetour(adresse & "_HUM", valeur)
+            'valeur = wrhum(recbuf(7) And &HC0)
+            'WriteRetour(adresse & "_HUM", valeur)
             valeur = wrbattery()
             WriteRetour(adresse & "_BAT", valeur)
             'checksum8()
@@ -1786,9 +1786,9 @@ Public Class rfxcom
             End If
             WriteRetour(adresse & "_THE", valeur)
             valeur = CStr(VB.Right(Hex(((recbuf(7) << 4) And &HF0) + ((recbuf(6) >> 4) And &HF)), 2))
-            WriteRetour(adresse & "_HYG", valeur)
-            valeur = wrhum(recbuf(7) And &HC0)
             WriteRetour(adresse & "_HUM", valeur)
+            'valeur = wrhum(recbuf(7) And &HC0)
+            'WriteRetour(adresse & "_HUM", valeur)
             valeur = CStr(recbuf(8) + 795) 'en hPa
             WriteRetour(adresse & "_BAR", valeur)
             valeur = wrforecast(recbuf(9) And &HF)
@@ -1808,9 +1808,9 @@ Public Class rfxcom
             End If
             WriteRetour(adresse & "_THE", valeur)
             valeur = CStr(VB.Right(Hex(((recbuf(7) << 4) And &HF0) + ((recbuf(6) >> 4) And &HF)), 2))
-            WriteRetour(adresse & "_HYG", valeur)
-            valeur = wrhum(recbuf(7) And &HC0)
             WriteRetour(adresse & "_HUM", valeur)
+            'valeur = wrhum(recbuf(7) And &HC0)
+            'WriteRetour(adresse & "_HUM", valeur)
             valeur = CStr(recbuf(8) + 795) 'en hPa
             WriteRetour(adresse & "_BAR", valeur)
             valeur = wrforecast(recbuf(9) >> 4)
