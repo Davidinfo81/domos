@@ -259,13 +259,18 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
 
     Public Sub WriteLog(ByVal message As String)
         'utilise la fonction de base pour loguer un event
-        If STRGS.InStr(message, "DBG:") > 0 Then
-            domos_svc.log("ZIB : " & message, 10)
-        ElseIf STRGS.InStr(message, "ERR:") > 0 Then
-            domos_svc.log("ZIB : " & message, 2)
-        Else
-            domos_svc.log("ZIB : " & message, 9)
-        End If
+        Try
+            If STRGS.InStr(message, "DBG:") > 0 Then
+                domos_svc.log("ZIB : " & message, 10)
+            ElseIf STRGS.InStr(message, "ERR:") > 0 Then
+                domos_svc.log("ZIB : " & message, 2)
+            Else
+                domos_svc.log("ZIB : " & message, 9)
+            End If
+        Catch ex As Exception
+            domos_svc.log("ZIB : ERREUR WriteLog", 2)
+        End Try
+
     End Sub
 
     Public Sub WriteRetour(ByVal adresse As String, ByVal valeur As String)
@@ -288,13 +293,13 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
                             valeur = valeur + CDbl(tabletmp(0)("composants_correction"))
                         End If
                         '--- comparaison du relevé avec le dernier etat ---
-                        '--- si la valeur a changé ou (autre chose qu'un nombre et different de humidité) --- 
-                        If valeur.ToString <> tabletmp(0)("composants_etat").ToString() Or (Not IsNumeric(valeur) And (VB.Right(tabletmp(0)("composants_adresse"), 4) <> "_HUM")) Then
+                        '--- si la valeur a changé ou autre chose qu'un nombre --- 
+                        If valeur <> tabletmp(0)("composants_etat").ToString() Or Not IsNumeric(valeur) Then
                             'si nombre alors 
                             If (IsNumeric(valeur) And IsNumeric(tabletmp(0)("lastetat")) And IsNumeric(tabletmp(0)("composants_etat"))) Then
                                 'on vérifie que la valeur a changé par rapport a l'avant dernier etat (lastetat) si domos.lastetat (table config)
-                                If domos_svc.lastetat And valeur.ToString = tabletmp(0)("lastetat").ToString() Then
-                                    domos_svc.log("ZIB : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString & " (inchangé lastetat " & tabletmp(0)("lastetat").ToString() & ")", 8)
+                                If domos_svc.lastetat And valeur = tabletmp(0)("lastetat").ToString() Then
+                                    domos_svc.log("ZIB : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur & " (inchangé lastetat " & tabletmp(0)("lastetat").ToString() & ")", 8)
                                     '--- Modification de la date dans la base SQL ---
                                     dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                                     Err = domos_svc.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
@@ -303,16 +308,16 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
                                     'on vérifie que la valeur a changé de plus de composants_precision sinon inchangé
                                     If (CDbl(valeur) + CDbl(tabletmp(0)("composants_precision"))) >= CDbl(tabletmp(0)("composants_etat")) And (CDbl(valeur) - CDbl(tabletmp(0)("composants_precision"))) <= CDbl(tabletmp(0)("composants_etat")) Then
                                         'log de "inchangé précision"
-                                        domos_svc.log("ZIB : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString & " (inchangé precision " & tabletmp(0)("composants_etat").ToString & "+-" & tabletmp(0)("composants_precision").ToString & ")", 8)
+                                        domos_svc.log("ZIB : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur & " (inchangé precision " & tabletmp(0)("composants_etat").ToString & "+-" & tabletmp(0)("composants_precision").ToString & ")", 8)
                                         '--- Modification de la date dans la base SQL ---
                                         dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                                         Err = domos_svc.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
                                         If Err <> "" Then WriteLog("ERR: inchange precision : " & Err)
                                     Else
-                                        domos_svc.log("ZIB : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString, 6)
+                                        domos_svc.log("ZIB : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur, 6)
                                         '  --- modification de l'etat du composant dans la table en memoire ---
                                         tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
-                                        tabletmp(0)("composants_etat") = valeur.ToString
+                                        tabletmp(0)("composants_etat") = valeur
                                         tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                                     End If
                                 End If
@@ -321,17 +326,13 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
                                 '  --- modification de l'etat du composant dans la table en memoire ---
                                 If VB.Left(valeur, 4) <> "CFG:" Then
                                     tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
-                                    tabletmp(0)("composants_etat") = valeur.ToString
+                                    tabletmp(0)("composants_etat") = valeur
                                     tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                                 End If
                             End If
-                            'Domos.log("ZIB : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString)
-                            ''  --- modification de l'etat du composant dans la table en memoire ---
-                            'tabletmp(0)("composants_etat") = valeur.ToString
-                            'tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                         Else
                             'la valeur n'a pas changé, on log en 7 et on maj la date dans la base sql
-                            domos_svc.log("ZIB : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString & " (inchangé " & tabletmp(0)("composants_etat").ToString() & ")", 7)
+                            domos_svc.log("ZIB : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur & " (inchangé " & tabletmp(0)("composants_etat").ToString() & ")", 7)
                             '--- Modification de la date dans la base SQL ---
                             dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                             Err = domos_svc.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
@@ -339,24 +340,24 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
                         End If
                     Else
                         'erreur d'acquisition
-                        WriteLog("ERR: " & tabletmp(0)("composants_nom").ToString() & " : " & valeur.ToString)
+                        WriteLog("ERR: " & tabletmp(0)("composants_nom").ToString() & " : " & valeur)
                     End If
                 Else
-                    WriteLog("DBG: IGNORE : Etat recu il y a moins de 2 sec : " & adresse.ToString & " : " & valeur.ToString)
+                    WriteLog("DBG: IGNORE : Etat recu il y a moins de 2 sec : " & adresse & " : " & valeur)
                 End If
             Else
                 'erreur d'adresse composant
-                tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_adresse = '" & adresse.ToString & "' AND composants_bannis_norme = 'ZIB'")
+                tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_adresse = '" & adresse & "' AND composants_bannis_norme = 'ZIB'")
                 If tabletmp.GetUpperBound(0) >= 0 Then
                     'on logue en debug car c'est une adresse bannie
-                    WriteLog("DBG: IGNORE : Adresse Bannie : " & adresse.ToString & " : " & valeur.ToString)
+                    WriteLog("DBG: IGNORE : Adresse Bannie : " & adresse & " : " & valeur)
                 Else
-                    WriteLog("ERR: Adresse composant : " & adresse.ToString & " : " & valeur.ToString)
+                    WriteLog("ERR: Adresse composant : " & adresse & " : " & valeur)
                 End If
             End If
 
         Catch ex As Exception
-            WriteLog("ERR: Writeretour Exception : " & ex.Message)
+            WriteLog("ERR: Writeretour Exception : " & ex.Message & " --> " & adresse & "-" & valeur)
         End Try
         adresselast = adresse
         valeurlast = valeur

@@ -1439,45 +1439,64 @@ Public Class rfxcom
     Private Sub processx10security()
         Dim adresse As String = ""
         Dim valeur As String = ""
+        Dim batteryempty As Boolean = False
         'Dim hsaddr As Integer
         adresse = (recbuf(0) * 256 + recbuf(1)).ToString
         Select Case recbuf(2)
-            Case &H0 : valeur = "Alert (Max delay)"
-            Case &H1 : valeur = "Alert (Battery+Max delay)"
-            Case &H4 : valeur = "Alert"
-            Case &H5 : valeur = "Alert (Battery)"
-            Case &H80 : valeur = "Normal (Max delay)"
-            Case &H81 : valeur = "Normal (battery+Max delay)"
+            Case &H3 : valeur = "ALERT: PANIC"
+            Case &H4 : valeur = "ALERT"
+            Case &H5
+                batteryempty = True
+                valeur = "ALERT"
+            Case &H22 : valeur = "ALERT: PANIC"
+            Case &H26 : valeur = "ALERT: PANIC"
+            Case &H44 : valeur = "Normal"
+            Case &H5 : valeur = "Normal"
+            Case &H66
+                batteryempty = True
+                valeur = "Normal"
+            Case &H80 : valeur = "Normal"
             Case &H84 : valeur = "Normal"
-            Case &H85 : valeur = "Normal (battery)"
-            Case &H40 : valeur = "Alert + Tamper (Max delay)"
-            Case &H44 : valeur = "Alert + Tamper"
-            Case &HC0 : valeur = "Normal + Tamper (Max delay)"
-            Case &HC4 : valeur = "Normal + Tamper"
-            Case &HC : valeur = "Alert"
-            Case &H8C : valeur = "Normal"
-            Case &H20 : valeur = "Dark sensor"
-            Case &H4C : valeur = "Alert + Tamper"
-            Case &HCC : valeur = "Normal + Tamper"
-            Case &H2 : valeur = "ARM Away (max)"
-            Case &H82 : valeur = "Disarm"
-            Case &H42 : valeur = "Lights On"
-            Case &HC2 : valeur = "Lights Off"
-            Case &H22 : valeur = "Panic"
-            Case &HA : valeur = "ARM Home (max)"
-            Case &H6 : valeur = "ARM Away (min)"
-            Case &H86 : valeur = "Disarm"
-            Case &H46 : valeur = "Lights On"
-            Case &HC6 : valeur = "Lights Off"
-            Case &H26 : valeur = "Panic"
-            Case &HE : valeur = "ARM Home (min)"
-            Case &H3 : valeur = "Panic"
-            Case &H1C : valeur = "Temp -< Set"
-            Case &H2B : valeur = "Temp > Set"
-            Case &HE0 : valeur = "Motion"
-            Case &HF0 : valeur = "Darkness detected"
-            Case &HF8 : valeur = "Light detected"
-            Case Else : valeur = "DEBUG : X10Security : Secur ??????"
+            Case &H85
+                batteryempty = True
+                valeur = "Normal"
+            Case Else : valeur = "ALERT: ??????"
+                'Case &H0 : valeur = "Alert (Max delay)"
+                'Case &H1 : valeur = "Alert (Battery+Max delay)"
+                'Case &H4 : valeur = "Alert"
+                'Case &H5 : valeur = "Alert (Battery)"
+                'Case &H80 : valeur = "Normal (Max delay)"
+                'Case &H81 : valeur = "Normal (battery+Max delay)"
+                'Case &H84 : valeur = "Normal"
+                'Case &H85 : valeur = "Normal (battery)"
+                'Case &H40 : valeur = "Alert + Tamper (Max delay)"
+                'Case &H44 : valeur = "Alert + Tamper"
+                'Case &HC0 : valeur = "Normal + Tamper (Max delay)"
+                'Case &HC4 : valeur = "Normal + Tamper"
+                'Case &HC : valeur = "Alert"
+                'Case &H8C : valeur = "Normal"
+                'Case &H20 : valeur = "Dark sensor"
+                'Case &H4C : valeur = "Alert + Tamper"
+                'Case &HCC : valeur = "Normal + Tamper"
+                'Case &H2 : valeur = "ARM Away (max)"
+                'Case &H82 : valeur = "Disarm"
+                'Case &H42 : valeur = "Lights On"
+                'Case &HC2 : valeur = "Lights Off"
+                'Case &H22 : valeur = "Panic"
+                'Case &HA : valeur = "ARM Home (max)"
+                'Case &H6 : valeur = "ARM Away (min)"
+                'Case &H86 : valeur = "Disarm"
+                'Case &H46 : valeur = "Lights On"
+                'Case &HC6 : valeur = "Lights Off"
+                'Case &H26 : valeur = "Panic"
+                'Case &HE : valeur = "ARM Home (min)"
+                'Case &H3 : valeur = "Panic"
+                'Case &H1C : valeur = "Temp -< Set"
+                'Case &H2B : valeur = "Temp > Set"
+                'Case &HE0 : valeur = "Motion"
+                'Case &HF0 : valeur = "Darkness detected"
+                'Case &HF8 : valeur = "Light detected"
+                'Case Else : valeur = "DEBUG : X10Security : Secur ??????"
                 'Case &H0
                 '    'valeur = "S DWS DS10/90  Alert (max delay)"
                 '    valeur = "Alert"
@@ -1567,8 +1586,10 @@ Public Class rfxcom
             'WriteLog("DEBUG : X10Security : addr:" & VB.Right("0" & Hex(recbuf(0)), 2) & VB.Right("0" & Hex(recbuf(1)), 2) & " " & VB.Right("0" & Hex(recbuf(4)), 2) & " ID:" & VB.Right("    " & Str(hsaddr), 5))
         End If
         If valeur <> "" Then
-            valeur = valeur + " " + VB.Right("0" & Hex(recbuf(0)), 2) + "-" + VB.Right("0" & Hex(recbuf(1)), 2) + "-" + VB.Right("0" & Hex(recbuf(2)), 2) + "-" + VB.Right("0" & Hex(recbuf(3)), 2) + "-" + VB.Right("0" & Hex(recbuf(4)), 2) + "-" + VB.Right("0" & Hex(recbuf(5)), 2)
+            'valeur = valeur + " " + VB.Right("0" & Hex(recbuf(0)), 2) + "-" + VB.Right("0" & Hex(recbuf(1)), 2) + "-" + VB.Right("0" & Hex(recbuf(2)), 2) + "-" + VB.Right("0" & Hex(recbuf(3)), 2) + "-" + VB.Right("0" & Hex(recbuf(4)), 2) + "-" + VB.Right("0" & Hex(recbuf(5)), 2)
+            valeur = valeur & " (" & VB.Right("0" & Hex(recbuf(2)), 2) & ")"
             WriteRetour(adresse, valeur)
+            If batteryempty Then WriteRetour(adresse, "ERR: Battery empty")
         End If
     End Sub
 
@@ -2342,8 +2363,8 @@ Public Class rfxcom
                             valeur = valeur + CDbl(tabletmp(0)("composants_correction"))
                         End If
                         '--- comparaison du relevé avec le dernier etat ---
-                        '--- si la valeur a changé ou (autre chose qu'un nombre et different de humidité) --- 
-                        If valeur.ToString <> tabletmp(0)("composants_etat").ToString() Or (Not IsNumeric(valeur) And (VB.Right(tabletmp(0)("composants_adresse"), 4) <> "_HUM")) Then
+                        '--- si la valeur a changé ou autre chose qu'un nombre (ON, OFF, ALERT...) --- 
+                        If valeur.ToString <> tabletmp(0)("composants_etat").ToString() Or Not IsNumeric(valeur) Then
                             'si nombre alors 
                             If (IsNumeric(valeur) And IsNumeric(tabletmp(0)("lastetat")) And IsNumeric(tabletmp(0)("composants_etat"))) Then
                                 'on vérifie que la valeur a changé par rapport a l'avant dernier etat (lastetat) si domos.lastetat (table config)
@@ -2380,10 +2401,6 @@ Public Class rfxcom
                                     tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                                 End If
                             End If
-                            'Domos.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString)
-                            ''  --- modification de l'etat du composant dans la table en memoire ---
-                            'tabletmp(0)("composants_etat") = valeur.ToString
-                            'tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                         Else
                             'la valeur n'a pas changé, on log en 7 et on maj la date dans la base sql
                             domos_svc.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString & " (inchangé " & tabletmp(0)("composants_etat").ToString() & ")", 7)
@@ -2397,7 +2414,12 @@ Public Class rfxcom
                         WriteLog("ERR: erreur acquisition" & tabletmp(0)("composants_nom").ToString() & " : " & valeur.ToString)
                     End If
                 Else
-                    WriteLog("DBG: IGNORE : Etat recu il y a moins de 2 sec : " & adresse.ToString & " : " & valeur.ToString)
+                    'si c'est un battery empty pour les composants oregon, c'est envoyé en même temps que la valeur donc on le traite ici
+                    If InStr(valeur, "battery") > 0 Then
+                        WriteLog("ERR: " & tabletmp(0)("composants_nom").ToString() & " : " & valeur.ToString)
+                    Else
+                        WriteLog("DBG: IGNORE : Etat recu il y a moins de 2 sec : " & adresse.ToString & " : " & valeur.ToString)
+                    End If
                 End If
             Else
                 'erreur d'adresse composant

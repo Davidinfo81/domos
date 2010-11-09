@@ -839,15 +839,16 @@ Public Class domos_svc
         '    9 : Divers
         '   10 : DEBUG
 
-        Dim dateheure, fichierlog As String
+        Dim dateheure, fichierlog, textemodifie As String
         Dim erreur_log As Integer = 1
         Try
             texte = texte.Replace("'", "")
             'si on doit loguer une erreur : gestion de la table des erreurs 
             'mais si on affiche le debug, on log quand meme et on ne gere pas la table des erreurs
             If niveau = "2" And STRGS.InStr("-10", niveau) <= 0 Then
+                textemodifie = Left(texte, texte.Length - 4)
                 'si c'est une erreur générale
-                Dim tabletemp = table_erreur.Select("texte = '" & texte & "'")
+                Dim tabletemp = table_erreur.Select("texte = '" & textemodifie & "'")
                 If tabletemp.GetLength(0) >= 1 Then
                     'on a déjà une erreur de ce type en memoire
                     If Date.Now.ToString("yyyy-MM-dd HH:mm:ss") > tabletemp(0)("datetime").ToString Then
@@ -874,7 +875,7 @@ Public Class domos_svc
                     'cet erreur n'est pas encore présente, on l'ajoute
                     Dim newRow As DataRow
                     newRow = table_erreur.NewRow()
-                    newRow.Item("texte") = texte
+                    newRow.Item("texte") = textemodifie
                     newRow.Item("nombre") = 1
                     newRow.Item("datetime") = DateAdd(DateInterval.Minute, logs_erreur_duree, DateTime.Now).ToString("yyyy-MM-dd HH:mm:ss")
                     table_erreur.Rows.Add(newRow)
@@ -1066,13 +1067,11 @@ Public Class domos_svc
                     If table_temp.Rows.Count() > 0 Then 'on a récupéré la nouvelle liste des composants, on fait la maj
                         'Maj et suppression des composants
                         If table_composants.Rows.Count() > 0 Then
-                            For i = 0 To table_composants.Rows.Count() - 1
+                            For i = table_composants.Rows.Count() - 1 To 0 Step -1
                                 result = table_temp.Select("composants_id = " & table_composants.Rows(i).Item("composants_id"))
                                 If result.GetLength(0) = 0 Then 'le composant n'existe plus --> DELETE
-                                    'log("MAJ: Suppression du composant : " & table_composants.Rows(i).Item("composants_id"))
                                     table_composants.Rows.Remove(table_composants.Rows(i))
                                 ElseIf result.GetLength(0) = 1 Then 'le composant existe --> MAJ
-                                    'log("MAJ: mise à jour du composant : " & table_composants.Rows(i).Item("composants_id"))
                                     For j = 0 To table_composants.Columns.Count - 1
                                         'si la colonne n'est pas l'etat, le dernier etat ou timer --> maj
                                         If table_composants.Columns(j).Caption <> "timer" And table_composants.Columns(j).Caption <> "lastetat" And table_composants.Columns(j).Caption <> "composants_etat" Then
@@ -1093,7 +1092,6 @@ Public Class domos_svc
                         For i = 0 To table_temp.Rows.Count() - 1
                             result = table_composants.Select("composants_id = " & table_temp.Rows(i).Item("composants_id"))
                             If result.GetLength(0) = 0 Then 'le composant n'est pas dans la table_composants, on l'ajoute
-                                'log("MAJ: ajout du composant : " & table_temp.Rows(i).Item("composants_id"))
                                 'creation de la dateheure du timer
                                 Dim date_pooling As Date
                                 date_pooling = DateAndTime.Now.AddSeconds(5 + i) 'on initilise le timer à dans 5+i secondes
@@ -1128,10 +1126,9 @@ Public Class domos_svc
                     If table_temp.Rows.Count() > 0 Then 'on a récupéré la nouvelle liste des composants bannis, on fait la maj
                         'Maj et suppression des composants bannis
                         If table_composants_bannis.Rows.Count() > 0 Then
-                            For i = 0 To table_composants_bannis.Rows.Count() - 1
+                            For i = table_composants_bannis.Rows.Count() - 1 To 0 Step -1
                                 result = table_temp.Select("composants_bannis_id = " & table_composants_bannis.Rows(i).Item("composants_bannis_id"))
                                 If result.GetLength(0) = 0 Then 'le composant n'existe plus --> DELETE
-                                    'log("MAJ: Suppression du composant banni : " & table_composants_bannis.Rows(i).Item("composants_bannis_id"))
                                     table_composants_bannis.Rows.Remove(table_composants_bannis.Rows(i))
                                 ElseIf result.GetLength(0) = 1 Then 'le composant banni existe --> MAJ
                                     'log("MAJ: mise à jour du composant banni : " & table_composants_bannis.Rows(i).Item("composants_bannis_id"))
@@ -1141,6 +1138,7 @@ Public Class domos_svc
                                 End If
                             Next
                         End If
+
                         'ajout des nouveaux composants bannis
                         For i = 0 To table_temp.Rows.Count() - 1
                             result = table_composants_bannis.Select("composants_bannis_id = " & table_temp.Rows(i).Item("composants_bannis_id"))
@@ -1148,6 +1146,7 @@ Public Class domos_svc
                                 table_composants_bannis.ImportRow(table_temp.Rows(i))
                             End If
                         Next
+
                         'affichage de la nouvelle liste
                         For i = 0 To table_composants_bannis.Rows.Count() - 1
                             log("     -> Id : " & table_composants_bannis.Rows(i).Item("composants_bannis_id") & " -- Norme : " & table_composants_bannis.Rows(i).Item("composants_bannis_norme") & " -- Adresse : " & table_composants_bannis.Rows(i).Item("composants_bannis_adresse") & " -- Description : " & table_composants_bannis.Rows(i).Item("composants_bannis_description"), 0)
@@ -1173,13 +1172,11 @@ Public Class domos_svc
                     If table_temp.Rows.Count() > 0 Then 'on a récupéré la nouvelle liste des macros, on fait la maj
                         'Maj et suppression des macros existantes
                         If table_macros.Rows.Count() > 0 Then
-                            For i = 0 To table_macros.Rows.Count() - 1
+                            For i = table_macros.Rows.Count() - 1 To 0 Step -1
                                 result = table_temp.Select("macro_id = " & table_macros.Rows(i).Item("macro_id"))
                                 If result.GetLength(0) = 0 Then 'la macro n'existe plus --> DELETE
-                                    'log("MAJ: Suppression de la macro : " & table_macros.Rows(i).Item("macro_id"))
                                     table_macros.Rows.Remove(table_macros.Rows(i))
                                 ElseIf result.GetLength(0) = 1 Then 'la macro existe --> MAJ
-                                    'log("MAJ: mise à jour de la macro : " & table_macros.Rows(i).Item("macro_id"))
                                     For j = 0 To table_macros.Columns.Count - 1
                                         'si la colonne n'est pas le verrou --> maj
                                         If table_macros.Columns(j).Caption <> "verrou" Then
@@ -1197,7 +1194,6 @@ Public Class domos_svc
                         For i = 0 To table_temp.Rows.Count() - 1
                             result = table_macros.Select("macro_id = " & table_temp.Rows(i).Item("macro_id"))
                             If result.GetLength(0) = 0 Then 'la macro n'est pas dans la table_macros, on l'ajoute
-                                'log("MAJ: ajout de la macro : " & table_temp.Rows(i).Item("macro_id"))
                                 table_temp.Rows(i).Item("verrou") = False
                                 'ajout
                                 table_macros.ImportRow(table_temp.Rows(i))
@@ -1228,13 +1224,11 @@ Public Class domos_svc
                     If table_temp.Rows.Count() > 0 Then 'on a récupéré la nouvelle liste des timers, on fait la maj
                         'Maj et suppression des timers existants
                         If table_timer.Rows.Count() > 0 Then
-                            For i = 0 To table_timer.Rows.Count() - 1
+                            For i = table_timer.Rows.Count() - 1 To 0 Step -1
                                 result = table_temp.Select("macro_id = " & table_timer.Rows(i).Item("macro_id"))
                                 If result.GetLength(0) = 0 Then 'le timer n'existe plus --> DELETE
-                                    'log("MAJ: Suppression du timer : " & table_timer.Rows(i).Item("macro_id"))
                                     table_timer.Rows.Remove(table_timer.Rows(i))
                                 ElseIf result.GetLength(0) = 1 Then 'le timer existe --> MAJ
-                                    'log("MAJ: mise à jour du timer : " & table_timer.Rows(i).Item("macro_id"))
                                     For j = 0 To table_timer.Columns.Count - 1
                                         'si la colonne n'est pas le verrou --> maj
                                         If table_timer.Columns(j).Caption <> "timer" Then
@@ -1252,7 +1246,6 @@ Public Class domos_svc
                         For i = 0 To table_temp.Rows.Count() - 1
                             result = table_timer.Select("macro_id = " & table_temp.Rows(i).Item("macro_id"))
                             If result.GetLength(0) = 0 Then 'le timer n'est pas dans la table_timer, on l'ajoute
-                                'log("MAJ: ajout du timer : " & table_temp.Rows(i).Item("macro_id"))
                                 table_temp.Rows(i).Item("timer") = timer_convertendate(table_temp.Rows(i).Item("macro_conditions"))
                                 'ajout
                                 table_timer.ImportRow(table_temp.Rows(i))
