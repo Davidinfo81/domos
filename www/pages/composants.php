@@ -63,9 +63,13 @@ case "gerer" :
 				function deletee() {
 					if (confirm('Supprimer ?')) {mygrid.deleteRow(mygrid.getSelectedId());}
 				}
-				function grapher() {
+				function grapherdyn() {
 					x = mygrid.getSelectedId();
 					window.location.href='composants-grapherdyn-'+x+'.html'
+				}
+				function grapherflash() {
+					x = mygrid.getSelectedId();
+					window.location.href='composants-grapherflash-'+x+'.html'
 				}
 				function ajouter() {
 					mygrid.addRow((new Date()).valueOf(),['','','nom',1,'','',0,0,'','2000-01-01 00:00:00','','0','','0']);
@@ -89,7 +93,8 @@ case "gerer" :
 			</script>
 			<input type=\"button\" name=\"a1\" value=\"Ajouter\" onClick=\"ajouter()\" class=\"formsubmit\">
 			<input type=\"button\" name=\"a1\" value=\"Supprimer\" onClick=\"deletee()\" class=\"formsubmit\">
-			<input type=\"button\" name=\"a1\" value=\"Grapher\" onClick=\"grapher()\" class=\"formsubmit\">
+			<input type=\"button\" name=\"a1\" value=\"Grapher Dyn\" onClick=\"grapherdyn()\" class=\"formsubmit\">
+			<input type=\"button\" name=\"a1\" value=\"Grapher Flash\" onClick=\"grapherflash()\" class=\"formsubmit\">
 			<input type=\"button\" name=\"a1\" value=\"Maj SVC\" onClick='sendsocket(\"([AS#maj_composants])\")' class=\"formsubmit\">
 		</div></td></tr>
 	";
@@ -98,10 +103,10 @@ case "gerer" :
 case "grapher" :
 	$composants_id=@$_GET["composants_id"];
 	$resultat = mysql_query("select * from composants where composants_id='$composants_id'");
-	$composants_nom = mysql_result($resultat,0,"composants_nom");	
-	$composants_modele = mysql_result($resultat,0,"composants_modele");	
+	$composants_nom = mysql_result($resultat,0,"composants_nom");
+	$composants_modele = mysql_result($resultat,0,"composants_modele");
 	$resultat = mysql_query("select composants_modele_graphe from composants_modele where composants_modele_id='$composants_modele'");
-	$composants_modele_graphe = mysql_result($resultat,0,"composants_modele_graphe");	
+	$composants_modele_graphe = mysql_result($resultat,0,"composants_modele_graphe");
 
 	//suppression des anciens graphes
 	if (file_exists("./images/graphes/$composants_id-jour.png")) {unlink ("./images/graphes/$composants_id-jour.png");}
@@ -144,6 +149,7 @@ case "grapher" :
 			graphe_numerique($resultat_semaine,$composants_id."-semaine",dequote($composants_nom),"Les 7 derniers jours",925,350,0,25,"D d H:i",85,0,1,0);
 			graphe_numerique($resultat_mois,$composants_id."-mois",dequote($composants_nom),"Le dernier mois (Moyenne par heure)",925,350,0,25,"Y/m/d",80,0,1,1);
 			graphe_numerique($resultat_annee,$composants_id."-annee",dequote($composants_nom),"Cette année (Moyenne par jour)",925,350,0,25,"Y/m/d",80,0,1,1);
+
 			break;
 	}
 	echo "<tr height=\"23\" bgcolor=\"#5680CB\">
@@ -156,8 +162,43 @@ case "grapher" :
 	if (file_exists("./images/graphes/$composants_id-mois.png")) {echo "<tr><td colspan=2 align=center><br /><img src=\"./images/graphes/$composants_id-mois.png\"></td></tr>";}
 	if (file_exists("./images/graphes/$composants_id-annee.png")) {echo "<tr><td colspan=2 align=center><br /><img src=\"./images/graphes/$composants_id-annee.png\"></td></tr>";}
 	break;
+case "grapherflash" :
+	$composants_id=@$_GET["composants_id"];
+	$resultat = mysql_query("select * from composants where composants_id='$composants_id'");
+	$composants_nom = mysql_result($resultat,0,"composants_nom");
+	$composants_modele = mysql_result($resultat,0,"composants_modele");
+	$resultat = mysql_query("select composants_modele_graphe from composants_modele where composants_modele_id='$composants_modele'");
+	$composants_modele_graphe = mysql_result($resultat,0,"composants_modele_graphe");
 	
+	echo "<tr height=\"23\" bgcolor=\"#5680CB\">
+	<td align=left class=\"titrecolonne\"> &nbsp;..:: Graphes du composant : $composants_nom ::..</td>
+	<td align=right class=\"titrecolonne\"><a href=\"javascript:history.go(-1);\"><img src=\"./images/plus.gif\" border=\"0\"> Retour</a>&nbsp;&nbsp;&nbsp;<a href=\"composants-relever-$composants_id.html\"><img src=\"./images/plus.gif\" border=\"0\"> Relevés</a>&nbsp;&nbsp;&nbsp;<a href=\"composants-gerer.html\"><img src=\"./images/plus.gif\" border=\"0\"> Gérer</a>&nbsp;&nbsp;&nbsp;</td>
+	</tr>\n";
+	echo "<tr><td colspan=2 align=center>";
+	//dessin des graphes
+	switch ($composants_modele_graphe) {
+		case 1 : //ON/OFF
 
+			break;
+		case 2 : //Cumul
+
+			break;
+		case 3 : //Numerique
+			echo "<script type='text/javascript' src='./amstock/swfobject.js'></script>
+				<div id='flashcontent'><strong>You need to upgrade your Flash Player</strong></div>
+				<script type='text/javascript'>
+					// <![CDATA[		
+					var so = new SWFObject('./amstock/amstock.swf', 'amstock', '100%', '600', '8', '#FFFFFF');
+					so.addVariable('path', './amstock/');
+					so.addVariable('settings_file', encodeURIComponent('./amstock/amstock_settings.php?composants_id=$composants_id&typevaleur=Temperature'));
+					//so.addVariable('additional_chart_settings', encodeURIComponent(\"<settings><data_sets><data_set did='1'><file_name>../pages/composants_grapheflashdata.php?composants_id=".$composants_id."</file_name></data_set></data_sets></settings>\"));
+					so.write('flashcontent');
+					// ]]>
+				</script>";
+			break;
+	}
+	echo "</td></tr>";
+	break;
 case "grapherdyn" :
 	$composants_id=@$_GET["composants_id"];
 	$resultat = mysql_query("select * from composants where composants_id='$composants_id'");
