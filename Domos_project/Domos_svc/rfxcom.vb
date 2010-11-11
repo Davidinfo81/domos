@@ -50,6 +50,7 @@ Public Class rfxcom
     Private recbuf(30), recbytes, recbits As Byte
     Private bytecnt As Integer = 0
     Private message As String
+    Private dateheurelancement As DateTime
     Private waitforack As Boolean = False
     Private vresponse As Boolean = False
     Private supply_voltage As Integer
@@ -101,6 +102,7 @@ Public Class rfxcom
                         port.RtsEnable = True
                         port.DiscardInBuffer()
                     End If
+                    dateheurelancement = DateTime.Now
                     Return ("Port " & port_name & " ouvert")
                 End If
             Else
@@ -1443,140 +1445,73 @@ Public Class rfxcom
         'Dim hsaddr As Integer
         adresse = (recbuf(0) * 256 + recbuf(1)).ToString
         Select Case recbuf(2)
+            'Case &H3 : valeur = "ALERT: PANIC"
+            'Case &H4 : valeur = "ALERT"
+            'Case &H5
+            '    batteryempty = True
+            '    valeur = "ALERT"
+            'Case &H22 : valeur = "ALERT: PANIC"
+            'Case &H26 : valeur = "ALERT: PANIC"
+            'Case &H44 : valeur = "Normal"
+            'Case &H5 : valeur = "Normal"
+            'Case &H66
+            '    batteryempty = True
+            '    valeur = "Normal"
+            'Case &H80 : valeur = "Normal"
+            'Case &H84 : valeur = "Normal"
+            'Case &H85
+            '    batteryempty = True
+            '    valeur = "Normal"
+            'Case Else : valeur = "ALERT: ??????"
+
+            Case &H0 : valeur = "ALERT (Max delay)"
+            Case &H1
+                batteryempty = True
+                valeur = "ALERT (Battery + Max delay)"
+            Case &H2 : valeur = "ARM Away (max)"
             Case &H3 : valeur = "ALERT: PANIC"
             Case &H4 : valeur = "ALERT"
             Case &H5
                 batteryempty = True
-                valeur = "ALERT"
+                valeur = "ALERT (Battery)"
+            Case &H6 : valeur = "ARM Away (min)"
+            Case &HA : valeur = "ARM Home (max)"
+            Case &HC : valeur = "ALERT"
+            Case &HD
+                batteryempty = True
+                valeur = "ALERT (Battery + sensor stop)"
+            Case &HE : valeur = "ARM Home (min)"
+            Case &H1C : valeur = "Temp -< Set"
+            Case &H20 : valeur = "Dark sensor"
             Case &H22 : valeur = "ALERT: PANIC"
             Case &H26 : valeur = "ALERT: PANIC"
-            Case &H44 : valeur = "Normal"
-            Case &H5 : valeur = "Normal"
-            Case &H66
+            Case &H2B : valeur = "Temp > Set"
+            Case &H40 : valeur = "ALERT + Tamper (Max delay)"
+            Case &H42 : valeur = "Lights On"
+            Case &H44 : valeur = "Normal" 'Case &H44 : valeur = "ALERT + Tamper" ----------------------
+            Case &H46 : valeur = "Lights On"
+            Case &H4C : valeur = "ALERT + Tamper"
+            Case &H66 : valeur = "ERR: Battery empty"
+            Case &H80 : valeur = "Normal (Max delay)"
+            Case &H81
                 batteryempty = True
-                valeur = "Normal"
-            Case &H80 : valeur = "Normal"
+                valeur = "Normal (Battery + Max delay)"
+            Case &H82 : valeur = "Disarm"
             Case &H84 : valeur = "Normal"
             Case &H85
                 batteryempty = True
-                valeur = "Normal"
-            Case Else : valeur = "ALERT: ??????"
-                'Case &H0 : valeur = "Alert (Max delay)"
-                'Case &H1 : valeur = "Alert (Battery+Max delay)"
-                'Case &H4 : valeur = "Alert"
-                'Case &H5 : valeur = "Alert (Battery)"
-                'Case &H80 : valeur = "Normal (Max delay)"
-                'Case &H81 : valeur = "Normal (battery+Max delay)"
-                'Case &H84 : valeur = "Normal"
-                'Case &H85 : valeur = "Normal (battery)"
-                'Case &H40 : valeur = "Alert + Tamper (Max delay)"
-                'Case &H44 : valeur = "Alert + Tamper"
-                'Case &HC0 : valeur = "Normal + Tamper (Max delay)"
-                'Case &HC4 : valeur = "Normal + Tamper"
-                'Case &HC : valeur = "Alert"
-                'Case &H8C : valeur = "Normal"
-                'Case &H20 : valeur = "Dark sensor"
-                'Case &H4C : valeur = "Alert + Tamper"
-                'Case &HCC : valeur = "Normal + Tamper"
-                'Case &H2 : valeur = "ARM Away (max)"
-                'Case &H82 : valeur = "Disarm"
-                'Case &H42 : valeur = "Lights On"
-                'Case &HC2 : valeur = "Lights Off"
-                'Case &H22 : valeur = "Panic"
-                'Case &HA : valeur = "ARM Home (max)"
-                'Case &H6 : valeur = "ARM Away (min)"
-                'Case &H86 : valeur = "Disarm"
-                'Case &H46 : valeur = "Lights On"
-                'Case &HC6 : valeur = "Lights Off"
-                'Case &H26 : valeur = "Panic"
-                'Case &HE : valeur = "ARM Home (min)"
-                'Case &H3 : valeur = "Panic"
-                'Case &H1C : valeur = "Temp -< Set"
-                'Case &H2B : valeur = "Temp > Set"
-                'Case &HE0 : valeur = "Motion"
-                'Case &HF0 : valeur = "Darkness detected"
-                'Case &HF8 : valeur = "Light detected"
-                'Case Else : valeur = "DEBUG : X10Security : Secur ??????"
-                'Case &H0
-                '    'valeur = "S DWS DS10/90  Alert (max delay)"
-                '    valeur = "Alert"
-                'Case &H1
-                '    ' valeur = "S DWS DS10/90  Alert (max delay, batt low)"
-                '    valeur = "Alert + Battery"
-                'Case &H40
-                '    'valeur = "S DWS DS90  Alert + Tamper(max delay)"
-                '    valeur = "Alert + Tamper"
-                'Case &H44
-                '    'valeur = "S DWS Visonic or DS90  Alert + Tamper"
-                '    valeur = "Alert : Open + Tamper"
-                'Case &HC0
-                '    'valeur = "S DWS DS90  Normal + Tamper (max delay)"
-                '    valeur = "Alert : Open + Tamper"
-                'Case &HC4
-                '    'valeur = "S DWS Visonic or DS90  Normal + Tamper"
-                '    valeur = "Alert : Closed + Tamper"
-                'Case &H4
-                '    'valeur = "S DWS Visonic or DS10/90  Alert"
-                '    valeur = "Alert : Open"
-                'Case &H5
-                '    'valeur = "S DWS Visonic or DS10/90  Alert (battery low)"
-                '    valeur = "Alert : Open + battery low"
-                'Case &H80
-                '    'valeur = "S DWS DS10/90  Normal (max delay)"
-                '    valeur = "Normal"
-                'Case &H81
-                '    'valeur = "S DWS DS10/90  Normal (max delay, batt low)"
-                '    valeur = "Alert : Closed + battery low"
-                'Case &H84
-                '    'valeur = "S DWS Visonic or DS10/90  Normal"
-                '    valeur = "Closed"
-                'Case &H85
-                '    'valeur = "S DWS Visonic or DS10/90  Normal (battery low)"
-                '    valeur = "Alert : Closed + battery low"
-                'Case &HC : valeur = "DEBUG : Alert : MOTION S Visonic or MS10/20/90  Alert"
-                'Case &H8C : valeur = "DEBUG : MOTION S Visonic or MS10/20/90  Normal"
-                'Case &H20 : valeur = "DEBUG : X10Security : MS20  Dark sensor"
-                'Case &H4C : valeur = "DEBUG : Alert : MOTION S Visonic or MS90  Alert + Tamper"
-                'Case &HCC : valeur = "DEBUG : Alert : MOTION S Visonic or MS90  Normal + Tamper"
-                'Case &HD
-                '    'valeur = "DEBUG : MOTION S Visonic or MS90  Alert + batt.low"
-                '    valeur = "Alert : Battery low"
-                'Case &H8D
-                '    'valeur = "DEBUG : MOTION S Visonic or MS90  Normal + batt.low"
-                '    valeur = "Alert : Battery low"
-                'Case &HE0
-                '    If recbuf(0) = &HFF Then
-                '        valeur = "DEBUG : X10Security : Master receiver jamming detected"
-                '    ElseIf recbuf(0) = &H0 Then
-                '        valeur = "DEBUG : X10Security : Slave receiver jamming detected"
-                '    Else
-                '        valeur = "DEBUG : GF DM10  Motion"
-                '    End If
-                'Case &HF0 : valeur = "DEBUG : GF DM10  Darkness detected"
-                'Case &HF8
-                '    If recbuf(0) = &HFF Then
-                '        valeur = "DEBUG : X10Security : Master end receiver jamming detected"
-                '    ElseIf recbuf(0) = &H0 Then
-                '        valeur = "DEBUG : X10Security : Slave receiver end jamming detected"
-                '    Else
-                '        valeur = "DEBUG : GF DM10  Light detected"
-                '    End If
-                'Case &H6 : valeur = "DEBUG : REMOTE S KR10/SH624 ARM Away (min)"
-                'Case &H26
-                '    'valeur = "DEBUG : REMOTE S Visonic or KR10/Smoke Panic"
-                '    valeur = "Smoke Panic"
-                'Case &H46 : valeur = "DEBUG : REMOTE S KR10  Lights On"
-                'Case &H86 : valeur = "DEBUG : REMOTE S KR10  Disarm"
-                'Case &HC6 : valeur = "DEBUG : REMOTE S KR10  Lights Off"
-                'Case &H2 : valeur = "DEBUG : REMOTE S Visonic or SH624 ARM Away (max)"
-                'Case &H3 : valeur = "DEBUG : REMOTE S SH624 Panic"
-                'Case &HA : valeur = "DEBUG : REMOTE S SH624 ARM Home (max)"
-                'Case &HE : valeur = "DEBUG : REMOTE S Visonic or SH624 ARM Home (min)"
-                'Case &H22 : valeur = "DEBUG : REMOTE S SH624 Panic"
-                'Case &H42 : valeur = "DEBUG : REMOTE S Visonic or SH624 Lights On"
-                'Case &H82 : valeur = "DEBUG : REMOTE S Visonic or SH624 Disarm"
-                'Case &HC2 : valeur = "DEBUG : REMOTE S SH624 Lights Off"
-                'Case Else : valeur = "DEBUG : X10Security : Secur ??????"
+                valeur = "Normal (Battery)"
+            Case &H86 : valeur = "Disarm"
+            Case &H8C : valeur = "Normal"
+            Case &HC0 : valeur = "Normal + Tamper (Max delay)"
+            Case &HC2 : valeur = "Lights Off"
+            Case &HC4 : valeur = "Normal + Tamper"
+            Case &HC6 : valeur = "Lights Off"
+            Case &HCC : valeur = "Normal + Tamper"
+            Case &HE0 : valeur = "Motion"
+            Case &HF0 : valeur = "Darkness detected"
+            Case &HF8 : valeur = "Light detected"
+            Case Else : valeur = "ALERT ??????"
         End Select
         If protocol = MODEB32 Then
             'hsaddr = createhsaddr()
@@ -1667,7 +1602,7 @@ Public Class rfxcom
                 valeur = "ERR: wrong value in temperature field=" & Hex(recbuf(5)) & "." & Hex(recbuf(4) >> 4)
             End If
             WriteRetour(adresse, valeur)
-            If (recbuf(4) And &H4) = &H4 Then WriteRetour(adresse, "ERR: battery empty")
+            If (recbuf(4) And &H4) = &H4 Then WriteRetour(adresse, "ERR: Battery empty")
             'checksum8()
 
         ElseIf recbuf(0) = &HEA And recbuf(1) = &H4C And recbits >= 60 Then
@@ -2350,92 +2285,95 @@ Public Class rfxcom
             'log tous les paquets en mode debug
             WriteLog("DBG: receive from " & adresse & " -> " & valeur)
 
-            'on verifie si un composant correspond à cette adresse
-            tabletmp = domos_svc.table_composants.Select("composants_adresse = '" & adresse.ToString & "' AND composants_modele_norme = 'RFX'")
-            If tabletmp.GetUpperBound(0) >= 0 Then
-                '--- On attend au moins x seconde entre deux receptions de valeur pour le meme composant (x sec = rfx_tpsentrereponse/100)
-                If (DateTime.Now - Date.Parse(tabletmp(0)("composants_etatdate"))).TotalMilliseconds > domos_svc.rfx_tpsentrereponse Then
-                    If VB.Left(valeur, 4) <> "ERR:" Then 'si y a pas erreur d'acquisition
-                        '--- Remplacement de , par .
-                        valeur = STRGS.Replace(valeur, ",", ".")
-                        '--- Correction si besoin ---
-                        If (tabletmp(0)("composants_correction") <> "" And tabletmp(0)("composants_correction") <> "0") Then
-                            valeur = valeur + CDbl(tabletmp(0)("composants_correction"))
-                        End If
-                        '--- comparaison du relevé avec le dernier etat ---
-                        '--- si la valeur a changé ou autre chose qu'un nombre (ON, OFF, ALERT...) --- 
-                        If valeur.ToString <> tabletmp(0)("composants_etat").ToString() Or Not IsNumeric(valeur) Then
-                            'si nombre alors 
-                            If (IsNumeric(valeur) And IsNumeric(tabletmp(0)("lastetat")) And IsNumeric(tabletmp(0)("composants_etat"))) Then
-                                'on vérifie que la valeur a changé par rapport a l'avant dernier etat (lastetat) si domos.lastetat (table config)
-                                If domos_svc.lastetat And valeur.ToString = tabletmp(0)("lastetat").ToString() Then
-                                    domos_svc.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString & " (inchangé lastetat " & tabletmp(0)("lastetat").ToString() & ")", 8)
-                                    '--- Modification de la date dans la base SQL ---
-                                    dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-                                    Err = domos_svc.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-                                    If Err <> "" Then WriteLog("ERR: inchange lastetat " & Err)
-                                Else
-                                    'on vérifie que la valeur a changé de plus de composants_precision sinon inchangé
-                                    'If (valeur + CDbl(tabletmp(0)("composants_precision"))).ToString >= tabletmp(0)("composants_etat").ToString() And (valeur - CDbl(tabletmp(0)("composants_precision"))).ToString <= tabletmp(0)("composants_etat").ToString() Then
-                                    If (CDbl(valeur) + CDbl(tabletmp(0)("composants_precision"))) >= CDbl(tabletmp(0)("composants_etat")) And (CDbl(valeur) - CDbl(tabletmp(0)("composants_precision"))) <= CDbl(tabletmp(0)("composants_etat")) Then
-                                        'log de "inchangé précision"
-                                        domos_svc.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString & " (inchangé precision " & tabletmp(0)("composants_etat").ToString & "+-" & tabletmp(0)("composants_precision").ToString & ")", 8)
+            'on ne traite rien pendant les x premieres secondes
+            If DateTime.Now > DateAdd(DateInterval.Second, 6, dateheurelancement) Then
+                'on verifie si un composant correspond à cette adresse
+                tabletmp = domos_svc.table_composants.Select("composants_adresse = '" & adresse.ToString & "' AND composants_modele_norme = 'RFX'")
+                If tabletmp.GetUpperBound(0) >= 0 Then
+                    '--- On attend au moins x seconde entre deux receptions ou si valeur<>valeurlastetat (donc pas le meme composant)
+                    If (DateTime.Now - Date.Parse(tabletmp(0)("composants_etatdate"))).TotalMilliseconds > domos_svc.rfx_tpsentrereponse Or valeur <> valeurlast Then
+                        If VB.Left(valeur, 4) <> "ERR:" Then 'si y a pas erreur d'acquisition
+                            '--- Remplacement de , par .
+                            valeur = STRGS.Replace(valeur, ",", ".")
+                            '--- Correction si besoin ---
+                            If (tabletmp(0)("composants_correction") <> "" And tabletmp(0)("composants_correction") <> "0") Then
+                                valeur = valeur + CDbl(tabletmp(0)("composants_correction"))
+                            End If
+                            '--- comparaison du relevé avec le dernier etat ---
+                            '--- si la valeur a changé ou autre chose qu'un nombre (ON, OFF, ALERT...) --- 
+                            If valeur.ToString <> tabletmp(0)("composants_etat").ToString() Or Not IsNumeric(valeur) Then
+                                'si nombre alors 
+                                If (IsNumeric(valeur) And IsNumeric(tabletmp(0)("lastetat")) And IsNumeric(tabletmp(0)("composants_etat"))) Then
+                                    'on vérifie que la valeur a changé par rapport a l'avant dernier etat (lastetat) si domos.lastetat (table config)
+                                    If domos_svc.lastetat And valeur.ToString = tabletmp(0)("lastetat").ToString() Then
+                                        domos_svc.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString & " (inchangé lastetat " & tabletmp(0)("lastetat").ToString() & ")", 8)
                                         '--- Modification de la date dans la base SQL ---
                                         dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                                         Err = domos_svc.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-                                        If Err <> "" Then WriteLog("ERR: inchange precision " & Err)
+                                        If Err <> "" Then WriteLog("ERR: inchange lastetat " & Err)
                                     Else
-                                        domos_svc.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString, 6)
-                                        '  --- modification de l'etat du composant dans la table en memoire ---
+                                        'on vérifie que la valeur a changé de plus de composants_precision sinon inchangé
+                                        'If (valeur + CDbl(tabletmp(0)("composants_precision"))).ToString >= tabletmp(0)("composants_etat").ToString() And (valeur - CDbl(tabletmp(0)("composants_precision"))).ToString <= tabletmp(0)("composants_etat").ToString() Then
+                                        If (CDbl(valeur) + CDbl(tabletmp(0)("composants_precision"))) >= CDbl(tabletmp(0)("composants_etat")) And (CDbl(valeur) - CDbl(tabletmp(0)("composants_precision"))) <= CDbl(tabletmp(0)("composants_etat")) Then
+                                            'log de "inchangé précision"
+                                            domos_svc.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString & " (inchangé precision " & tabletmp(0)("composants_etat").ToString & "+-" & tabletmp(0)("composants_precision").ToString & ")", 8)
+                                            '--- Modification de la date dans la base SQL ---
+                                            dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
+                                            Err = domos_svc.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
+                                            If Err <> "" Then WriteLog("ERR: inchange precision " & Err)
+                                        Else
+                                            domos_svc.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString, 6)
+                                            '  --- modification de l'etat du composant dans la table en memoire ---
+                                            tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
+                                            tabletmp(0)("composants_etat") = valeur.ToString
+                                            tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
+                                        End If
+                                    End If
+                                Else
+                                    domos_svc.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString, 6)
+                                    '  --- modification de l'etat du composant dans la table en memoire ---
+                                    If VB.Left(valeur, 4) <> "CFG:" Then
                                         tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
                                         tabletmp(0)("composants_etat") = valeur.ToString
                                         tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                                     End If
                                 End If
                             Else
-                                domos_svc.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString, 6)
-                                '  --- modification de l'etat du composant dans la table en memoire ---
-                                If VB.Left(valeur, 4) <> "CFG:" Then
-                                    tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
-                                    tabletmp(0)("composants_etat") = valeur.ToString
-                                    tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-                                End If
+                                'la valeur n'a pas changé, on log en 7 et on maj la date dans la base sql
+                                domos_svc.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString & " (inchangé " & tabletmp(0)("composants_etat").ToString() & ")", 7)
+                                '--- Modification de la date dans la base SQL ---
+                                dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
+                                Err = domos_svc.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
+                                If Err <> "" Then WriteLog("ERR: inchange : " & Err)
                             End If
                         Else
-                            'la valeur n'a pas changé, on log en 7 et on maj la date dans la base sql
-                            domos_svc.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString & " (inchangé " & tabletmp(0)("composants_etat").ToString() & ")", 7)
-                            '--- Modification de la date dans la base SQL ---
-                            dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-                            Err = domos_svc.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-                            If Err <> "" Then WriteLog("ERR: inchange : " & Err)
+                            'erreur d'acquisition
+                            WriteLog("ERR: " & tabletmp(0)("composants_nom").ToString() & " : " & valeur.ToString)
                         End If
                     Else
-                        'erreur d'acquisition
-                        WriteLog("ERR: erreur acquisition" & tabletmp(0)("composants_nom").ToString() & " : " & valeur.ToString)
-                    End If
-                Else
-                    'si c'est un battery empty pour les composants oregon, c'est envoyé en même temps que la valeur donc on le traite ici
-                    If InStr(valeur, "battery") > 0 Then
-                        WriteLog("ERR: " & tabletmp(0)("composants_nom").ToString() & " : " & valeur.ToString)
-                    Else
+                        'si c'est un battery empty pour les composants oregon, c'est envoyé en même temps que la valeur donc on le traite ici
+                        'If InStr(LCase(valeur), "battery") > 0 Then
+                        'If InStr(LCase(valeur), "battery") > 0 Or InStr(LCase(valeur), "panic") > 0 Or InStr(LCase(valeur), "alert") > 0 Or InStr(LCase(valeur), "normal") > 0 Then
+                        '  WriteLog("ERR: " & tabletmp(0)("composants_nom").ToString() & " : " & valeur.ToString)
+                        '   Else
                         WriteLog("DBG: IGNORE : Etat recu il y a moins de 2 sec : " & adresse.ToString & " : " & valeur.ToString)
-                    End If
-                End If
-            Else
-                'erreur d'adresse composant
-                If adresse <> adresselast Then
-                    tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_adresse = '" & adresse.ToString & "' AND composants_bannis_norme = 'RFX'")
-                    If tabletmp.GetUpperBound(0) >= 0 Then
-                        'on logue en debug car c'est une adresse bannie
-                        WriteLog("DBG: IGNORE : Adresse Bannie : " & adresse.ToString & " : " & valeur.ToString)
-                    Else
-                        WriteLog("ERR: Adresse composant : " & adresse.ToString & " : " & valeur.ToString)
+                        'End If
                     End If
                 Else
-                    'on logue en debug car c'est la même adresse non trouvé depuis le dernier message
-                    WriteLog("DBG: IGNORE : Adresse composant : " & adresse.ToString & " : " & valeur.ToString)
+                    'erreur d'adresse composant
+                    If adresse <> adresselast Then
+                        tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_adresse = '" & adresse.ToString & "' AND composants_bannis_norme = 'RFX'")
+                        If tabletmp.GetUpperBound(0) >= 0 Then
+                            'on logue en debug car c'est une adresse bannie
+                            WriteLog("DBG: IGNORE : Adresse Bannie : " & adresse.ToString & " : " & valeur.ToString)
+                        Else
+                            WriteLog("ERR: Adresse composant : " & adresse.ToString & " : " & valeur.ToString)
+                        End If
+                    Else
+                        'on logue en debug car c'est la même adresse non trouvé depuis le dernier message
+                        WriteLog("DBG: IGNORE : Adresse composant : " & adresse.ToString & " : " & valeur.ToString)
+                    End If
                 End If
-                
             End If
         Catch ex As Exception
             WriteLog("ERR: Writeretour Exception : " & ex.Message)

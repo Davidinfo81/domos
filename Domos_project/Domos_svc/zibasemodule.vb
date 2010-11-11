@@ -212,11 +212,9 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
 
 #Region "Write"
 
-    Public Sub traitement(ByVal adresse As String, ByVal type As String, ByVal valeurentiere As String, ByVal valeurstring As String)
-        Dim valeur As String = valeurentiere
-
-
-
+    Public Sub traitement(ByVal adresse As String, ByVal type As String, ByVal valeurentiere As Long, ByVal valeurstring As String)
+        Dim valeur As String = CStr(valeurentiere)
+        If [String].IsNullOrEmpty(valeurstring) Then valeurstring = " "
         'modification des informations suivant le type
         Select Case UCase(type)
             Case "TEM"
@@ -283,8 +281,8 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
         Try
             tabletmp = domos_svc.table_composants.Select("composants_adresse = '" & adresse.ToString & "' AND composants_modele_norme = 'ZIB'")
             If tabletmp.GetUpperBound(0) >= 0 Then
-                '--- On attend au moins x seconde entre deux receptions de valeur pour le meme composant (x sec = rfx_tpsentrereponse/100)
-                If (DateTime.Now - Date.Parse(tabletmp(0)("composants_etatdate"))).TotalMilliseconds > domos_svc.rfx_tpsentrereponse Then
+                '--- On attend au moins x seconde entre deux receptions de valeur ou valeur<>valeurlast
+                If (DateTime.Now - Date.Parse(tabletmp(0)("composants_etatdate"))).TotalMilliseconds > domos_svc.rfx_tpsentrereponse Or valeur <> valeurlast Then
                     If VB.Left(valeur, 4) <> "ERR:" Then 'si y a pas erreur d'acquisition
                         '--- Remplacement de , par .
                         valeur = STRGS.Replace(valeur, ",", ".")

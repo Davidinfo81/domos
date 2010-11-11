@@ -908,8 +908,8 @@ Public Class domos_svc
 					log("LOG : Error DataTable internal index is corrupted --> Réinitialisation de la table des erreurs",2)
 					SendMessage("LOG: ERR: DataTable internal index is corrupted", "LOG : Error DataTable internal index is corrupted --> Réinitialisation de la table des erreurs")
 	            End If
-	        Catch ex As Exception
-	        	ecrireevtlog("LOG: Exception Table_erreur Exception : " & ex.ToString, 1, 109)
+            Catch ex2 As Exception
+                ecrireevtlog("LOG: Exception Table_erreur Exception : " & ex2.ToString, 1, 109)
 	        End Try
         End Try
         
@@ -1742,9 +1742,9 @@ Public Class domos_svc
         Dim contenu
         Dim timer_valeur As String = ""
         Dim y As Thread
-        Dim tabletemp as new datatable
-        Dim tabletempp as new datatable
-        Dim tblthread as new datatable
+        Dim tabletemp() As DataRow
+        Dim tabletempp() As DataRow
+        Dim tblthread() As DataRow
         Try
             liste = STRGS.Mid(liste, 2, STRGS.Len(liste) - 2) 'on supprimer les () de chaque cote de la liste
             While (posfin < STRGS.Len(liste)) 'tant que toute la liste n'a pas ete traite
