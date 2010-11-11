@@ -114,7 +114,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="rfxcom.vb" />
-    <Compile Include="Scheduler.vb" />
     <Compile Include="domos_svc.vb">
       <SubType>Component</SubType>
     </Compile>
@@ -132,7 +131,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Settings.vb" />
     <Compile Include="sockets.vb" />
     <Compile Include="Soleil.vb" />
     <Compile Include="tellstick.vb" />

@@ -1317,7 +1317,8 @@ Public Class domos_svc
 	                temp = temp & table_composants.Columns(j).Caption & ":" & table_composants.Rows(i).Item(j) & " "
 	            Next
 	            log("     -> " & temp, 0)
-	        Next
+            Next
+            If table_composants.Rows.Count() = 0 Then log("     -> pas de composant", 0)
 	        'Affiche la table composant bannis
 	        log("AFF: table_composants_bannis", 0)
 	        For i = 0 To table_composants_bannis.Rows.Count() - 1
@@ -1326,7 +1327,8 @@ Public Class domos_svc
 	                temp = temp & table_composants_bannis.Columns(j).Caption & ":" & table_composants_bannis.Rows(i).Item(j) & " "
 	            Next
 	            log("     -> " & temp, 0)
-	        Next
+            Next
+            If table_composants_bannis.Rows.Count() = 0 Then log("     -> pas de composant banni", 0)
 	        'Affiche la table Macro
 	        log("AFF: table_macros", 0)
 	        For i = 0 To table_macros.Rows.Count() - 1
@@ -1335,7 +1337,8 @@ Public Class domos_svc
 	                temp = temp & table_macros.Columns(j).Caption & ":" & table_macros.Rows(i).Item(j) & " "
 	            Next
 	            log("     -> " & temp, 0)
-	        Next
+            Next
+            If table_macros.Rows.Count() = 0 Then log("     -> pas de macro", 0)
 	        'Affiche la table Timer
 	        log("AFF: table_timer", 0)
 	        For i = 0 To table_timer.Rows.Count() - 1
@@ -1344,19 +1347,31 @@ Public Class domos_svc
 	                temp = temp & table_timer.Columns(j).Caption & ":" & table_timer.Rows(i).Item(j) & " "
 	            Next
 	            log("     -> " & temp, 0)
-	        Next
-	        'Affiche la table Thread
-	        log("AFF: table_thread", 0)
-	        For i = 0 To table_thread.Rows.Count() - 1
-	            temp = ""
-	            For j = 0 To table_thread.Columns.Count() - 1
-	                temp = temp & table_thread.Columns(j).Caption & ":" & table_thread.Rows(i).Item(j) & " "
-	            Next
-	            log("     -> " & temp, 0)
-	        Next
-		Catch ex As Exception
-		    log("AFF: Exception : " & ex.Message, 0)
-		End Try
+            Next
+            If table_timer.Rows.Count() = 0 Then log("     -> pas de timer", 0)
+            'Affiche la table Thread
+            log("AFF: table_thread", 0)
+            For i = 0 To table_thread.Rows.Count() - 1
+                temp = ""
+                For j = 0 To table_thread.Columns.Count() - 1
+                    temp = temp & table_thread.Columns(j).Caption & ":" & table_thread.Rows(i).Item(j) & " "
+                Next
+                log("     -> " & temp, 0)
+            Next
+            If table_thread.Rows.Count() = 0 Then log("     -> pas de threads", 0)
+            'Affiche la table Erreur
+            log("AFF: table_erreur", 0)
+            For i = 0 To table_erreur.Rows.Count() - 1
+                temp = ""
+                For j = 0 To table_thread.Columns.Count() - 1
+                    temp = temp & table_thread.Columns(j).Caption & ":" & table_thread.Rows(i).Item(j) & " "
+                Next
+                log("     -> " & temp, 0)
+            Next
+            If table_erreur.Rows.Count() = 0 Then log("     -> pas d erreurs", 0)
+        Catch ex As Exception
+            log("AFF: Exception : " & ex.Message, 0)
+        End Try
     End Sub
 
     Private Sub thread_ajout(ByVal composant_id As String, ByVal norme As String, ByVal source As String, ByRef mythread As Thread)
@@ -1523,7 +1538,7 @@ Public Class domos_svc
         End Try
     End Sub
 
-    Private Sub macro(ByVal comp_id, ByVal comp_etat)
+    Private Sub macro(ByVal comp_id As String, ByVal comp_etat As String)
         Try
             Dim tabletemp() As DataRow
             tabletemp = table_composants.Select("composants_id = '" & comp_id & "'")
@@ -1547,7 +1562,7 @@ Public Class domos_svc
         End Try
     End Sub
 
-    Function analyse_cond(ByVal liste As String, ByVal composants_id As Integer) As Boolean
+    Function analyse_cond(ByVal liste As String, ByVal composants_id As String) As Boolean
         'fonction recursive d'analyse des conditions d'une macro
         Dim resultat As Boolean = True
         Dim resultat_temp As Boolean = True
@@ -1919,15 +1934,38 @@ Public Class domos_svc
                 ElseIf contenu(0) = "AM" Then 'execution d'une macro : [AM#macros_id]
                     tabletemp = table_macros.Select("macro_id = '" & contenu(1) & "'")
                     If tabletemp.GetLength(0) = 1 Then 'macro trouvé
-                        log("MAC:  -> Analyse Macro : " & tabletemp(0)("macro_nom"), 5)
+                        log("MAC : AM# : Analyse Macro : " & tabletemp(0)("macro_nom"), 5)
                         If analyse_cond(tabletemp(0)("macro_conditions"), "") Then 'verification des conditions
                             If tabletemp(0)("verrou") = False Then 'si la macro n'est pas déjà en cours d'execution
                                 tabletemp(0)("verrou") = True
                                 log("MAC : AM# : " & tabletemp(0)("macro_nom") & " : OK", 4)
                                 action(tabletemp(0)("macro_actions"))
                                 tabletemp(0)("verrou") = False
+                            Else
+                                log("MAC : AM# : macro " & tabletemp(0)("macro_nom") & " vérouillé", 2)
                             End If
+                        Else
+                            log("MAC : AM# : macro " & tabletemp(0)("macro_nom") & " conditions:" & tabletemp(0)("macro_conditions") & " pas bonnes", 2)
                         End If
+                    Else
+                        log("MAC : AM# : macro " & tabletemp(0)("macro_nom") & " n existe pas", 2)
+                    End If
+
+                    '---------------------------- EM = executer une macro (sans conditions) ------------------------
+                ElseIf contenu(0) = "EM" Then 'execution d'une macro sans verifier les conditions: [AM#macros_id]
+                    tabletemp = table_macros.Select("macro_id = '" & contenu(1) & "'")
+                    If tabletemp.GetLength(0) = 1 Then 'macro trouvé
+                        log("MAC : EM# : Execution Macro : " & tabletemp(0)("macro_nom"), 5)
+                        If tabletemp(0)("verrou") = False Then 'si la macro n'est pas déjà en cours d'execution
+                            tabletemp(0)("verrou") = True
+                            log("MAC : EM# : " & tabletemp(0)("macro_nom") & " : OK", 4)
+                            action(tabletemp(0)("macro_actions"))
+                            tabletemp(0)("verrou") = False
+                        Else
+                            log("MAC : EM# : macro " & tabletemp(0)("macro_nom") & " vérouillé", 2)
+                        End If
+                    Else
+                        log("MAC : EM# : macro " & tabletemp(0)("macro_nom") & " n existe pas", 2)
                     End If
                 End If
 
@@ -1974,32 +2012,32 @@ Public Class domos_svc
                         Case "PLC"
                             'verification si on a pas déjà un thread qui ecrit sur le plcbus sinon on boucle pour attendre PLC_timeout/10 = 5 sec par défaut
                             Dim tblthread = table_thread.Select("norme='PLC' AND source='ECR_PLC' AND composant_id<>'" & compid & "'")
-                            While (tblthread.GetLength(0) > 0 And limite < (PLC_timeout / 10))
-                                wait(10)
+                            While (tblthread.GetLength(0) > 0 And limite < (PLC_timeout / 5))
+                                wait(5)
                                 tblthread = table_thread.Select("norme='PLC' AND source='ECR_PLC' AND composant_id<>'" & compid & "'")
                                 limite = limite + 1
                             End While
-                            If (limite < (PLC_timeout / 10)) Then 'on a attendu moins que le timeout
+                            If (limite < (PLC_timeout / 5)) Then 'on a attendu moins que le timeout
                                 'maj du thread pour dire qu'on ecrit sur le bus
                                 tblthread = table_thread.Select("norme='PLC' AND source='ECR' AND composant_id='" & compid & "'")
                                 If tblthread.GetLength(0) = 1 Then
                                     tblthread(0)("source") = "ECR_PLC"
-	                                If valeur2 <> "" Then
-	                                    err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, valeur2, 0)
-	                                Else
-	                                    err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, 0, 0)
-	                                End If
-	                                If STRGS.Left(err, 4) = "ERR:" Then
-	                                    log("ECR : PLC : " & err, 2)
-	                                Else
-	                                    log("ECR : PLC : " & err, 5)
-	                                End If
-	                                wait(100) 'pause de 1sec pour recevoir le ack et libérer le bus correctement
+                                    If valeur2 <> "" Then
+                                        err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, valeur2, 0)
+                                    Else
+                                        err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, 0, 0)
+                                    End If
+                                    If STRGS.Left(err, 4) = "ERR:" Then
+                                        log("ECR : PLC : " & err, 2)
+                                    Else
+                                        log("ECR : PLC : " & err, 5)
+                                    End If
+                                    wait(50) 'pause de 0.5sec pour recevoir le ack et libérer le bus correctement
                                 Else
                                     log("ECR : PLC Thread non trouvé : composant ID=" & compid, 2)
                                 End If
                             Else
-                                log("ECR : Le port PLCBUS nest pas disponible pour une ecriture : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
+                                log("ECR : Le port PLCBUS nest pas disponible : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
                             End If
                         Case "WIR"
                             Dim modelewir As String = tabletmp(0)("composants_modele_nom").ToString
@@ -2136,7 +2174,7 @@ Public Class domos_svc
                                         log("ECR : WIR : Thread non trouvé : composant ID=" & compid, 2)
                                     End If
                                 Else
-                                    log("ECR : WIR Le bus 1-wire nest pas disponible pour une ecriture : " & tabletmp(0)("composants_nom") & "-" & valeur, 2)
+                                    log("ECR : WIR Le bus 1-wire nest pas disponible : " & tabletmp(0)("composants_nom") & "-" & valeur, 2)
                                 End If
                             Else
                                 log("ECR : WIR Modele 1-wire non géré : " & modelewir & " comp: " & tabletmp(0)("composants_nom") & " : " & modelewir.ToString, 2)
@@ -2170,12 +2208,12 @@ Public Class domos_svc
 	                                Else
 	                                    log("ECR : X10 : " & err, 5)
 	                                End If
-	                                wait(100) 'pause de 1sec pour recevoir le ack et libérer le bus correctement
+                                    wait(50) 'pause de 0.5sec pour recevoir le ack et libérer le bus correctement
                                 Else
                                     log("ECR : X10 : Thread non trouvé : composant ID=" & compid, 2)
                                 End If
                             Else
-                                log("ECR : Le port X10 nest pas disponible pour une ecriture : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
+                                log("ECR : Le port X10 nest pas disponible : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
                             End If
                         Case "ZIB"
                             'verification si on a pas déjà un thread qui ecrit sur le zib sinon on boucle pour attendre ZIB_timeout/10 = 5 sec par défaut

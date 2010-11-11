@@ -8,4 +8,7 @@ Imports System.Globalization
 
 Public Class tellstick
 
+
+
+
 End Class
