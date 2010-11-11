@@ -13,7 +13,7 @@ include("./include_php/config.php");
 
 ?>
 
-<iframe src="http://www.google.com/calendar/embed?showTitle=0&amp;showTz=0&amp;height=600&amp;wkst=2&amp;hl=fr&amp;bgcolor=%23ffffff&amp;src=davidinfo05%40gmail.com&amp;color=%232952A3&amp;ctz=Europe%2FParis" style=" border-width:0 " width="930" height="600" frameborder="0" scrolling="no"></iframe>
+<iframe src="http://www.google.com/calendar/embed?showTitle=0&amp;showTz=0&amp;height=600&amp;wkst=2&amp;hl=fr&amp;bgcolor=%23ffffff&amp;src=x%40gmail.com&amp;color=%232952A3&amp;ctz=Europe%2FParis" style=" border-width:0 " width="930" height="600" frameborder="0" scrolling="no"></iframe>
 
         </table>
       </td>
