@@ -285,7 +285,7 @@ Public Class plcbus
                         'If Not ack Then Domos.log(reponse)
                         If ack Then
                             ackreceived = True 'c'est un Ack
-                            reponse = " <- PLC : ACK :" & plcbus_commande & "-" & plcbus_adresse & " : " & data1 & "-" & data2 & " : " & comBuffer(7)
+                            reponse = "      <- PLC : ACK :" & plcbus_commande & "-" & plcbus_adresse & " : " & data1 & "-" & data2 & " : " & comBuffer(7)
                             domos_svc.log(reponse, 9)
                         Else
                             'ce n'est pas un ack, je traite le paquet
