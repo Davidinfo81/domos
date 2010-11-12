@@ -1088,7 +1088,7 @@ Public Class domos_svc
         'Maj de la table composant
         If table = "ALL" Or table = "COMPOSANTS" Then
             Try
-                log("MAJ: Maj de la table_composants", 0)
+                log("MAJ : Maj de la table_composants", 0)
                 Dim Condition_service As String = ""
                 If Not Serv_PLC Then Condition_service &= " AND composants_modele_norme<>'PLC'"
                 If Not Serv_WIR Then Condition_service &= " AND composants_modele_norme<>'WIR'"
@@ -1099,7 +1099,7 @@ Public Class domos_svc
                 If Not Serv_TSK Then Condition_service &= " AND composants_modele_norme<>'TSK'"
                 err = Table_maj_sql(table_temp, "SELECT composants.*,composants_modele.* FROM composants,composants_modele WHERE composants_modele=composants_modele_id AND composants_actif='1'" & Condition_service)
                 If err <> "" Then
-                    log("MAJ: SQL : ERR: " & err, 0)
+                    log("MAJ : SQL ERR: " & err, 0)
                 Else
                     If table_temp.Rows.Count() > 0 Then 'on a récupéré la nouvelle liste des composants, on fait la maj
                         'Maj et suppression des composants
@@ -1148,17 +1148,17 @@ Public Class domos_svc
                     End If
                 End If
             Catch ex As Exception
-                log("MAJ: composants error : " & ex.Message, 0)
+                log("MAJ : composants error : " & ex.Message, 0)
             End Try
         End If
 
         'Maj de la table composant bannis
         If table = "ALL" Or table = "COMPOSANTS_BANNIS" Then
             Try
-                log("MAJ: Maj de la table_composants bannis", 0)
+                log("MAJ : Maj de la table_composants bannis", 0)
                 err = Table_maj_sql(table_temp, "SELECT * FROM composants_bannis")
                 If err <> "" Then
-                    log("MAJ: SQL : ERR: " & err, 0)
+                    log("MAJ : SQL ERR: " & err, 0)
                 Else
                     If table_temp.Rows.Count() > 0 Then 'on a récupéré la nouvelle liste des composants bannis, on fait la maj
                         'Maj et suppression des composants bannis
@@ -1193,18 +1193,18 @@ Public Class domos_svc
                     End If
                 End If
             Catch ex As Exception
-                log("MAJ: composants_bannis error : " & ex.Message, 0)
+                log("MAJ : composants_bannis error : " & ex.Message, 0)
             End Try
         End If
 
         'Maj de la table Macro
         If table = "ALL" Or table = "MACRO" Then
             Try
-                log("MAJ: Maj de la table_macros", 0)
+                log("MAJ : Maj de la table_macros", 0)
                 table_temp = New DataTable
                 err = Table_maj_sql(table_temp, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions NOT LIKE '%CT#%'")
                 If err <> "" Then
-                    log("MAJ: SQL : ERR: " & err, 0)
+                    log("MAJ : SQL ERR: " & err, 0)
                 Else
                     If table_temp.Rows.Count() > 0 Then 'on a récupéré la nouvelle liste des macros, on fait la maj
                         'Maj et suppression des macros existantes
@@ -1245,18 +1245,18 @@ Public Class domos_svc
                     End If
                 End If
             Catch ex As Exception
-                log("MAJ: macro error : " & ex.Message, 0)
+                log("MAJ : macro error : " & ex.Message, 0)
             End Try
         End If
 
         'Maj de la table Timer
         If table = "ALL" Or table = "TIMER" Then
             Try
-                log("MAJ: Maj de la table_timer", 0)
+                log("MAJ : Maj de la table_timer", 0)
                 table_temp = New DataTable
                 err = Table_maj_sql(table_temp, "SELECT * FROM macro WHERE macro_actif='1' AND macro_conditions LIKE '%CT#%'")
                 If err <> "" Then
-                    log("MAJ: SQL : ERR: " & err, 0)
+                    log("MAJ : SQL ERR: " & err, 0)
                 Else
                     If table_temp.Rows.Count() > 0 Then 'on a récupéré la nouvelle liste des timers, on fait la maj
                         'Maj et suppression des timers existants
@@ -1298,7 +1298,7 @@ Public Class domos_svc
                     End If
                 End If
             Catch ex As Exception
-                log("MAJ: timer error : " & ex.Message, 0)
+                log("MAJ : timer error : " & ex.Message, 0)
             End Try
         End If
 
@@ -1310,7 +1310,7 @@ Public Class domos_svc
         
         Try
 	        'Affiche la table composant
-	        log("AFF: table_composants", 0)
+            log("AFF : table_composants", 0)
 	        For i = 0 To table_composants.Rows.Count() - 1
 	            temp = ""
 	            For j = 0 To table_composants.Columns.Count() - 1
@@ -1320,7 +1320,7 @@ Public Class domos_svc
             Next
             If table_composants.Rows.Count() = 0 Then log("     -> pas de composant", 0)
 	        'Affiche la table composant bannis
-	        log("AFF: table_composants_bannis", 0)
+            log("AFF : table_composants_bannis", 0)
 	        For i = 0 To table_composants_bannis.Rows.Count() - 1
 	            temp = ""
 	            For j = 0 To table_composants_bannis.Columns.Count() - 1
@@ -1330,7 +1330,7 @@ Public Class domos_svc
             Next
             If table_composants_bannis.Rows.Count() = 0 Then log("     -> pas de composant banni", 0)
 	        'Affiche la table Macro
-	        log("AFF: table_macros", 0)
+            log("AFF : table_macros", 0)
 	        For i = 0 To table_macros.Rows.Count() - 1
 	            temp = ""
 	            For j = 0 To table_macros.Columns.Count() - 1
@@ -1340,7 +1340,7 @@ Public Class domos_svc
             Next
             If table_macros.Rows.Count() = 0 Then log("     -> pas de macro", 0)
 	        'Affiche la table Timer
-	        log("AFF: table_timer", 0)
+            log("AFF : table_timer", 0)
 	        For i = 0 To table_timer.Rows.Count() - 1
 	            temp = ""
 	            For j = 0 To table_timer.Columns.Count() - 1
@@ -1350,7 +1350,7 @@ Public Class domos_svc
             Next
             If table_timer.Rows.Count() = 0 Then log("     -> pas de timer", 0)
             'Affiche la table Thread
-            log("AFF: table_thread", 0)
+            log("AFF : table_thread", 0)
             For i = 0 To table_thread.Rows.Count() - 1
                 temp = ""
                 For j = 0 To table_thread.Columns.Count() - 1
@@ -1360,7 +1360,7 @@ Public Class domos_svc
             Next
             If table_thread.Rows.Count() = 0 Then log("     -> pas de threads", 0)
             'Affiche la table Erreur
-            log("AFF: table_erreur", 0)
+            log("AFF : table_erreur", 0)
             For i = 0 To table_erreur.Rows.Count() - 1
                 temp = ""
                 For j = 0 To table_erreur.Columns.Count() - 1
@@ -1370,7 +1370,7 @@ Public Class domos_svc
             Next
             If table_erreur.Rows.Count() = 0 Then log("     -> pas d erreurs", 0)
         Catch ex As Exception
-            log("AFF: Exception : " & ex.Message, 0)
+            log("AFF : Exception : " & ex.Message, 0)
         End Try
     End Sub
 
@@ -1998,6 +1998,7 @@ Public Class domos_svc
         End Sub
         Public Sub action()
             Dim tabletmp() As DataRow
+            Dim tblthread() As DataRow
             Dim limite As Integer = 0
             Dim err As String = ""
             Try
@@ -2012,7 +2013,7 @@ Public Class domos_svc
                         Case "PLC"
                         	try
 	                            'verification si on a pas déjà un thread qui ecrit sur le plcbus sinon on boucle pour attendre PLC_timeout/10 = 5 sec par défaut
-	                            Dim tblthread = table_thread.Select("norme='PLC' AND source='ECR_PLC' AND composant_id<>'" & compid & "'")
+                                tblthread = table_thread.Select("norme='PLC' AND source='ECR_PLC' AND composant_id<>'" & compid & "'")
 	                            While (tblthread.GetLength(0) > 0 And limite < (PLC_timeout / 5))
 	                                wait(5)
 	                                tblthread = table_thread.Select("norme='PLC' AND source='ECR_PLC' AND composant_id<>'" & compid & "'")
@@ -2196,7 +2197,7 @@ Public Class domos_svc
                         Case "X10"
                         	try
 	                            'verification si on a pas déjà un thread qui ecrit sur le x10 sinon on boucle pour attendre X10_timeout/10 = 5 sec par défaut
-	                            Dim tblthread = table_thread.Select("norme='X10' AND source='ECR_X10' AND composant_id<>'" & compid & "'")
+                                tblthread = table_thread.Select("norme='X10' AND source='ECR_X10' AND composant_id<>'" & compid & "'")
 	                            While (tblthread.GetLength(0) > 0 And limite < (X10_timeout / 10))
 	                                wait(10)
 	                                tblthread = table_thread.Select("norme='X10' AND source='ECR_X10' AND composant_id<>'" & compid & "'")
@@ -2230,7 +2231,7 @@ Public Class domos_svc
                         Case "ZIB"
                         	try
 	                            'verification si on a pas déjà un thread qui ecrit sur le zib sinon on boucle pour attendre ZIB_timeout/10 = 5 sec par défaut
-	                            Dim tblthread = table_thread.Select("norme='ZIB' AND source='ECR_ZIB' AND composant_id<>'" & compid & "'")
+                                tblthread = table_thread.Select("norme='ZIB' AND source='ECR_ZIB' AND composant_id<>'" & compid & "'")
 	                            While (tblthread.GetLength(0) > 0 And limite < (ZIB_timeout / 10))
 	                                wait(10)
 	                                tblthread = table_thread.Select("norme='ZIB' AND source='ECR_ZIB' AND composant_id<>'" & compid & "'")

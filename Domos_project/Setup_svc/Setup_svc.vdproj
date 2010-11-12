@@ -21,6 +21,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_46674FBC9C5DC0750C9C33208121EF7B"
+        "OwnerKey" = "8:_E647BE1E609949A6B123E925E90D8A79"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_5655FB545CE05116334BC567CC67F105"
         "OwnerKey" = "8:_E3B2AE2880CD4B549D3991B9FBEB6371"
         "MsmSig" = "8:_UNDEFINED"
@@ -112,6 +118,12 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_AA8044E0CE21CCA78D781AC32C32ED05"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_46674FBC9C5DC0750C9C33208121EF7B"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -124,7 +136,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_AA8044E0CE21CCA78D781AC32C32ED05"
+        "OwnerKey" = "8:_E3B2AE2880CD4B549D3991B9FBEB6371"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -625,14 +637,14 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Domos"
-        "ProductCode" = "8:{DDC656F0-D910-4A61-92B4-C20243DABF79}"
-        "PackageCode" = "8:{D94105AF-F9F9-46A8-8577-113DE2C660FB}"
+        "ProductCode" = "8:{917975B5-C4D4-4768-B4CA-3230C871EE81}"
+        "PackageCode" = "8:{02BE7486-2DE3-410D-B375-ECDB7B8481B3}"
         "UpgradeCode" = "8:{A38D82A6-E5E0-49DC-8275-FC1DD4DFA04F}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.0.5"
+        "ProductVersion" = "8:1.1.0"
         "Manufacturer" = "8:Davidinfo"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://domos.googlecode.com"
@@ -1672,7 +1684,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_E3B2AE2880CD4B549D3991B9FBEB6371"
             {
-            "SourcePath" = "8:..\\Domos_svc\\obj\\Release\\Domos_svc.exe"
+            "SourcePath" = "8:..\\Domos_svc\\obj\\Debug\\Domos_svc.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_E04FC9D29B034090AA473B7D1C01AB0A"
@@ -1700,7 +1712,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_E647BE1E609949A6B123E925E90D8A79"
             {
-            "SourcePath" = "8:..\\Domos_gui\\obj\\Release\\Domos_gui.exe"
+            "SourcePath" = "8:..\\Domos_gui\\obj\\Debug\\Domos_gui.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_E04FC9D29B034090AA473B7D1C01AB0A"
