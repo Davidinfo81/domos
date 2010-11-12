@@ -43,7 +43,7 @@ echo "<div class=cadregauche>";
 	echo "<div class='cadresl'><table id='weather' cellpadding='4' cellspacing='0' width='100%'>";
 	echo "<tr><td colspan='2' align='left'><b> Les derniéres alertes :</b></td></tr>";
 	$sql = "SELECT DISTINCT logs_date, logs_description from logs where logs_description like '%Alert%' order by logs_date desc limit 0,9 ";
-	//$sql = "SELECT * from logs where logs_description like '%Alert%' order by logs_date desc limit 0,9 ";
+	$sql = "SELECT logs_date, logs_description from logs where logs_description like '%Alert%' and logs_description not like '%->%' order by logs_date desc limit 0,9 ";
 	$res = mysql_query ($sql);
 	if(mysql_num_rows($res)>0){
 		while($row=mysql_fetch_array($res)){
