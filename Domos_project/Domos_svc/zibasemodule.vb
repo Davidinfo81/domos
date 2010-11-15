@@ -232,7 +232,7 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
 
         'Action suivant le type
         Select Case type
-            Case "bat" : If STRGS.UCase(valeur) = "LOW" Then WriteRetour(adresse & "_THE", "ERR: battery empty") 'Niveau de batterie (Ok / Low)
+            Case "bat" : If STRGS.UCase(valeur) = "LOW" Then WriteRetour(adresse & "_THE", "ERR: Battery empty") 'Niveau de batterie (Ok / Low)
             Case "lev" 'on envoie rien : Niveau de réception RF (1 à 5)
             Case "lnk" : WriteLog("DBG: Etat de la connexion avec la Zibase " & adresse & " : " & valeur) 'Etat de la connexion Zibase
             Case "" : WriteRetour(adresse, valeur) ' si pas de type particulier
@@ -350,7 +350,17 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
                     'on logue en debug car c'est une adresse bannie
                     WriteLog("DBG: IGNORE : Adresse Bannie : " & adresse & " : " & valeur)
                 Else
-                    WriteLog("ERR: Adresse composant : " & adresse & " : " & valeur)
+                	'si c'est un pb de batterie et que l'adresse pas connu on verifie si un composant porte la meme adresse sans le _THE
+					If Ucase(VB.Left(valeur, 12)) = "ERR: BATTERY" Then
+						tabletmp = domos_svc.table_composants.Select("composants_adresse LIKE '" & VB.Left(adresse, adresse.length - 4) & "%' AND composants_modele_norme = 'ZIB'")
+						If tabletmp.GetUpperBound(0) >= 0 Then 
+							WriteLog("ERR: " & tabletmp(0)("composants_nom").ToString() & " : " & valeur)
+						Else
+							WriteLog("ERR: Adresse composant : " & adresse & " : " & valeur)
+						End If
+					Else
+                    	WriteLog("ERR: Adresse composant : " & adresse & " : " & valeur)
+                    End If
                 End If
             End If
 

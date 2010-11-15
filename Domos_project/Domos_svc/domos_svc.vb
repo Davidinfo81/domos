@@ -17,6 +17,9 @@ Public Class domos_svc
     Shared plcbus As New plcbus
     Shared x10 As New x10
     Shared zibase As New zibasemodule
+    Private shared lock_logfile As New Object
+    Private shared lock_sqlwrite As New Object
+    Private shared lock_tablethread As New Object
 
     'variable interne au script
     Public Shared table_config, table_composants, table_composants_bannis, table_macros, table_timer, table_thread, table_erreur As New DataTable
@@ -971,9 +974,11 @@ Public Class domos_svc
         Try
             FreeF = FreeFile()
             Texte = Replace(Texte, vbLf, vbCrLf)
-            FileOpen(FreeF, CheminFichier, OpenMode.Append)
-            Print(FreeF, Texte)
-            FileClose(FreeF)
+            SyncLock lock_logfile
+            	FileOpen(FreeF, CheminFichier, OpenMode.Append)
+            	Print(FreeF, Texte)
+            	FileClose(FreeF)
+            End SyncLock
         Catch ex As IOException
             wait(500)
             EcrireFichier(CheminFichier, Texte)
@@ -2032,7 +2037,7 @@ Public Class domos_svc
 	                                    If STRGS.Left(err, 4) = "ERR:" Then
 	                                        log("ECR : PLC : " & err, 2)
 	                                    Else
-	                                        log("ECR : PLC : " & err, 5)
+	                                        log("ECR : " & err, 5)
 	                                    End If
 	                                    wait(50) 'pause de 0.5sec pour recevoir le ack et libérer le bus correctement
 	                                Else
