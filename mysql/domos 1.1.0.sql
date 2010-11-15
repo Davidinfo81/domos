@@ -113,7 +113,7 @@ CREATE TABLE `config` (
   `config_valeur` text NOT NULL,
   `config_description` text NOT NULL,
   PRIMARY KEY (`config_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=39 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=43 DEFAULT CHARSET=latin1;
 INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_description`) VALUES
 ('1', 'Serv_X10', '1', 'X10 : 0=desactive 1=active'),
 ('2', 'Serv_WIR', '1', '1-wire : 0=desactive 1=active'),
@@ -155,7 +155,8 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('38', 'mail_to', '', 'Ton adresse email'),
 ('39', 'WIR_timeout', '500', 'Timeout pour attendre que le port WIR soit disponible en ecriture (Defaut : 500 = 5 sec)'),
 ('40', 'ZIB_timeout', '500', 'Timeout pour attendre que le port ZIB soit disponible en ecriture (Defaut : 500 = 5 sec)'),
-('41', 'TSK_timeout', '500', 'Timeout pour attendre que le port TSK soit disponible en ecriture (Defaut : 500 = 5 sec)');
+('41', 'TSK_timeout', '500', 'Timeout pour attendre que le port TSK soit disponible en ecriture (Defaut : 500 = 5 sec)'),
+('42', 'mail_action', '3', 'activer les mails 0=desactive 1=manuel-macro 2=manuel-macro-erreurcritiq 3=tout'),
 
 CREATE TABLE `logs` (
   `logs_id` bigint(20) NOT NULL AUTO_INCREMENT,
