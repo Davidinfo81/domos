@@ -2278,7 +2278,7 @@ Public Class rfxcom
 		Dim tabletmp() As DataRow
 
 		'log tous les paquets en mode debug
-		WriteLog("DBG: WriteBattery : receive from " & adresse & " -> " & valeur)
+        WriteLog("DBG: WriteBattery : receive from " & adresse)
 
 		'on ne traite rien pendant les x premieres secondes
 		If DateTime.Now > DateAdd(DateInterval.Second, 6, dateheurelancement) Then
@@ -2297,13 +2297,13 @@ Public Class rfxcom
 					tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_adresse = '" & adresse.ToString & "' AND composants_bannis_norme = 'RFX'")
 					If tabletmp.GetUpperBound(0) >= 0 Then
 						'on logue en debug car c'est une adresse bannie
-						WriteLog("DBG: IGNORE : Adresse Bannie : " & adresse.ToString & " : " & valeur.ToString)
+                        WriteLog("DBG: IGNORE : WriteBattery : Adresse Bannie : " & adresse.ToString)
 					Else
-						WriteLog("ERR: Adresse composant : " & adresse.ToString & " : " & valeur.ToString)
+                        WriteLog("ERR: WriteBattery : Adresse composant : " & adresse.ToString)
 					End If
 				Else
 					'on logue en debug car c'est la même adresse non trouvé depuis le dernier message
-					WriteLog("DBG: IGNORE : Adresse composant : " & adresse.ToString & " : " & valeur.ToString)
+                    WriteLog("DBG: IGNORE : WriteBattery : Adresse composant : " & adresse.ToString)
 				End If
 			End If
 		End If
@@ -2382,16 +2382,20 @@ Public Class rfxcom
                                 If Err <> "" Then WriteLog("ERR: inchange : " & Err)
                             End If
                         Else
-                            'erreur d'acquisition
-                            WriteLog("ERR: " & tabletmp(0)("composants_nom").ToString() & " : " & valeur.ToString)
+                            'erreur d'acquisition ou battery
+                            If InStr(LCase(valeur), "battery") > 0 Then
+                                WriteLog("ERR: " & tabletmp(0)("composants_nom").ToString() & " : " & valeur.ToString)
+                            Else
+                                WriteLog("ERR: " & tabletmp(0)("composants_nom").ToString() & " : " & valeur.ToString)
+                            End If
                         End If
                     Else
                         'si c'est un battery empty pour les composants oregon, c'est envoyé en même temps que la valeur donc on le traite ici
                         'If InStr(LCase(valeur), "battery") > 0 Then
-                        'If InStr(LCase(valeur), "battery") > 0 Or InStr(LCase(valeur), "panic") > 0 Or InStr(LCase(valeur), "alert") > 0 Or InStr(LCase(valeur), "normal") > 0 Then
+                        'If adresse = adresselast and (InStr(LCase(valeur), "battery") > 0 Or InStr(LCase(valeur), "panic") > 0 Or InStr(LCase(valeur), "alert") > 0 Or InStr(LCase(valeur), "normal") > 0 Then
                         '  WriteLog("ERR: " & tabletmp(0)("composants_nom").ToString() & " : " & valeur.ToString)
                         '   Else
-                        WriteLog("DBG: IGNORE : Etat recu il y a moins de 2 sec : " & adresse.ToString & " : " & valeur.ToString)
+                        WriteLog("DBG: IGNORE : Etat recu il y a moins de " & domos_svc.rfx_tpsentrereponse & " msec : " & adresse.ToString & " : " & valeur.ToString)
                         'End If
                     End If
                 Else

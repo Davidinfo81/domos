@@ -18,7 +18,6 @@ Public Class domos_svc
     Shared x10 As New x10
     Shared zibase As New zibasemodule
     Private shared lock_logfile As New Object
-    Private shared lock_sqlwrite As New Object
     Private shared lock_tablethread As New Object
 
     'variable interne au script
@@ -630,7 +629,7 @@ Public Class domos_svc
             log("--- Service démarré ---", 0)
             log("--- Service démarré ---", -1)
             resumemail = resumemail & Chr(10) & "Service démarré !"
-            SendMessage("Service started", "Domos Service a été démarré à " & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & Chr(10) & Chr(10) & Chr(10) & resumemail)
+            SendMessage("Service started", "Domos Service a été démarré à " & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & Chr(10) & Chr(10) & Chr(10) & resumemail, 1)
             log("", 0)
         Catch ex As Exception
             log("ERR: Init exception : Fermeture du programme : " & ex.ToString, 1)
@@ -814,7 +813,7 @@ Public Class domos_svc
             resumemail = resumemail & Chr(10) & Chr(10) & "Service arrété"
             log("--- Service arrété ---", 0)
             log("--- Service arrété ---", -1)
-            SendMessage("Service stopped", "Domos Service a été arrêté à " & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & Chr(10) & Chr(10) & Chr(10) & resumemail)
+            SendMessage("Service stopped", "Domos Service a été arrêté à " & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & Chr(10) & Chr(10) & Chr(10) & resumemail, 1)
             log("", 0)
         Catch ex As Exception
             log("ERR: Close exception : " & ex.ToString, 1)
@@ -896,7 +895,7 @@ Public Class domos_svc
         Catch ex As Exception
         	try
 	            ecrireevtlog("LOG: Exception Table_erreur : " & ex.ToString & " --> " & texte, 1, 109)
-	            SendMessage("LOG: Exception Table_erreur", ex.ToString & " --> " & texte)
+                SendMessage("LOG: Exception Table_erreur", ex.ToString & " --> " & texte, 4)
 	            'si erreur de corruption : Réinitialisation de la gestion de la table des erreurs
 	            If STRGS.InStr("DataTable internal index is corrupted", ex.ToString) > 0 then
 					'logs_erreur_nb=0
@@ -1418,7 +1417,9 @@ Public Class domos_svc
             newRow.Item("norme") = norme
             newRow.Item("datetime") = Date.Now.ToString("yyyy-MM-dd HH:mm:ss")
             newRow.Item("thread") = mythread
-            table_thread.Rows.Add(newRow)
+            SyncLock lock_tablethread
+                table_thread.Rows.Add(newRow)
+            End SyncLock
         Catch ex As Exception
             log("DOM : Thread_Ajout Exception : " & ex.ToString, 2)
         End Try
@@ -1430,16 +1431,20 @@ Public Class domos_svc
         Dim y As Thread
         Dim tabletemp() As DataRow
         Dim tabletemp2() As DataRow
+        Dim dateettime As DateTime
         Try
+            dateettime = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
             tabletemp = table_composants.Select("composants_polling <> '0'")
             For i = 0 To tabletemp.GetUpperBound(0)
-                If tabletemp(i)("timer") <= DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss") Then
+                If tabletemp(i)("timer") <= dateettime Then
                     '--- maj du timer du composant ---
                     Dim date_pooling As Date
                     date_pooling = DateAndTime.Now.AddSeconds(tabletemp(i)("composants_polling")) 'on initialise
                     tabletemp(i)("timer") = date_pooling.ToString("yyyy-MM-dd HH:mm:ss")
                     '--- test pour savoir si un thread est deja lancé sur ce composant ---
-                    tabletemp2 = table_thread.Select("composant_id = '" & tabletemp(i)("composants_id") & "'")
+                    SyncLock lock_tablethread
+                        tabletemp2 = table_thread.Select("composant_id = '" & tabletemp(i)("composants_id") & "'")
+                    End SyncLock
                     If tabletemp2.GetUpperBound(0) < 0 Then
                         Select Case tabletemp(i)("composants_modele_nom").ToString() 'choix de l'action en fonction du modele
                             Case "DS18B20", "DS2423_A", "DS2423_B", "DS2406_capteur", "DS2406_relais" 'WIR ou WI2 : compteur, temperature, switch, relais
@@ -1806,15 +1811,21 @@ Public Class domos_svc
                     tabletemp = table_composants.Select("composants_id = '" & contenu(1) & "'")
                     If tabletemp.GetLength(0) = 1 Then
                         'verification si on a pas déjà un thread sur ce comp sinon on boucle pour attendre Action_timeout/10 = 5 sec par défaut
-                        tblthread = table_thread.Select("composant_id = '" & contenu(1) & "'")
+                        SyncLock lock_tablethread
+                            tblthread = table_thread.Select("composant_id = '" & contenu(1) & "'")
+                        End SyncLock
                         Dim limite As Integer = 0
                         While (tblthread.GetLength(0) > 0 And limite < (Action_timeout / 10))
                             wait(10)
-                            tblthread = table_thread.Select("composant_id = '" & contenu(1) & "'")
+                            SyncLock lock_tablethread
+                                tblthread = table_thread.Select("composant_id = '" & contenu(1) & "'")
+                            End SyncLock
                             limite = limite + 1
                         End While
                         'a la fin du timeout on verifie si Libre
-                        tblthread = table_thread.Select("composant_id = '" & contenu(1) & "'")
+                        SyncLock lock_tablethread
+                            tblthread = table_thread.Select("composant_id = '" & contenu(1) & "'")
+                        End SyncLock
                         If tblthread.GetUpperBound(0) < 0 Then
                             'gestion du timer dans une action de type [AC#xx#...#timer20] -> pause de 20 sec avant d'executer l'action
                             Dim lastcontenu = contenu(UBound(contenu))
@@ -2031,8 +2042,8 @@ Public Class domos_svc
             valeur4 = val4 'timer
         End Sub
         Public Sub action()
-            Dim tabletmp() As DataRow
-            Dim tblthread() As DataRow
+            Dim tabletmp As DataRow()
+            Dim tblthread As DataRow()
             Dim limite As Integer = 0
             Dim err As String = ""
             Try
@@ -2047,31 +2058,39 @@ Public Class domos_svc
                         Case "PLC"
                         	try
 	                            'verification si on a pas déjà un thread qui ecrit sur le plcbus sinon on boucle pour attendre PLC_timeout/10 = 5 sec par défaut
-                                tblthread = table_thread.Select("norme='PLC' AND source='ECR_PLC' AND composant_id<>'" & compid & "'")
-	                            While (tblthread.GetLength(0) > 0 And limite < (PLC_timeout / 5))
-	                                wait(5)
-	                                tblthread = table_thread.Select("norme='PLC' AND source='ECR_PLC' AND composant_id<>'" & compid & "'")
-	                                limite = limite + 1
-	                            End While
+                                SyncLock lock_tablethread
+                                    tblthread = table_thread.Select("norme='PLC' AND source='ECR_PLC' AND composant_id<>'" & compid & "'")
+                                End SyncLock
+                                While (tblthread.GetLength(0) > 0 And limite < (PLC_timeout / 5))
+                                    wait(5)
+                                    SyncLock lock_tablethread
+                                        tblthread = table_thread.Select("norme='PLC' AND source='ECR_PLC' AND composant_id<>'" & compid & "'")
+                                    End SyncLock
+                                    limite = limite + 1
+                                End While
 	                            If (limite < (PLC_timeout / 5)) Then 'on a attendu moins que le timeout
 	                                'maj du thread pour dire qu'on ecrit sur le bus
-	                                tblthread = table_thread.Select("norme='PLC' AND source='ECR' AND composant_id='" & compid & "'")
-	                                If tblthread.GetLength(0) = 1 Then
-	                                    tblthread(0)("source") = "ECR_PLC"
-	                                    If valeur2 <> "" Then
-	                                        err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, valeur2, 0)
-	                                    Else
-	                                        err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, 0, 0)
-	                                    End If
-	                                    If STRGS.Left(err, 4) = "ERR:" Then
-	                                        log("ECR : PLC : " & err, 2)
-	                                    Else
-	                                        log("ECR : " & err, 5)
-	                                    End If
-	                                    wait(50) 'pause de 0.5sec pour recevoir le ack et libérer le bus correctement
-	                                Else
-	                                    log("ECR : PLC Thread non trouvé : composant ID=" & compid, 2)
-	                                End If
+                                    SyncLock lock_tablethread
+                                        tblthread = table_thread.Select("norme='PLC' AND source='ECR' AND composant_id='" & compid & "'")
+                                    End SyncLock
+                                    If tblthread.GetLength(0) = 1 Then
+                                        SyncLock lock_tablethread
+                                            tblthread(0)("source") = "ECR_PLC"
+                                        End SyncLock
+                                        If valeur2 <> "" Then
+                                            err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, valeur2, 0)
+                                        Else
+                                            err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, 0, 0)
+                                        End If
+                                        If STRGS.Left(err, 4) = "ERR:" Then
+                                            log("ECR : PLC : " & err, 2)
+                                        Else
+                                            log("ECR : " & err, 5)
+                                        End If
+                                        wait(50) 'pause de 0.5sec pour recevoir le ack et libérer le bus correctement
+                                    Else
+                                        log("ECR : PLC Thread non trouvé : composant ID=" & compid, 2)
+                                    End If
 	                            Else
 	                                log("ECR : Le port PLCBUS nest pas disponible : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
 	                            End If
@@ -2088,131 +2107,140 @@ Public Class domos_svc
 	                                My.Application.ChangeCulture("en-US")
 	
 	                                'verification si on a pas déjà un thread qui ecrit sur le bus sinon on boucle pour attendre WIR_timeout/10 = 5 sec par défaut
-	                                tblthread = table_thread.Select("norme='WIR' AND source='ECR_WIR' AND composant_id<>'" & compid & "'")
+                                    SyncLock lock_tablethread
+
+                                    End SyncLock
+                                    tblthread = table_thread.Select("norme='WIR' AND source='ECR_WIR' AND composant_id<>'" & compid & "'")
 	                                While (tblthread.GetLength(0) > 0 And limite < (WIR_timeout / 10))
 	                                    wait(10)
-	                                    tblthread = table_thread.Select("norme='WIR' AND source='ECR_WIR' AND composant_id<>'" & compid & "'")
-	                                    limite = limite + 1
+                                        SyncLock lock_tablethread
+                                            tblthread = table_thread.Select("norme='WIR' AND source='ECR_WIR' AND composant_id<>'" & compid & "'")
+                                        End SyncLock
+                                        limite = limite + 1
 	                                End While
 	                                If (limite < (WIR_timeout / 10)) Then 'on a attendu moins que le timeout
 	                                    'maj du thread pour dire qu'on ecrit sur le bus
-	                                    tblthread = table_thread.Select("norme='WIR' AND source='ECR' AND composant_id='" & compid & "'")
-	                                    If tblthread.GetLength(0) = 1 Then
-	                                        tblthread(0)("source") = "ECR_WIR"
-	                                        
-											Dim wirvaleur, wirvaleur_etat, wirvaleur_activite As String
-		                                    Dim wirvaleur2 As Double
-		                                    Dim wirdateheure As String
-		                                    wirdateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-		
-		                                    'traitement du DS18B20
-		                                    If modelewir = "DS18B20" Then
-		                                        'recuperation valeur et traitement
-		                                        If tabletmp(0)("composants_modele_norme").ToString() = "WIR" Then
-		                                            wirvaleur = onewire.temp_get(tabletmp(0)("composants_adresse").ToString(), WIR_res)
-		                                        Else
-		                                            wirvaleur = onewire2.temp_get(tabletmp(0)("composants_adresse").ToString(), WIR_res)
-		                                        End If
-		                                        If STRGS.Left(wirvaleur, 4) <> "ERR:" And IsNumeric(wirvaleur) Then 'si y a pas erreur d'acquisition, action
-		                                            If (tabletmp(0)("composants_correction") <> "") Then
-		                                                wirvaleur2 = Math.Round(CDbl(wirvaleur) + CDbl(tabletmp(0)("composants_correction")), 1) 'correction de la temperature
-		                                            Else
-		                                                wirvaleur2 = Math.Round(CDbl(wirvaleur), 1)
-		                                            End If
-		                                            'correction de l'etat si pas encore initialisé à une valeur
-		                                            If tabletmp(0)("composants_etat").ToString() = "" Then tabletmp(0)("composants_etat") = 0
-		                                            'comparaison du relevé avec le dernier etat
-		                                            If wirvaleur2.ToString <> tabletmp(0)("composants_etat").ToString() Then
-		                                                'on verifie si valeur=lastetat
-		                                                If lastetat And wirvaleur2.ToString = tabletmp(0)("lastetat").ToString() Then
-		                                                    log("ECR : WIR DS18B20 : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur2 & "°C (inchangé lastetat)", 8)
-		                                                    '--- Modification de la date dans la base SQL ---
-		                                                    err = mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & wirdateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-		                                                    If err <> "" Then log("ECR : WIR DS18B20 : inchange lastetat : " & err, 2)
-		                                                Else
-		                                                    'on vérifie que la valeur a changé de plus de composants_precision sinon inchangé
-		                                                    If (CDbl(wirvaleur2) + CDbl(tabletmp(0)("composants_precision"))) >= CDbl(tabletmp(0)("composants_etat")) And (CDbl(wirvaleur2) - CDbl(tabletmp(0)("composants_precision"))) <= CDbl(tabletmp(0)("composants_etat")) Then
-		                                                        log("ECR : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur2 & "°C (inchangé precision)", 8)
-		                                                        '--- Modification de la date dans la base SQL ---
-		                                                        err = mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & wirdateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-		                                                        If err <> "" Then log("ECR : WIR DS18B20 : inchange precision : " & err, 2)
-		                                                    Else
-		                                                        'la valeur a changé, on modifie le composant
-		                                                        log("ECR : WIR DS18B20 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur2 & "°C ", 6)
-		                                                        '--- modification de l'etat du composant dans la table en memoire ---
-		                                                        tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
-		                                                        tabletmp(0)("composants_etat") = wirvaleur2
-		                                                        tabletmp(0)("composants_etatdate") = wirdateheure
-		                                                    End If
-		                                                End If
-		                                            Else
-		                                                'la valeur n a pas changé
-		                                                log("ECR : WIR DS18B20 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur2 & "°C (inchangé)", 7)
-		                                                '--- Modification de la date dans la base SQL ---
-		                                                err = mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & wirdateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-		                                                If err <> "" Then log("ECR : WIR DS18B20 : inchange : " & err, 2)
-		                                            End If
-		                                        Else
-		                                            'erreur
-		                                            log("ECR : WIR DS18B20 : erreur acquisition valeur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur, 2)
-		                                        End If
-		                                    ElseIf modelewir = "DS2423_A" Or modelewir = "DS2423_B" Then
-		                                        'traitement des compteurs DS2423
-		                                        Dim AorB As Boolean
-		                                        'on verifie quel compteur on interroge
-		                                        If modelewir = "DS2423_A" Then AorB = True Else AorB = False
-		                                        'recuperation de la valeur
-		                                        wirvaleur = onewire.counter(tabletmp(0)("composants_adresse").ToString(), AorB)
-		                                        If STRGS.Left(wirvaleur, 4) <> "ERR:" And IsNumeric(wirvaleur) Then 'si y a pas erreur d'acquisition, action
-		                                            '--- comparaison du relevé avec le dernier etat ---
-		                                            If wirvaleur <> tabletmp(0)("composants_etat").ToString() Then
-		                                                log("ECR : WIR DS2423 : " & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur & " ", 6)
-		                                                '--- modification de l'etat du composant dans la table en memoire ---
-		                                                tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
-		                                                tabletmp(0)("composants_etat") = wirvaleur
-		                                                tabletmp(0)("composants_etatdate") = wirdateheure
-		                                            Else
-		                                                'la valeur n a pas changé
-		                                                log("ECR : WIR DS2423 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur & " (inchangé)", 7)
-		                                                err = mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & wirdateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-		                                                If err <> "" Then log("ECR : WIR DS2423 : inchange : " & err, 2)
-		                                            End If
-		                                        Else
-		                                            'erreur
-		                                            log("ECR : WIR DS2423 : erreur acquisition valeur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur, 2)
-		                                        End If
-		                                    ElseIf modelewir = "DS2406_capteur" Then
-		                                        'traitement des switch DS2406_capteur
-		                                        wirvaleur = onewire.switch_get(tabletmp(0)("composants_adresse").ToString())
-		                                        If STRGS.Left(wirvaleur, 4) <> "ERR:" Then 'si y a pas erreur d'acquisition, action
-		                                            '--- comparaison du relevé avec le dernier etat ---
-		                                            wirvaleur_etat = STRGS.Left(wirvaleur, 1)
-		                                            wirvaleur_activite = STRGS.Right(wirvaleur, 1)
-		                                            If wirvaleur_activite <> tabletmp(0)("composants_etat").ToString() Then
-		                                                log("WIR (ECR): DS2406_capteur : " & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur_activite & " ", 6)
-		                                                '--- modification de l'etat du composant dans la table en memoire ---
-		                                                tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
-		                                                tabletmp(0)("composants_etat") = wirvaleur_activite
-		                                                tabletmp(0)("composants_etatdate") = wirdateheure
-		                                            Else
-		                                                'la valeur n a pas changé
-		                                                log("ECR : WIR DS2406_capteur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur_activite & " (inchangé)", 7)
-		                                                err = mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & wirdateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-		                                                If err <> "" Then log("ECR : WIR DS2406_capteur : inchange : " & err, 2)
-		                                            End If
-		                                        Else
-		                                            'erreur
-		                                            log("ECR : WIR DS2406_capteur : erreur acquisition valeur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur, 2)
-		                                        End If
-		                                    ElseIf modelewir = "DS2406_relais" Then
-		                                        'traitement des switch DS2406_relais
-		                                        log("ECR : WIR DS2406_relais : pas encore géré", 2)
-		                                    End If
-		                                    wait(50) 'pause de 0.5sec libérer le bus correctement
-	                                        
-	                                    Else
-	                                        log("ECR : WIR : Thread non trouvé : composant ID=" & compid, 2)
-	                                    End If
+                                        SyncLock lock_tablethread
+                                            tblthread = table_thread.Select("norme='WIR' AND source='ECR' AND composant_id='" & compid & "'")
+                                        End SyncLock
+                                        If tblthread.GetLength(0) = 1 Then
+                                            SyncLock lock_tablethread
+                                                tblthread(0)("source") = "ECR_WIR"
+                                            End SyncLock
+                                            
+                                            Dim wirvaleur, wirvaleur_etat, wirvaleur_activite As String
+                                            Dim wirvaleur2 As Double
+                                            Dim wirdateheure As String
+                                            wirdateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
+
+                                            'traitement du DS18B20
+                                            If modelewir = "DS18B20" Then
+                                                'recuperation valeur et traitement
+                                                If tabletmp(0)("composants_modele_norme").ToString() = "WIR" Then
+                                                    wirvaleur = onewire.temp_get(tabletmp(0)("composants_adresse").ToString(), WIR_res)
+                                                Else
+                                                    wirvaleur = onewire2.temp_get(tabletmp(0)("composants_adresse").ToString(), WIR_res)
+                                                End If
+                                                If STRGS.Left(wirvaleur, 4) <> "ERR:" And IsNumeric(wirvaleur) Then 'si y a pas erreur d'acquisition, action
+                                                    If (tabletmp(0)("composants_correction") <> "") Then
+                                                        wirvaleur2 = Math.Round(CDbl(wirvaleur) + CDbl(tabletmp(0)("composants_correction")), 1) 'correction de la temperature
+                                                    Else
+                                                        wirvaleur2 = Math.Round(CDbl(wirvaleur), 1)
+                                                    End If
+                                                    'correction de l'etat si pas encore initialisé à une valeur
+                                                    If tabletmp(0)("composants_etat").ToString() = "" Then tabletmp(0)("composants_etat") = 0
+                                                    'comparaison du relevé avec le dernier etat
+                                                    If wirvaleur2.ToString <> tabletmp(0)("composants_etat").ToString() Then
+                                                        'on verifie si valeur=lastetat
+                                                        If lastetat And wirvaleur2.ToString = tabletmp(0)("lastetat").ToString() Then
+                                                            log("ECR : WIR DS18B20 : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur2 & "°C (inchangé lastetat)", 8)
+                                                            '--- Modification de la date dans la base SQL ---
+                                                            err = mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & wirdateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
+                                                            If err <> "" Then log("ECR : WIR DS18B20 : inchange lastetat : " & err, 2)
+                                                        Else
+                                                            'on vérifie que la valeur a changé de plus de composants_precision sinon inchangé
+                                                            If (CDbl(wirvaleur2) + CDbl(tabletmp(0)("composants_precision"))) >= CDbl(tabletmp(0)("composants_etat")) And (CDbl(wirvaleur2) - CDbl(tabletmp(0)("composants_precision"))) <= CDbl(tabletmp(0)("composants_etat")) Then
+                                                                log("ECR : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur2 & "°C (inchangé precision)", 8)
+                                                                '--- Modification de la date dans la base SQL ---
+                                                                err = mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & wirdateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
+                                                                If err <> "" Then log("ECR : WIR DS18B20 : inchange precision : " & err, 2)
+                                                            Else
+                                                                'la valeur a changé, on modifie le composant
+                                                                log("ECR : WIR DS18B20 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur2 & "°C ", 6)
+                                                                '--- modification de l'etat du composant dans la table en memoire ---
+                                                                tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
+                                                                tabletmp(0)("composants_etat") = wirvaleur2
+                                                                tabletmp(0)("composants_etatdate") = wirdateheure
+                                                            End If
+                                                        End If
+                                                    Else
+                                                        'la valeur n a pas changé
+                                                        log("ECR : WIR DS18B20 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur2 & "°C (inchangé)", 7)
+                                                        '--- Modification de la date dans la base SQL ---
+                                                        err = mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & wirdateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
+                                                        If err <> "" Then log("ECR : WIR DS18B20 : inchange : " & err, 2)
+                                                    End If
+                                                Else
+                                                    'erreur
+                                                    log("ECR : WIR DS18B20 : erreur acquisition valeur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur, 2)
+                                                End If
+                                            ElseIf modelewir = "DS2423_A" Or modelewir = "DS2423_B" Then
+                                                'traitement des compteurs DS2423
+                                                Dim AorB As Boolean
+                                                'on verifie quel compteur on interroge
+                                                If modelewir = "DS2423_A" Then AorB = True Else AorB = False
+                                                'recuperation de la valeur
+                                                wirvaleur = onewire.counter(tabletmp(0)("composants_adresse").ToString(), AorB)
+                                                If STRGS.Left(wirvaleur, 4) <> "ERR:" And IsNumeric(wirvaleur) Then 'si y a pas erreur d'acquisition, action
+                                                    '--- comparaison du relevé avec le dernier etat ---
+                                                    If wirvaleur <> tabletmp(0)("composants_etat").ToString() Then
+                                                        log("ECR : WIR DS2423 : " & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur & " ", 6)
+                                                        '--- modification de l'etat du composant dans la table en memoire ---
+                                                        tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
+                                                        tabletmp(0)("composants_etat") = wirvaleur
+                                                        tabletmp(0)("composants_etatdate") = wirdateheure
+                                                    Else
+                                                        'la valeur n a pas changé
+                                                        log("ECR : WIR DS2423 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur & " (inchangé)", 7)
+                                                        err = mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & wirdateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
+                                                        If err <> "" Then log("ECR : WIR DS2423 : inchange : " & err, 2)
+                                                    End If
+                                                Else
+                                                    'erreur
+                                                    log("ECR : WIR DS2423 : erreur acquisition valeur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur, 2)
+                                                End If
+                                            ElseIf modelewir = "DS2406_capteur" Then
+                                                'traitement des switch DS2406_capteur
+                                                wirvaleur = onewire.switch_get(tabletmp(0)("composants_adresse").ToString())
+                                                If STRGS.Left(wirvaleur, 4) <> "ERR:" Then 'si y a pas erreur d'acquisition, action
+                                                    '--- comparaison du relevé avec le dernier etat ---
+                                                    wirvaleur_etat = STRGS.Left(wirvaleur, 1)
+                                                    wirvaleur_activite = STRGS.Right(wirvaleur, 1)
+                                                    If wirvaleur_activite <> tabletmp(0)("composants_etat").ToString() Then
+                                                        log("WIR (ECR): DS2406_capteur : " & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur_activite & " ", 6)
+                                                        '--- modification de l'etat du composant dans la table en memoire ---
+                                                        tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
+                                                        tabletmp(0)("composants_etat") = wirvaleur_activite
+                                                        tabletmp(0)("composants_etatdate") = wirdateheure
+                                                    Else
+                                                        'la valeur n a pas changé
+                                                        log("ECR : WIR DS2406_capteur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur_activite & " (inchangé)", 7)
+                                                        err = mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & wirdateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
+                                                        If err <> "" Then log("ECR : WIR DS2406_capteur : inchange : " & err, 2)
+                                                    End If
+                                                Else
+                                                    'erreur
+                                                    log("ECR : WIR DS2406_capteur : erreur acquisition valeur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur, 2)
+                                                End If
+                                            ElseIf modelewir = "DS2406_relais" Then
+                                                'traitement des switch DS2406_relais
+                                                log("ECR : WIR DS2406_relais : pas encore géré", 2)
+                                            End If
+                                            wait(50) 'pause de 0.5sec libérer le bus correctement
+
+                                        Else
+                                            log("ECR : WIR : Thread non trouvé : composant ID=" & compid, 2)
+                                        End If
 	                                Else
 	                                    log("ECR : WIR Le bus 1-wire nest pas disponible : " & tabletmp(0)("composants_nom") & "-" & valeur, 2)
 	                                End If
@@ -2231,31 +2259,39 @@ Public Class domos_svc
                         Case "X10"
                         	try
 	                            'verification si on a pas déjà un thread qui ecrit sur le x10 sinon on boucle pour attendre X10_timeout/10 = 5 sec par défaut
-                                tblthread = table_thread.Select("norme='X10' AND source='ECR_X10' AND composant_id<>'" & compid & "'")
-	                            While (tblthread.GetLength(0) > 0 And limite < (X10_timeout / 10))
-	                                wait(10)
-	                                tblthread = table_thread.Select("norme='X10' AND source='ECR_X10' AND composant_id<>'" & compid & "'")
-	                                limite = limite + 1
-	                            End While
+                                SyncLock lock_tablethread
+                                    tblthread = table_thread.Select("norme='X10' AND source='ECR_X10' AND composant_id<>'" & compid & "'")
+                                End SyncLock
+                                While (tblthread.GetLength(0) > 0 And limite < (X10_timeout / 10))
+                                    wait(10)
+                                    SyncLock lock_tablethread
+                                        tblthread = table_thread.Select("norme='X10' AND source='ECR_X10' AND composant_id<>'" & compid & "'")
+                                    End SyncLock
+                                    limite = limite + 1
+                                End While
 	                            If (limite < (X10_timeout / 10)) Then 'on a attendu moins que le timeout
 	                                'maj du thread pour dire qu'on ecrit sur le bus
-	                                tblthread = table_thread.Select("norme='X10' AND source='ECR' AND composant_id='" & compid & "'")
-	                                If tblthread.GetLength(0) = 1 Then
-	                                    tblthread(0)("source") = "ECR_X10"
-		                                If valeur2 <> "" Then
-		                                    err = x10.ecrire(tabletmp(0)("composants_adresse"), valeur, valeur2)
-		                                Else
-		                                    err = x10.ecrire(tabletmp(0)("composants_adresse"), valeur, 0)
-		                                End If
-		                                If STRGS.Left(err, 4) = "ERR:" Then
-		                                    log("ECR : X10 : " & err, 2)
-		                                Else
-		                                    log("ECR : X10 : " & err, 5)
-		                                End If
-	                                    wait(50) 'pause de 0.5sec pour recevoir le ack et libérer le bus correctement
-	                                Else
-	                                    log("ECR : X10 : Thread non trouvé : composant ID=" & compid, 2)
-	                                End If
+                                    SyncLock lock_tablethread
+                                        tblthread = table_thread.Select("norme='X10' AND source='ECR' AND composant_id='" & compid & "'")
+                                    End SyncLock
+                                    If tblthread.GetLength(0) = 1 Then
+                                        SyncLock lock_tablethread
+                                            tblthread(0)("source") = "ECR_X10"
+                                        End SyncLock
+                                        If valeur2 <> "" Then
+                                            err = x10.ecrire(tabletmp(0)("composants_adresse"), valeur, valeur2)
+                                        Else
+                                            err = x10.ecrire(tabletmp(0)("composants_adresse"), valeur, 0)
+                                        End If
+                                        If STRGS.Left(err, 4) = "ERR:" Then
+                                            log("ECR : X10 : " & err, 2)
+                                        Else
+                                            log("ECR : X10 : " & err, 5)
+                                        End If
+                                        wait(50) 'pause de 0.5sec pour recevoir le ack et libérer le bus correctement
+                                    Else
+                                        log("ECR : X10 : Thread non trouvé : composant ID=" & compid, 2)
+                                    End If
 	                            Else
 	                                log("ECR : Le port X10 nest pas disponible : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
 	                            End If
@@ -2265,31 +2301,39 @@ Public Class domos_svc
                         Case "ZIB"
                         	try
 	                            'verification si on a pas déjà un thread qui ecrit sur le zib sinon on boucle pour attendre ZIB_timeout/10 = 5 sec par défaut
-                                tblthread = table_thread.Select("norme='ZIB' AND source='ECR_ZIB' AND composant_id<>'" & compid & "'")
-	                            While (tblthread.GetLength(0) > 0 And limite < (ZIB_timeout / 10))
-	                                wait(10)
-	                                tblthread = table_thread.Select("norme='ZIB' AND source='ECR_ZIB' AND composant_id<>'" & compid & "'")
-	                                limite = limite + 1
-	                            End While
+                                SyncLock lock_tablethread
+                                    tblthread = table_thread.Select("norme='ZIB' AND source='ECR_ZIB' AND composant_id<>'" & compid & "'")
+                                End SyncLock
+                                While (tblthread.GetLength(0) > 0 And limite < (ZIB_timeout / 10))
+                                    wait(10)
+                                    SyncLock lock_tablethread
+                                        tblthread = table_thread.Select("norme='ZIB' AND source='ECR_ZIB' AND composant_id<>'" & compid & "'")
+                                    End SyncLock
+                                    limite = limite + 1
+                                End While
 	                            If (limite < (ZIB_timeout / 10)) Then 'on a attendu moins que le timeout
 	                                'maj du thread pour dire qu'on ecrit sur le bus
-	                                tblthread = table_thread.Select("norme='ZIB' AND source='ECR' AND composant_id='" & compid & "'")
-	                                If tblthread.GetLength(0) = 1 Then
-	                                    tblthread(0)("source") = "ECR_ZIB"
-		                                If valeur2 <> "" Then
-		                                    err = zibase.Ecrirecommand(tabletmp(0)("composants_id"), valeur, valeur2)
-		                                Else
-		                                    err = zibase.Ecrirecommand(tabletmp(0)("composants_id"), valeur, 0)
-		                                End If
-		                                If STRGS.Left(err, 4) = "ERR:" Then
-		                                    log("ECR : ZIB : " & err, 2)
-		                                Else
-		                                    log("ECR : ZIB : " & err, 5)
-		                                End If
-		                                wait(50) 'pause de 0.5sec pour libérer le bus correctement
-	                                Else
-	                                    log("ECR : ZIB : Thread non trouvé : composant ID=" & compid, 2)
-	                                End If
+                                    SyncLock lock_tablethread
+                                        tblthread = table_thread.Select("norme='ZIB' AND source='ECR' AND composant_id='" & compid & "'")
+                                    End SyncLock
+                                    If tblthread.GetLength(0) = 1 Then
+                                        SyncLock lock_tablethread
+                                            tblthread(0)("source") = "ECR_ZIB"
+                                        End SyncLock
+                                        If valeur2 <> "" Then
+                                            err = zibase.Ecrirecommand(tabletmp(0)("composants_id"), valeur, valeur2)
+                                        Else
+                                            err = zibase.Ecrirecommand(tabletmp(0)("composants_id"), valeur, 0)
+                                        End If
+                                        If STRGS.Left(err, 4) = "ERR:" Then
+                                            log("ECR : ZIB : " & err, 2)
+                                        Else
+                                            log("ECR : ZIB : " & err, 5)
+                                        End If
+                                        wait(50) 'pause de 0.5sec pour libérer le bus correctement
+                                    Else
+                                        log("ECR : ZIB : Thread non trouvé : composant ID=" & compid, 2)
+                                    End If
 	                            Else
 	                                log("ECR : Le port ZIB nest pas disponible pour une ecriture : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
 	                            End If
@@ -2309,9 +2353,13 @@ Public Class domos_svc
             
             Try
                 '--- suppresion du thread de la liste des threads lancés ---
-                tabletmp = table_thread.Select("composant_id = '" & compid & "'")
+                SyncLock lock_tablethread
+                    tabletmp = table_thread.Select("composant_id = '" & compid & "'")
+                End SyncLock
                 If tabletmp.GetLength(0) >= 1 Then
-                    tabletmp(0).Delete()
+                    SyncLock lock_tablethread
+                        tabletmp(0).Delete()
+                    End SyncLock
                 Else
                     log("ECR : Thread non trouvé (pour delete) : composant ID=" & compid, 2)
                 End If

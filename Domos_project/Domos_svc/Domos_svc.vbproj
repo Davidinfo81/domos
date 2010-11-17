@@ -135,6 +135,7 @@
     <Compile Include="Soleil.vb" />
     <Compile Include="tellstick.vb" />
     <Compile Include="x10.vb" />
+    <Compile Include="xpl.vb" />
     <Compile Include="zibasemodule.vb" />
   </ItemGroup>
   <ItemGroup>

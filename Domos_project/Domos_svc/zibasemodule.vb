@@ -229,6 +229,8 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
                 type = "THC" 'Température de consigne (Thermostat : °C)
             Case "XSE", "BAT", "LNK", "STA" : valeur = valeurstring 'on utilise la valeur normale et non l'entier
         End Select
+        'dans le cas des adresse du tpe M5
+        If adresse.Length = 2 Then valeur = valeurstring 'on utilise la valeur normale et non l'entier
 
         'Action suivant le type
         Select Case type

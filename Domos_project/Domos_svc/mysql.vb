@@ -10,6 +10,7 @@ Public Class mysql
     ' Date : 20/01/2009
     Public connected As Boolean = False
     Public error_number As Integer = 0
+    Private Shared lock_sqlwrite As New Object
 
     Private var_connexion As New MySqlConnection
 
@@ -54,9 +55,11 @@ Public Class mysql
 
         If connected Then
             Try
-                commande = New MySqlCommand(query, var_connexion) 'creation de la commande pour la requete
-                dataadapter.SelectCommand = commande
-                dataadapter.Fill(data) 'lancement de la requete et recup du resultat dans le datatable
+                SyncLock lock_sqlwrite
+                    commande = New MySqlCommand(query, var_connexion) 'creation de la commande pour la requete
+                    dataadapter.SelectCommand = commande
+                    dataadapter.Fill(data) 'lancement de la requete et recup du resultat dans le datatable
+                End SyncLock
                 table = data
                 Return ""
             Catch ex As Exception
@@ -72,8 +75,10 @@ Public Class mysql
         Dim commande As MySqlCommand
         If connected Then
             Try
-                commande = New MySqlCommand(query, var_connexion) 'creation de la commande pour la requete
-                commande.ExecuteNonQuery()
+                SyncLock lock_sqlwrite
+                    commande = New MySqlCommand(query, var_connexion) 'creation de la commande pour la requete
+                    commande.ExecuteNonQuery()
+                End SyncLock
                 Return ""
             Catch ex As Exception
                 Return "ERR: SQL_NonQuery : " & ex.Message & " : " & query
