@@ -156,7 +156,7 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('39', 'WIR_timeout', '500', 'Timeout pour attendre que le port WIR soit disponible en ecriture (Defaut : 500 = 5 sec)'),
 ('40', 'ZIB_timeout', '500', 'Timeout pour attendre que le port ZIB soit disponible en ecriture (Defaut : 500 = 5 sec)'),
 ('41', 'TSK_timeout', '500', 'Timeout pour attendre que le port TSK soit disponible en ecriture (Defaut : 500 = 5 sec)'),
-('42', 'mail_action', '3', 'activer les mails 0=desactive 1=manuel-macro 2=manuel-macro-erreurcritiq 3=tout'),
+('42', 'mail_action', '3', 'activer les mails 0=desactive 1=manuel 2=manuel-auto 3=manuel-auto-erreurcritique 4=manuel-auto-erreurcritique-erreursredondante 5=manuel-auto-erreurs'),
 
 CREATE TABLE `logs` (
   `logs_id` bigint(20) NOT NULL AUTO_INCREMENT,
