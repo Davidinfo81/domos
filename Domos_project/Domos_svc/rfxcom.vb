@@ -1524,7 +1524,7 @@ Public Class rfxcom
             'valeur = valeur + " " + VB.Right("0" & Hex(recbuf(0)), 2) + "-" + VB.Right("0" & Hex(recbuf(1)), 2) + "-" + VB.Right("0" & Hex(recbuf(2)), 2) + "-" + VB.Right("0" & Hex(recbuf(3)), 2) + "-" + VB.Right("0" & Hex(recbuf(4)), 2) + "-" + VB.Right("0" & Hex(recbuf(5)), 2)
             valeur = valeur & " (" & VB.Right("0" & Hex(recbuf(2)), 2) & ")"
             WriteRetour(adresse, valeur)
-            If batteryempty Then WriteRetour(adresse, "ERR: Battery empty")
+            If batteryempty Then WriteBattery(adresse)
         End If
     End Sub
 
@@ -1602,7 +1602,7 @@ Public Class rfxcom
                 valeur = "ERR: wrong value in temperature field=" & Hex(recbuf(5)) & "." & Hex(recbuf(4) >> 4)
             End If
             WriteRetour(adresse, valeur)
-            If (recbuf(4) And &H4) = &H4 Then WriteRetour(adresse, "ERR: Battery empty")
+            If (recbuf(4) And &H4) = &H4 Then WriteBattery(adresse)
             'checksum8()
 
         ElseIf recbuf(0) = &HEA And recbuf(1) = &H4C And recbits >= 60 Then
@@ -1616,7 +1616,7 @@ Public Class rfxcom
                 valeur = CStr(0 - (CSng(Hex(recbuf(5))) + CSng(Hex(recbuf(4) >> 4)) / 10))
             End If
             WriteRetour(adresse, valeur)
-            If (recbuf(4) And &H4) = &H4 Then WriteRetour(adresse, "ERR: battery empty")
+            If (recbuf(4) And &H4) = &H4 Then WriteBattery(adresse)
             'checksumw()
 
         ElseIf recbuf(0) = &H1A And recbuf(1) = &H2D And recbits >= 72 Then
@@ -1634,7 +1634,7 @@ Public Class rfxcom
             WriteRetour(adresse & "_HUM", valeur)
             'valeur = wrhum(recbuf(7) And &HC0)
             'WriteRetour(adresse & "_HUM", valeur)
-            If (recbuf(4) And &H4) = &H4 Then WriteRetour(adresse & "_THE", "ERR: battery empty")
+            If (recbuf(4) And &H4) = &H4 Then WriteBattery(adresse & "_THE")
             'checksum8()
 
         ElseIf recbuf(0) = &HFA And recbuf(1) = &H28 And recbits >= 72 Then
@@ -1652,7 +1652,7 @@ Public Class rfxcom
             WriteRetour(adresse & "_HUM", valeur)
             'valeur = wrhum(recbuf(7) And &HC0)
             'WriteRetour(adresse & "_HUM", valeur)
-            If (recbuf(4) And &H4) = &H4 Then WriteRetour(adresse & "_THE", "ERR: battery empty")
+            If (recbuf(4) And &H4) = &H4 Then WriteBattery(adresse & "_THE")
             'checksum8()
 
         ElseIf (recbuf(0) And &HF) = &HA And recbuf(1) = &HCC And recbits >= 72 Then
@@ -1671,7 +1671,7 @@ Public Class rfxcom
             WriteRetour(adresse & "_HUM", valeur)
             'valeur = wrhum(recbuf(7) And &HC0)
             'WriteRetour(adresse & "_HUM", valeur)
-            If (recbuf(4) And &H4) = &H4 Then WriteRetour(adresse & "_THE", "ERR: battery empty")
+            If (recbuf(4) And &H4) = &H4 Then WriteBattery(adresse & "_THE")
             'checksum8()
 
         ElseIf recbuf(0) = &HCA And recbuf(1) = &H2C And recbits >= 72 Then
@@ -1690,7 +1690,7 @@ Public Class rfxcom
             WriteRetour(adresse & "_HUM", valeur)
             'valeur = wrhum(recbuf(7) And &HC0)
             'WriteRetour(adresse & "_HUM", valeur)
-            If (recbuf(4) And &H4) = &H4 Then WriteRetour(adresse & "_THE", "ERR: battery empty")
+            If (recbuf(4) And &H4) = &H4 Then WriteBattery(adresse & "_THE")
             'checksum8()
 
         ElseIf recbuf(0) = &HFA And recbuf(1) = &HB8 And recbits >= 72 Then
@@ -1749,7 +1749,7 @@ Public Class rfxcom
             WriteRetour(adresse & "_BAR", valeur)
             valeur = wrforecast(recbuf(9) And &HF)
             WriteRetour(adresse & "_FOR", valeur)
-            If (recbuf(4) And &H4) = &H4 Then WriteRetour(adresse & "_THE", "ERR: battery empty")
+            If (recbuf(4) And &H4) = &H4 Then WriteBattery(adresse & "_THE")
             'checksum10()
 
         ElseIf recbuf(0) = &H5A And recbuf(1) = &H6D And recbits >= 88 Then
@@ -1785,7 +1785,7 @@ Public Class rfxcom
             WriteRetour(adresse & "_RAT", valeur) 'mm
             valeur = Hex(recbuf(6) And &HF)
             WriteRetour(adresse & "_RAP", valeur) 'flip cnt
-            If (recbuf(4) And &H4) <> 0 Then WriteRetour(adresse & "_RAF", "ERR: battery empty")
+            If (recbuf(4) And &H4) <> 0 Then WriteBattery(adresse & "_RAF")
             'checksum2()
 
         ElseIf recbuf(0) = &H2A And recbuf(1) = &H19 And recbits >= 84 Then
@@ -1797,7 +1797,7 @@ Public Class rfxcom
             valeur = (CSng(Hex(recbuf(7))) / 100 + CSng(Hex(recbuf(6) >> 4)) / 1000)
             valeur = CStr(Round(((valeur + (CSng(Hex(recbuf(9) And &HF)) * 100 + CSng(Hex(recbuf(8))))) * 25.4), 2))
             WriteRetour(adresse & "_RAT", valeur) 'mm
-            If (recbuf(4) And &H4) <> 0 Then WriteRetour(adresse & "_RAF", "ERR: battery empty")
+            If (recbuf(4) And &H4) <> 0 Then WriteBattery(adresse & "_RAF")
             'checksumr()
 
         ElseIf recbuf(0) = &H6 And recbuf(1) = &HE4 And recbits >= 84 Then
@@ -1809,7 +1809,7 @@ Public Class rfxcom
             valeur = (CSng(Hex(recbuf(7))) / 100 + CSng(Hex(recbuf(6) >> 4)) / 1000)
             valeur = CStr(Round(((valeur + (CSng(Hex(recbuf(9) And &HF)) * 100 + CSng(Hex(recbuf(8))))) * 25.4), 2))
             WriteRetour(adresse & "_RAT", valeur) 'mm
-            If (recbuf(4) And &H4) <> 0 Then WriteRetour(adresse & "_RAF", "ERR: battery empty")
+            If (recbuf(4) And &H4) <> 0 Then WriteBattery(adresse & "_RAF")
             'checksumr()
 
         ElseIf recbuf(0) = &H1A And recbuf(1) = &H99 And recbits >= 80 Then
@@ -1889,7 +1889,7 @@ Public Class rfxcom
             Else
                 WriteRetour(adresse & "_UVL", "Dangerous") 'en level
             End If
-            If (recbuf(4) And &H4) = &H4 Then WriteRetour(adresse & "_UVV", "ERR: battery empty")
+            If (recbuf(4) And &H4) = &H4 Then WriteBattery(adresse & "_UVV")
             'checksumw()
 
         ElseIf recbuf(0) = &HDA And recbuf(1) = &H78 And recbits >= 64 Then
@@ -1909,7 +1909,7 @@ Public Class rfxcom
             Else
                 WriteRetour(adresse & "_UVL", "Dangerous") 'en level
             End If
-            If (recbuf(4) And &H4) = &H4 Then WriteRetour(adresse & "_UVV", "ERR: battery empty")
+            If (recbuf(4) And &H4) = &H4 Then WriteBattery(adresse & "_UVV")
             'checksum7()
 
         ElseIf recbuf(0) = &H8A And recbuf(1) = &HEC And recbits >= 96 Then
@@ -1961,9 +1961,9 @@ Public Class rfxcom
                 valeur = CStr(CSng(Hex(recbuf(5) And &H1)) * 100 + CSng(Hex(recbuf(4))) + CSng(Hex(recbuf(3) >> 4)) / 10)
                 WriteRetour(adresse, valeur) 'en kg
                 'WriteMessage(" Unknown byte=" & CStr(Hex(recbuf(3) And &HF)) & CStr(Hex(recbuf(2) >> 4)), False)
-                If Not (((recbuf(0) And &HF0) = (recbuf(5) And &HF0)) And ((recbuf(1) And &HF) = (recbuf(6) And &HF))) Then
-                    WriteRetour(adresse, "ERR: Checksum error")
-                End If
+                'If Not (((recbuf(0) And &HF0) = (recbuf(5) And &HF0)) And ((recbuf(1) And &HF) = (recbuf(6) And &HF))) Then
+                '    WriteRetour(adresse, "ERR: Checksum error")
+                'End If
             Else
                 WriteRetour(adresse, "ERR: weight value is not a decimal value.")
             End If
@@ -2115,7 +2115,7 @@ Public Class rfxcom
 
     Function wrforecast(ByVal forecast As Byte) As String
         Select Case forecast
-            Case &HC : Return "Sunny "
+            Case &HC : Return "Sunny"
             Case &H6 : Return "Partly"
             Case &H2 : Return "Cloudy"
             Case &H3 : Return "Rain"
@@ -2273,6 +2273,41 @@ Public Class rfxcom
             domos_svc.log("RFX : " & message, 9)
         End If
     End Sub
+    
+	Public Sub WriteBattery(ByVal adresse As String)
+		Dim tabletmp() As DataRow
+
+		'log tous les paquets en mode debug
+		WriteLog("DBG: WriteBattery : receive from " & adresse & " -> " & valeur)
+
+		'on ne traite rien pendant les x premieres secondes
+		If DateTime.Now > DateAdd(DateInterval.Second, 6, dateheurelancement) Then
+			'on verifie si un composant correspond à cette adresse
+			tabletmp = domos_svc.table_composants.Select("composants_adresse = '" & adresse.ToString & "' AND composants_modele_norme = 'RFX'")
+			If tabletmp.GetUpperBound(0) >= 0 Then
+				'--- On attend au moins x seconde entre deux receptions ou si valeur<>valeurlastetat (donc pas le meme composant)
+				If (DateTime.Now - Date.Parse(tabletmp(0)("composants_etatdate"))).TotalMilliseconds > domos_svc.rfx_tpsentrereponse Then
+					WriteLog("ERR: " & tabletmp(0)("composants_nom").ToString() & "  Battery Empty")
+				Else
+					WriteLog("DBG: IGNORE : BatteryEmpty recu il y a moins de " & domos_svc.rfx_tpsentrereponse & " msec : " & adresse.ToString)
+				End If
+			Else
+				'erreur d'adresse composan
+				If adresse <> adresselast Then
+					tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_adresse = '" & adresse.ToString & "' AND composants_bannis_norme = 'RFX'")
+					If tabletmp.GetUpperBound(0) >= 0 Then
+						'on logue en debug car c'est une adresse bannie
+						WriteLog("DBG: IGNORE : Adresse Bannie : " & adresse.ToString & " : " & valeur.ToString)
+					Else
+						WriteLog("ERR: Adresse composant : " & adresse.ToString & " : " & valeur.ToString)
+					End If
+				Else
+					'on logue en debug car c'est la même adresse non trouvé depuis le dernier message
+					WriteLog("DBG: IGNORE : Adresse composant : " & adresse.ToString & " : " & valeur.ToString)
+				End If
+			End If
+		End If
+	End Sub
 
     Public Sub WriteRetour(ByVal adresse As String, ByVal valeur As String)
         'Forcer le . 
@@ -2283,7 +2318,7 @@ Public Class rfxcom
         Dim dateheure, Err As String
         Try
             'log tous les paquets en mode debug
-            WriteLog("DBG: receive from " & adresse & " -> " & valeur)
+            WriteLog("DBG: WriteRetour receive from " & adresse & " -> " & valeur)
 
             'on ne traite rien pendant les x premieres secondes
             If DateTime.Now > DateAdd(DateInterval.Second, 6, dateheurelancement) Then
