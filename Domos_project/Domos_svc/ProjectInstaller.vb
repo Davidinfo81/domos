@@ -43,4 +43,15 @@ Public Class ProjectInstaller
 
     End Sub
 
+    Private Sub ServiceInstaller1_BeforeUninstall(ByVal sender As Object, ByVal e As System.Configuration.Install.InstallEventArgs) Handles ServiceInstaller1.BeforeUninstall
+        Try
+            Dim myService As New ServiceProcess.ServiceController("domos")
+            If Not myService.Status = ServiceProcess.ServiceControllerStatus.Stopped Then
+                myService.Stop()
+                myService.WaitForStatus(ServiceProcess.ServiceControllerStatus.Stopped, New TimeSpan(0, 0, 30))
+            End If
+        Catch ex As Exception
+        End Try
+    End Sub
+
 End Class
