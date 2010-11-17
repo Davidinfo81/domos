@@ -29,6 +29,7 @@ Public Class domos_svc
     Public Shared WIR_timeout, ZIB_timeout, TSK_timeout, heure_coucher_correction, heure_lever_correction As Integer
     Public Shared logs_erreur_nb, logs_erreur_duree As Integer
     Public Shared gps_longitude, gps_latitude, mail_smtp, mail_from, mail_to As String
+    Public Shared mail_action as integer
     Dim WithEvents timer_pool, timer_timer As New System.Timers.Timer
     Dim err As String = ""
     Public Shared log_niveau As String
@@ -110,7 +111,8 @@ Public Class domos_svc
         etape_startup = 0
         logs_erreur_nb = 0
         logs_erreur_duree = 60
-
+		mail_action = 0
+		
         svc_start()
     End Sub
 
@@ -254,6 +256,7 @@ Public Class domos_svc
                 mail_smtp = table_config.Select("config_nom = 'mail_smtp'")(0)("config_valeur")
                 mail_from = table_config.Select("config_nom = 'mail_from'")(0)("config_valeur")
                 mail_to = table_config.Select("config_nom = 'mail_to'")(0)("config_valeur")
+                mail_action = table_config.Select("config_nom = 'mail_action'")(0)("config_valeur")
                 logs_erreur_nb = table_config.Select("config_nom = 'logs_erreur_nb'")(0)("config_valeur")
                 logs_erreur_duree = table_config.Select("config_nom = 'logs_erreur_duree'")(0)("config_valeur")
                 log("      -> LOG_NIVEAU=" & log_niveau & " LOG_DESTINATION=" & log_dest, 0)
@@ -263,7 +266,7 @@ Public Class domos_svc
                 log("      -> RFX_tpsentrereponse=" & rfx_tpsentrereponse & " Lastetat=" & lastetat, 0)
                 log("      -> heure_lever_correction=" & heure_lever_correction & " heure_coucher_correction=" & heure_coucher_correction, 0)
                 log("      -> longitude=" & gps_longitude & " latitude=" & gps_latitude, 0)
-                log("      -> Mail smtp=" & mail_smtp & " From=" & mail_from & " To=" & mail_to, 0)
+                log("      -> Mail smtp=" & mail_smtp & " From=" & mail_from & " To=" & mail_to & " Action=" & mail_action, 0)
                 log("      -> WIR_res=" & WIR_res & " WIR_adaptername=" & WIR_adaptername, 0)
                 log("      -> Socket Activé=" & Serv_SOC & " IP=" & socket_ip & " Port=" & socket_port, 0)
                 log("      -> Logs erreur NB=" & logs_erreur_nb & " Logs erreur Duree=" & logs_erreur_duree, 0)
@@ -876,7 +879,7 @@ Public Class domos_svc
 	                        Else
 	                            texte = texte & " (" & tabletemp(0).Item("nombre") & "x -> erreur multiple, on ne logue plus jusqu'à " & tabletemp(0)("datetime").ToString & ")"
 	                            'envoi d'un mail car erreur redondante
-	                            SendMessage("Erreur redondante", texte)
+	                            SendMessage("Erreur redondante", texte, 3)
 	                        End If
 	                    End If
 	                Else
@@ -895,7 +898,7 @@ Public Class domos_svc
 	            ecrireevtlog("LOG: Exception Table_erreur : " & ex.ToString & " --> " & texte, 1, 109)
 	            SendMessage("LOG: Exception Table_erreur", ex.ToString & " --> " & texte)
 	            'si erreur de corruption : Réinitialisation de la gestion de la table des erreurs
-	            If STRGS.InStr("DataTable internal index is corrupted", texte) > 0 then
+	            If STRGS.InStr("DataTable internal index is corrupted", ex.ToString) > 0 then
 					'logs_erreur_nb=0
 					table_erreur.dispose()
 					Dim x As New DataColumn
@@ -909,7 +912,7 @@ Public Class domos_svc
 					x.ColumnName = "datetime"
 					table_erreur.Columns.Add(x)
 					log("LOG : Error DataTable internal index is corrupted --> Réinitialisation de la table des erreurs",2)
-					SendMessage("LOG: ERR: DataTable internal index is corrupted", "LOG : Error DataTable internal index is corrupted --> Réinitialisation de la table des erreurs")
+					SendMessage("LOG: ERR: DataTable internal index is corrupted", "LOG : Error DataTable internal index is corrupted --> Réinitialisation de la table des erreurs",2)
 	            End If
             Catch ex2 As Exception
                 ecrireevtlog("LOG: Exception Table_erreur Exception : " & ex2.ToString, 1, 109)
@@ -936,18 +939,19 @@ Public Class domos_svc
                 End If
                 'Log dans les events logs / mail
                 Select Case niveau
-                    Case "-2" : SendMessage("Message", texte)
+                    Case "-2" : SendMessage("Message", texte, 1)
                     Case "-1" : ecrireevtlog(texte, 3, 100)
                     Case "1"
                         ecrireevtlog(texte, 1, 101)
-                        SendMessage("Erreur critique", texte)
+                        SendMessage("Erreur critique", texte, 2)
+                    Case "2" : SendMessage("Erreur", texte, 4)
                     Case "3" : ecrireevtlog(texte, 3, 103)
                     Case "4" : ecrireevtlog(texte, 3, 104)
                 End Select
             End If
         Catch ex As Exception
             ecrireevtlog("LOG: Exception : " & ex.ToString & " --> " & texte, 1, 109)
-            SendMessage("LOG: Exception", ex.ToString & " --> " & texte)
+            SendMessage("LOG: Exception", ex.ToString & " --> " & texte, 2)
         End Try
     End Sub
 
@@ -988,12 +992,37 @@ Public Class domos_svc
         End Try
     End Sub
 
-    Public Shared Sub SendMessage(ByVal subject As String, ByVal messageBody As String)
+    Public Shared Sub SendMessage(ByVal subject As String, ByVal messageBody As String, ByVal niveau As Integer)
+    	'niveau : 
+    	'0=manuel
+    	'1=auto par Domos
+    	'2=erreur critique
+    	'3=erreur redondantes
+    	'4=erreurs
+    
+    	'mail_action :
+    	'0=desactive 
+    	'1=manuel 
+    	'2=manuel-auto 
+    	'3=manuel-auto-erreurcritique 
+    	'4=manuel-auto-erreurcritique-erreursredondante 
+    	'5=manuel-auto-erreurs
+    	
         'envoi un email
         Dim message As New MailMessage()
         Dim client As New SmtpClient()
+        dim envoiemailautorise as boolean=true
         Try
-            If mail_from <> "" And mail_smtp <> "" And mail_to <> "" Then
+        	'on verifie si on peut envoyer un mail
+        	If mail_from = "" or mail_smtp = "" or mail_to = "" Then envoiemailautorise = false
+        	If mail_action = 0 then envoiemailautorise = false
+        	If mail_action = 1 and niveau > 0 then envoiemailautorise = false
+        	If mail_action = 2 and niveau > 1 then envoiemailautorise = false
+        	If mail_action = 3 and niveau > 2 then envoiemailautorise = false
+        	If mail_action = 4 and niveau > 3 then envoiemailautorise = false
+        	If mail_action = 5 and niveau = 3 then envoiemailautorise = false 'car une erreur redondante est déjà envoyé voir fonction log
+        	
+            If envoiemailautorise Then
                 Dim fromAddress As String = mail_from
                 Dim toAddress As String = mail_to
                 Dim ccAddress As String = ""
@@ -1882,7 +1911,7 @@ Public Class domos_svc
 
                     '---------------------------------- ML = mail ----------------------------------
                 ElseIf contenu(0) = "ML" Then 'on doit juste mailer : [ML#sujet#texte]
-                    SendMessage(contenu(1), contenu(2))
+                    SendMessage(contenu(1), contenu(2), 0)
 
                     '-------------------------- AS = action sur le SERVICE ------------------------
                 ElseIf contenu(0) = "AS" Then 'on execute une action sur le service  : [AS#action(#divers)]
