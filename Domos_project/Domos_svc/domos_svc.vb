@@ -2085,7 +2085,11 @@ Public Class domos_svc
                                         If STRGS.Left(err, 4) = "ERR:" Then
                                             log("ECR : PLC : " & err, 2)
                                         Else
-                                            log("ECR : " & err, 5)
+                                        	If STRGS.InStr("STATUS_REQUEST", err) > 0 then
+                                            	log("DBG: ECR : " & err, 10)
+                                            Else
+                                            	log("ECR : " & err, 5)
+                                            End If
                                         End If
                                         wait(50) 'pause de 0.5sec pour recevoir le ack et libérer le bus correctement
                                     Else

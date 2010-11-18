@@ -286,7 +286,12 @@ Public Class plcbus
                         If ack Then
                             ackreceived = True 'c'est un Ack
                             reponse = "      <- PLC : ACK :" & plcbus_commande & "-" & plcbus_adresse & " : " & data1 & "-" & data2 & " : " & comBuffer(7)
-                            domos_svc.log(reponse, 9)
+                        	If STRGS.InStr("STATUS_REQUEST", err) > 0 then
+                            	domos_svc.log("DBG: " & reponse, 10)
+                            Else
+                            	domos_svc.log(reponse, 9)
+                            End If
+                            
                         Else
                             'ce n'est pas un ack, je traite le paquet
                             ackreceived = False
