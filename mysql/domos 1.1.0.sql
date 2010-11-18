@@ -133,7 +133,7 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('16', 'Serv_ZIB', '0', 'Zibase : 0=desactive 1=active'),
 ('17', 'Port_WIR', 'USB1', 'Nom du port de la cle USB WIR ex: USB1 ou COM1'),
 ('18', 'Port_WI2', 'USB2', 'Nom du port de la cle USB WI2 ex: USB1 ou COM1'),
-('19', 'rfx_tpsentrereponse', '1500', 'Temps entre deux receptions de valeurs a prendre en compte (pour eviter les doublons/triplons) (1500 par defaut  = 1.5sec)'),
+('19', 'rfx_tpsentrereponse', '1600', 'Temps entre deux receptions de valeurs a prendre en compte (pour eviter les doublons/triplons) (1600 par defaut  = 1.6sec)'),
 ('20', 'PLC_timeout', '500', 'Timeout pour attendre que le port PLCBUS soit disponible en ecriture (Defaut : 500 = 5 sec)'),
 ('21', 'socket_ip', '127.0.0.1', 'Socket : Adresse IP du serveur'),
 ('22', 'socket_port', '3852', 'Socket : Port du serveur (3852)'),
@@ -156,7 +156,7 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('39', 'WIR_timeout', '500', 'Timeout pour attendre que le port WIR soit disponible en ecriture (Defaut : 500 = 5 sec)'),
 ('40', 'ZIB_timeout', '500', 'Timeout pour attendre que le port ZIB soit disponible en ecriture (Defaut : 500 = 5 sec)'),
 ('41', 'TSK_timeout', '500', 'Timeout pour attendre que le port TSK soit disponible en ecriture (Defaut : 500 = 5 sec)'),
-('42', 'mail_action', '3', 'activer les mails 0=desactive 1=manuel 2=manuel-auto 3=manuel-auto-erreurcritique 4=manuel-auto-erreurcritique-erreursredondante 5=manuel-auto-erreurs'),
+('42', 'mail_action', '4', 'activer les mails 0=desactive 1=manuel 2=manuel-auto 3=manuel-auto-erreurcritique 4=manuel-auto-erreurcritique-erreursredondante 5=manuel-auto-erreurs'),
 
 CREATE TABLE `logs` (
   `logs_id` bigint(20) NOT NULL AUTO_INCREMENT,
