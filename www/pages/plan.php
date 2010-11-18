@@ -183,9 +183,15 @@ echo "<script type=\"text/javascript\">
 						if (resultat.getAttribute('valeur')=='OFF') {
 							monimg.setAttribute('src',\"./images/ampoule_off.png\");
 							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF');
-						} else {
+						} else if (resultat.getAttribute('valeur')=='ON') {
 							monimg.setAttribute('src',\"./images/ampoule_on.png\");
 							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON');
+						} else if (resultat.getAttribute('valeur') = 0){
+							monimg.setAttribute('src',\"./images/ampoule_off.png\");
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF');
+						} else {
+							monimg.setAttribute('src',\"./images/ampoule_on.png\");
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON-' + resultat.getAttribute('valeur'));
 						}
 						monimg.style.width = '16px';
 						monimg.style.height = '16px';
@@ -233,9 +239,15 @@ echo "<script type=\"text/javascript\">
 						if (resultat.getAttribute('valeur')=='OFF') {
 							monimg.setAttribute('src',\"./images/ampoule_off.png\");
 							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF');
-						} else {
+						} else if (resultat.getAttribute('valeur')=='ON') {
 							monimg.setAttribute('src',\"./images/ampoule_on.png\");
 							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON');
+						} else if (resultat.getAttribute('valeur') == 0){
+							monimg.setAttribute('src',\"./images/ampoule_off.png\");
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF');
+						} else {
+							monimg.setAttribute('src',\"./images/ampoule_on.png\");
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON-' + resultat.getAttribute('valeur'));
 						}
 						monimg.style.width = '16px';
 						monimg.style.height = '16px';
