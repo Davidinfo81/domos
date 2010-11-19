@@ -289,13 +289,13 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
 				tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_adresse = '" & adresse.ToString & "' AND composants_bannis_norme = 'ZIB'")
 				If tabletmp.GetUpperBound(0) >= 0 Then
 					'on logue en debug car c'est une adresse bannie
-                    WriteLog("DBG: WriteBattery : Adresse Bannie : " & adresse.ToString)
+                    WriteLog("DBG: WriteBattery Empty : Adresse Bannie : " & adresse.ToString)
 				Else
-                    WriteLog("ERR: WriteBattery : Adresse composant : " & adresse.ToString)
+                    WriteLog("ERR: WriteBattery Empty : Adresse composant : " & adresse.ToString)
 				End If
 			Else
 				'on logue en debug car c'est la même adresse non trouvé depuis le dernier message
-                WriteLog("DBG: WriteBattery : Adresse composant : " & adresse.ToString)
+                WriteLog("DBG: WriteBattery Empty : Adresse composant : " & adresse.ToString)
 			End If
 		End If
 	End Sub

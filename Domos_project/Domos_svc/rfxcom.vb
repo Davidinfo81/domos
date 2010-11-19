@@ -2289,7 +2289,7 @@ Public Class rfxcom
 				If (DateTime.Now - Date.Parse(tabletmp(0)("composants_etatdate"))).TotalMilliseconds > domos_svc.rfx_tpsentrereponse Then
 					WriteLog("ERR: " & tabletmp(0)("composants_nom").ToString() & "  Battery Empty")
 				Else
-					WriteLog("DBG: IGNORE : BatteryEmpty recu il y a moins de " & domos_svc.rfx_tpsentrereponse & " msec : " & adresse.ToString)
+					WriteLog("DBG: BatteryEmpty recu il y a moins de " & domos_svc.rfx_tpsentrereponse & " msec : " & adresse.ToString)
 				End If
 			Else
 				'erreur d'adresse composan
@@ -2297,13 +2297,13 @@ Public Class rfxcom
 					tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_adresse = '" & adresse.ToString & "' AND composants_bannis_norme = 'RFX'")
 					If tabletmp.GetUpperBound(0) >= 0 Then
 						'on logue en debug car c'est une adresse bannie
-                        WriteLog("DBG: IGNORE : WriteBattery : Adresse Bannie : " & adresse.ToString)
+                        WriteLog("DBG: WriteBattery Empty : Adresse Bannie : " & adresse.ToString)
 					Else
-                        WriteLog("ERR: WriteBattery : Adresse composant : " & adresse.ToString)
+                        WriteLog("ERR: WriteBattery Empty : Adresse composant : " & adresse.ToString)
 					End If
 				Else
 					'on logue en debug car c'est la même adresse non trouvé depuis le dernier message
-                    WriteLog("DBG: IGNORE : WriteBattery : Adresse composant : " & adresse.ToString)
+                    WriteLog("DBG: WriteBattery Empty : Adresse composant : " & adresse.ToString)
 				End If
 			End If
 		End If
