@@ -234,7 +234,7 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
 
         'Action suivant le type
         Select Case type
-            Case "bat" : If STRGS.UCase(valeur) = "LOW" Then WriteRetour(adresse & "_THE", "ERR: Battery empty") 'Niveau de batterie (Ok / Low)
+            Case "bat" : If STRGS.UCase(valeur) = "LOW" Then WriteBattery(adresse) 'Niveau de batterie (Ok / Low)
             Case "lev" 'on envoie rien : Niveau de réception RF (1 à 5)
             Case "lnk" : WriteLog("DBG: Etat de la connexion avec la Zibase " & adresse & " : " & valeur) 'Etat de la connexion Zibase
             Case "" : WriteRetour(adresse, valeur) ' si pas de type particulier
@@ -272,6 +272,33 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
         End Try
 
     End Sub
+    
+    Public Sub WriteBattery(ByVal adresse As String)
+		Dim tabletmp() As DataRow
+
+		'log tous les paquets en mode debug
+        WriteLog("DBG: WriteBattery : receive from " & adresse)
+
+		'on verifie si un composant correspond à cette adresse
+		tabletmp = domos_svc.table_composants.Select("composants_adresse LIKE '" & adresse.ToString & "%' AND composants_modele_norme = 'ZIB'")
+		If tabletmp.GetUpperBound(0) >= 0 Then
+			WriteLog("ERR: " & tabletmp(0)("composants_nom").ToString() & "  Battery Empty")
+		Else
+			'erreur d'adresse composant
+			If adresse <> adresselast Then
+				tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_adresse = '" & adresse.ToString & "' AND composants_bannis_norme = 'ZIB'")
+				If tabletmp.GetUpperBound(0) >= 0 Then
+					'on logue en debug car c'est une adresse bannie
+                    WriteLog("DBG: WriteBattery : Adresse Bannie : " & adresse.ToString)
+				Else
+                    WriteLog("ERR: WriteBattery : Adresse composant : " & adresse.ToString)
+				End If
+			Else
+				'on logue en debug car c'est la même adresse non trouvé depuis le dernier message
+                WriteLog("DBG: WriteBattery : Adresse composant : " & adresse.ToString)
+			End If
+		End If
+	End Sub
 
     Public Sub WriteRetour(ByVal adresse As String, ByVal valeur As String)
         'Forcer le . 
