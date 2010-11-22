@@ -244,8 +244,10 @@ class WdWeather
 			case "lightfreezingdrizzle":return "Légère bruine verglaçante";break;
 			case "lightfreezingrain":return "Légère pluie verglaçante";break;
 			case "lightrain":return "Légère pluie";break;
+			case "lightrainearly":return "Légère pluie";break;
 			case "lightrainfog":return "Légère pluie / Brouillard";break;
 			case "lightrainfreezingrain":return "Légère pluie / Pluie verglaçante";break;
+			case "lightrainlate":return "Légère pluie tardive";break;
 			case "lightrainwind":return "Légère pluie / Vent";break;
 			case "lightrainandfog":return "Légère pluie et Brouillard";break;
 			case "lightrainandfreezingrain":return "Légère pluie et Pluie verglaçante";break;
@@ -299,6 +301,7 @@ class WdWeather
 			case "rainfreezingrain":return "Pluie / Pluie verglaÃ§ante";break;
 			case "rainsleet":return "Pluie / Granules de glace";break;
 			case "rainsnow":return "Pluie / Neige";break;
+			case "rainsnowlate":return "Pluie / Neige tardive";break;
 			case "rainsnowwind":return "Pluie / Neige / Vent";break;
 			case "rainsnowshowers":return "Pluie / Chutes de neige";break;
 			case "rainsnowshowerswind":return "Pluie / Chutes de neige / Vent";break;
