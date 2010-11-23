@@ -195,53 +195,57 @@ Public Class plcbus
         'adresse= adresse du composant : A1
         'commande : ON, OFF...
         'data1 et 2, voir description des actions plus haut ou doc plcbus
-        Dim _err As Boolean = False
         Dim _adresse = 0
         Dim _cmd = 0
+        Dim valeurretour as string = ""
+        
         If port_ouvert Then
             Dim usercode = &HD1 'D1
             Try
                 _adresse = adresse_to_hex(adresse)
             Catch ex As Exception
-                domos_svc.log("PLC : " & adresse & " non valide", 2)
-                _err = True
+                Return ("ERR: Adresse non valide : " & _adresse)
             End Try
             Try
                 _cmd = com_to_hex(commande)
             Catch ex As Exception
-                domos_svc.log("PLC : " & commande & " n'est pas une commande valide", 2)
-                _err = True
+                Return ("ERR: " & commande & " n est pas une commande valide")
             End Try
-            If Not _err Then
-                Dim donnee() As Byte = {&H2, &H5, usercode, _adresse, _cmd, data1, data2, &H3}
-                Try
-                    'ecriture sur le port
-                    port.Write(donnee, 0, donnee.Length)
-                    Return "PLC : ecrit : " & adresse & " --> " & hex_to_com(donnee(4)) & "-" & data1 & "-" & data2
-                    'test si on recoit le ack
-                    'Dim nbtest As Integer = 0
-                    'While nbtest < 10
-                    '    If ackreceived Then 'ack recu on sort
-                    '        ackreceived = False
-                    '        nbtest = 100
-                    '    Else
-                    '        nbtest = nbtest + 1
-                    '        Domos.wait(20) 'on attend 0.2s
-                    '    End If
-                    'End While
-                    'If nbtest = 100 Then
-                    '    Return "PLC : ecrit : " & adresse & " --> " & hex_to_com(donnee(4)) & "-" & data1 & "-" & data2
-                    'Else
-                    '    Return "ERR: PLC : pas de ack de : " & adresse & " --> " & hex_to_com(donnee(4)) & "-" & data1 & "-" & data2
-                    'End If
-                Catch ex As Exception
-                    Return ("ERR: PLC : " & ex.Message)
-                End Try
-            Else
-                Return ("ERR: PLC : Données non valide, annulation de la commande")
-            End If
+            
+            Dim donnee() As Byte = {&H2, &H5, usercode, _adresse, _cmd, data1, data2, &H3}
+            Try
+                'ecriture sur le port
+                port.Write(donnee, 0, donnee.Length)
+                'test si on recoit le ack
+                'Dim nbtest As Integer = 0
+                'While nbtest < 10
+                '    If ackreceived Then 'ack recu on sort
+                '        ackreceived = False
+                '        nbtest = 100
+                '    Else
+                '        nbtest = nbtest + 1
+                '        Domos.wait(20) 'on attend 0.2s
+                '    End If
+                'End While
+                'If nbtest = 100 Then
+                '    Return "ecrit : " & adresse & " --> " & hex_to_com(donnee(4)) & "-" & data1 & "-" & data2
+                'Else
+                '    Return "ERR: PLC : pas de ack de : " & adresse & " --> " & hex_to_com(donnee(4)) & "-" & data1 & "-" & data2
+                'End If
+            Catch ex As Exception
+                Return ("ERR: plc_ecrire : " & ex.Message & " --> adresse:" & adresse & " commande:" & commande & "-" & data1 & "-" & data2)
+            End Try
+            
+            'renvoie la valeur ecrite
+            Select Case UCase(hex_to_com(donnee(4)))
+                    Case "ON", "ALL_LIGHTS_ON", "All_USER_LIGHTS_ON" : valeurretour = 100
+                    Case "OFF", "ALL_UNITS_OFF", "ALL_LIGHTS_OFF", "All_USER_LIGHTS_OFF", "All_USER_UNITS_OFF" : valeurretour = 0
+                    Case "PRESET_DIM" : valeurretour = data1
+                    Case Else : valeurretour = hex_to_com(donnee(4))
+                End Select
+            Return valeurretour
         Else
-            Return ("ERR: PLC : Port fermé")
+            Return ("ERR: Port fermé")
         End If
 
     End Function
@@ -306,14 +310,19 @@ Public Class plcbus
                                         domos_svc.log("PLC : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur, 6)
                                         '  --- modification de l'etat du composant dans la table en memoire ---
                                         tabletmp(0)("composants_etat") = valeur
+                                        tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                                     Else
                                         domos_svc.log("PLC : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur & " (inchangé)", 7)
+										'--- Modification de la date dans la base SQL ---
+                                        dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
+                                        Err = domos_svc.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
+                                        If Err <> "" Then WriteLog("PLC: inchange precision " & Err, 2)
                                     End If
                                 Else
-                                    domos_svc.log("PLC : Pas de composant pour cette adresse : " & plcbus_adresse & " : " & valeur, 2)
+                                    domos_svc.log("PLC: Pas de composant pour cette adresse : " & plcbus_adresse & " : " & valeur, 2)
                                 End If
                             Catch ex As Exception
-                                domos_svc.log("PLC : ERROR acces table_composants : " & ex.Message, 2)
+                                domos_svc.log("PLC: ERROR acces table_composants : " & ex.Message, 2)
                             End Try
 
                         End If

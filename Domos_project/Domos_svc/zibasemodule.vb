@@ -128,24 +128,25 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
     End Function
 
     'ecrire device
-    Public Function Ecrirecommand(ByVal composants_id As Integer, ByVal ordre As String, ByVal iDim As Integer)
-        'composants_id : id du composant
+    Public Function Ecrirecommand(ByVal composants_adresse As string, ByVal composants_modele_nom As String, ByVal composants_divers as string, byval ordre as string, ByVal iDim As Integer)
+        'composants_adresse : adresse du composant
+        'composants_modele_nom : modele du composant
+        'composants_divers : adresse secondaire du composant chacon
         'ordre : ordre à envoyer
         'iDim: nombre de 0 à 100 pour l'ordre DIM sur chacon
         Dim protocole As ZiBase.Protocol
-        Dim adresse, modele() As String
+        Dim adresse, modele() as String
+        Dim valeur As String = ""
         Dim tabletmp() As DataRow
 
         Try
-            tabletmp = domos_svc.table_composants.Select("composants_id = '" & composants_id.ToString & "'")
-            If tabletmp.GetUpperBound(0) >= 0 Then
-                modele = Split(tabletmp(0)("composants_modele_nom"), "_")
-                adresse = Split(tabletmp(0)("composants_adresse"), "_")(0)
+			modele = Split(composants_modele_nom, "_")
+            adresse = Split(composants_adresse, "_")(0)
                 Select Case UCase(modele(0))
                     Case "BROADC" : protocole = ZiBase.Protocol.PROTOCOL_BROADCAST
                     Case "CHACON"
                         protocole = ZiBase.Protocol.PROTOCOL_CHACON
-                        adresse = tabletmp(0)("composants_divers") 'on a 2 adres pour chacon : reception et emission dans le champ divers
+                        adresse = composants_divers 'on a 2 adres pour chacon : reception et emission dans le champ divers
                     Case "DOMIA" : protocole = ZiBase.Protocol.PROTOCOL_DOMIA
                     Case "VIS433" : protocole = ZiBase.Protocol.PROTOCOL_VISONIC433
                     Case "VIS868" : protocole = ZiBase.Protocol.PROTOCOL_VISONIC868
@@ -162,28 +163,27 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
                 Select Case UCase(ordre)
                     Case "ON"
                         zba.SendCommand(adresse, ZiBase.State.STATE_ON, 0, protocole, 1)
+                        valeur=100
                     Case "OFF"
                         zba.SendCommand(adresse, ZiBase.State.STATE_OFF, 0, protocole, 1)
+                        valeur=0
                     Case "DIM"
                         If UCase(modele(0)) <> "CHACON" Then
                             zba.SendCommand(adresse, ZiBase.State.STATE_DIM, 0, protocole, 1)
+                            valeur=100
                         Else
                             zba.SendCommand(adresse, ZiBase.State.STATE_DIM, iDim, protocole, 1)
+                            valeur=iDim
                         End If
                     Case Else
                         Return ("ERR: ordre incorrect : " & ordre)
                 End Select
+				
+                'retour normal : on renvoie la valeur
+                Return (valeur)
 
-                'modification de l'etat en memoire
-                tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
-                tabletmp(0)("composants_etat") = ordre & "" & iDim
-                tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-                Return (" -> ecrit " & adresse(0) & " -> " & ordre)
-            Else
-                Return ("ERR: Composant non trouvé : " & composants_id.ToString & " : " & ordre)
-            End If
         Catch ex As Exception
-            Return "ERR: Ecrirecommand" & ex.Message
+            Return ("ERR: Zib_ecrirecommand" & ex.Message & " --> adresse:" & composants_adresse & " (" & composants_divers & ") commande:" & ordre & "-" & idim)
         End Try
 
     End Function
@@ -286,7 +286,7 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
 		Else
 			'erreur d'adresse composant
 			If adresse <> adresselast Then
-				tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_adresse = '" & adresse.ToString & "' AND composants_bannis_norme = 'ZIB'")
+				tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_adresse LIKE '" & adresse.ToString & "%' AND composants_bannis_norme = 'ZIB'")
 				If tabletmp.GetUpperBound(0) >= 0 Then
 					'on logue en debug car c'est une adresse bannie
                     WriteLog("DBG: WriteBattery Empty : Adresse Bannie : " & adresse.ToString)

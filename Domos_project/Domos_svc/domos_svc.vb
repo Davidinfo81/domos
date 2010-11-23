@@ -1448,32 +1448,36 @@ Public Class domos_svc
                         SyncLock lock_tablethread
                             tabletemp2 = table_thread.Select("composant_id = '" & tabletemp(i)("composants_id") & "'")
                         End SyncLock
-                        If tabletemp2.GetUpperBound(0) < 0 Then
-                            Select Case tabletemp(i)("composants_modele_nom").ToString() 'choix de l'action en fonction du modele
-                                Case "DS18B20", "DS2423_A", "DS2423_B", "DS2406_capteur", "DS2406_relais" 'WIR ou WI2 : compteur, temperature, switch, relais
-                                    Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "", "", "", "")
-                                    y = New Thread(AddressOf ecrire.action)
-                                    y.Name = "ecrire_" & tabletemp(i)("composants_id")
-                                    thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
-                                    y.Start()
-                                Case "2267-2268", "2263-2264" 'PLC : MicroModule lampes ou MicroModule Appareils
-                                    Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "STATUS_REQUEST", "", "", "")
-                                    y = New Thread(AddressOf ecrire.action)
-                                    y.Name = "ecrire_" & tabletemp(i)("composants_id")
-                                    thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
-                                    y.Start()
-                                Case "ZIB_STA" 'ZIB : switch
-                                    Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "STATUS_REQUEST", "", "", "")
-                                    y = New Thread(AddressOf ecrire.action)
-                                    y.Name = "ecrire_" & tabletemp(i)("composants_id")
-                                    thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
-                                    y.Start()
-                                Case Else
-                                    log("POL : Pas de fonction associé à " & tabletemp(i)("composants_modele_nom").ToString() & ":" & tabletemp(i)("composants_nom").ToString(), 2)
-                            End Select
-                        Else
-                            log("POL : Un thread est déjà associé à " & tabletemp(i)("composants_nom").ToString(), 2)
-                        End If
+                        If Not IsNothing(tabletemp2) Then
+	                        If tabletemp2.GetUpperBound(0) < 0 Then
+	                            Select Case tabletemp(i)("composants_modele_nom").ToString() 'choix de l'action en fonction du modele
+	                                Case "DS18B20", "DS2423_A", "DS2423_B", "DS2406_capteur", "DS2406_relais" 'WIR ou WI2 : compteur, temperature, switch, relais
+	                                    Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "", "", "", "")
+	                                    y = New Thread(AddressOf ecrire.action)
+	                                    y.Name = "ecrire_" & tabletemp(i)("composants_id")
+	                                    thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
+	                                    y.Start()
+	                                Case "2267-2268", "2263-2264" 'PLC : MicroModule lampes ou MicroModule Appareils
+	                                    Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "STATUS_REQUEST", "", "", "")
+	                                    y = New Thread(AddressOf ecrire.action)
+	                                    y.Name = "ecrire_" & tabletemp(i)("composants_id")
+	                                    thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
+	                                    y.Start()
+	                                Case "ZIB_STA" 'ZIB : switch
+	                                    Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "STATUS_REQUEST", "", "", "")
+	                                    y = New Thread(AddressOf ecrire.action)
+	                                    y.Name = "ecrire_" & tabletemp(i)("composants_id")
+	                                    thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
+	                                    y.Start()
+	                                Case Else
+	                                    log("POL : Pas de fonction associé à " & tabletemp(i)("composants_modele_nom").ToString() & ":" & tabletemp(i)("composants_nom").ToString(), 2)
+	                            End Select
+	                        Else
+	                            log("POL : Un thread est déjà associé à " & tabletemp(i)("composants_nom").ToString(), 2)
+	                        End If
+			            Else
+			                log("POL : table_thread.select donne un objet vide", 2)
+			            End If
                     End If
                 Next
             Else
@@ -1844,22 +1848,24 @@ Public Class domos_svc
 
                             Dim x As ECRIRE
                             If UBound(contenu) = 5 Then
-                                x = New ECRIRE(tabletemp(0)("composants_id"), contenu(2), contenu(3), contenu(4), timer_valeur)
+                                log("MAC :  -> Action composant : Composant : " & tabletemp(0)("composants_nom") & " Etat=" & contenu(2) & "-" & contenu(3) & "-" & contenu(4), 6)
+                            	x = New ECRIRE(tabletemp(0)("composants_id"), contenu(2), contenu(3), contenu(4), timer_valeur)
                             ElseIf UBound(contenu) = 4 Then
-                                x = New ECRIRE(tabletemp(0)("composants_id"), contenu(2), contenu(3), "", timer_valeur)
+                                log("MAC :  -> Action composant : Composant : " & tabletemp(0)("composants_nom") & " Etat=" & contenu(2) & "-" & contenu(3), 6)
+                            	x = New ECRIRE(tabletemp(0)("composants_id"), contenu(2), contenu(3), "", timer_valeur)
                             Else
-                                x = New ECRIRE(tabletemp(0)("composants_id"), contenu(2), "", "", timer_valeur)
+                                log("MAC :  -> Action composant : Composant : " & tabletemp(0)("composants_nom") & " Etat=" & contenu(2), 6)
+                            	x = New ECRIRE(tabletemp(0)("composants_id"), contenu(2), "", "", timer_valeur)
                             End If
                             y = New Thread(AddressOf x.action)
                             y.Name = "ecrire_" & tabletemp(0)("composants_id")
                             thread_ajout(tabletemp(0)("composants_id").ToString, tabletemp(0)("composants_modele_norme").ToString, "ECR", y)
                             y.Start()
                             'on modifie l'etat du composant en memoire
-                            tabletempp = table_composants.Select("composants_id = '" & contenu(1) & "'")
-                            If tabletempp.GetLength(0) = 1 Then
-                                tabletempp(0)("composants_etat") = contenu(2)
-                            End If
-                            log("MAC :  -> Action composant : Composant : " & tabletemp(0)("composants_nom") & " Etat=" & contenu(2), 6)
+                            'tabletempp = table_composants.Select("composants_id = '" & contenu(1) & "'")
+                            'If tabletempp.GetLength(0) = 1 Then
+                            '    tabletempp(0)("composants_etat") = contenu(2)
+                            'End If
                         Else
                             log("MAC :  -> Action composant : Un thread est déjà associé à " & tabletemp(0)("composants_nom").ToString(), 2)
                         End If
@@ -2093,20 +2099,23 @@ Public Class domos_svc
                                                 log("ECR : PLC : " & err, 2)
                                             Else
                                                 If STRGS.InStr(err, "STATUS_REQUEST") > 0 Then
-                                                    log("DBG: ECR : " & err, 10)
+                                                    log("DBG: ECR : PLC : " & err, 10)
                                                 Else
-                                                    log("ECR : " & err, 5)
-                                                End If
+                                                    log("ECR : PLC : ecrit " & tabletmp(0)("composants_adresse") & "=" & valeur & " " & valeur2 & "(" & err & ")", 5)
+                                                    'modification de l'etat en memoire
+								                	If IsNumeric(err) Then tabletmp(0)("composants_etat") = err 'valeur renvoyé par la fonction ecrire si OK
+								                	tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
+								                End If
                                             End If
                                             wait(50) 'pause de 0.5sec pour recevoir le ack et libérer le bus correctement
                                         Else
-                                            log("ECR : PLC Thread non trouvé : composant ID=" & compid, 2)
+                                            log("ECR : PLC : Thread non trouvé : composant ID=" & compid, 2)
                                         End If
                                     Else
                                         log("ECR : Le port PLCBUS nest pas disponible : " & tabletmp(0)("composants_adresse") & "-" & valeur, 2)
                                     End If
                                 Catch ex1 As Exception
-                                    log("ECR : PLC Exception : " & ex1.ToString & " --> ID=" & compid & " / " & valeur, 2)
+                                    log("ECR : PLC : Exception : " & ex1.ToString & " --> ID=" & compid & " / " & valeur, 2)
                                 End Try
                             Case "WIR"
                                 Try
@@ -2119,9 +2128,8 @@ Public Class domos_svc
 
                                         'verification si on a pas déjà un thread qui ecrit sur le bus sinon on boucle pour attendre WIR_timeout/10 = 5 sec par défaut
                                         SyncLock lock_tablethread
-
+											tblthread = table_thread.Select("norme='WIR' AND source='ECR_WIR' AND composant_id<>'" & compid & "'")
                                         End SyncLock
-                                        tblthread = table_thread.Select("norme='WIR' AND source='ECR_WIR' AND composant_id<>'" & compid & "'")
                                         While (tblthread.GetLength(0) > 0 And limite < (WIR_timeout / 10))
                                             wait(10)
                                             SyncLock lock_tablethread
@@ -2248,7 +2256,6 @@ Public Class domos_svc
                                                     log("ECR : WIR DS2406_relais : pas encore géré", 2)
                                                 End If
                                                 wait(50) 'pause de 0.5sec libérer le bus correctement
-
                                             Else
                                                 log("ECR : WIR : Thread non trouvé : composant ID=" & compid, 2)
                                             End If
@@ -2332,14 +2339,17 @@ Public Class domos_svc
                                                 tblthread(0)("source") = "ECR_ZIB"
                                             End SyncLock
                                             If valeur2 <> "" Then
-                                                err = zibase.Ecrirecommand(tabletmp(0)("composants_id"), valeur, valeur2)
+                                                err = zibase.Ecrirecommand(tabletmp(0)("composants_adresse"), tabletmp(0)("composants_modele_nom"), tabletmp(0)("composants_divers"), valeur, valeur2)
                                             Else
-                                                err = zibase.Ecrirecommand(tabletmp(0)("composants_id"), valeur, 0)
+                                                err = zibase.Ecrirecommand(tabletmp(0)("composants_adresse"), tabletmp(0)("composants_modele_nom"), tabletmp(0)("composants_divers"), valeur, 0)
                                             End If
                                             If STRGS.Left(err, 4) = "ERR:" Then
                                                 log("ECR : ZIB : " & err, 2)
                                             Else
-                                                log("ECR : ZIB : " & err, 5)
+                                                log("ECR : ZIB : ecrit " & tabletmp(0)("composants_adresse") & "=" & valeur & "(" & err & ")", 5)
+                                                'modification de l'etat en memoire
+								                tabletmp(0)("composants_etat") = err 'valeur renvoyé par la fonction ecrire si OK
+								                tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                                             End If
                                             wait(50) 'pause de 0.5sec pour libérer le bus correctement
                                         Else
@@ -2363,7 +2373,7 @@ Public Class domos_svc
                 End If
 
             Catch ex As Exception
-                log("ECR : Exception Traitement : " & ex.ToString & " --> composant ID=" & compid, 2)
+                log("ECR: Exception Traitement : " & ex.ToString & " --> composant ID=" & compid, 2)
             End Try
             
             Try
