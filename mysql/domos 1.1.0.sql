@@ -35,7 +35,7 @@ CREATE TABLE `composants_modele` (
   `composants_modele_norme` tinytext NOT NULL,
   `composants_modele_graphe` smallint(6) unsigned NOT NULL,
   PRIMARY KEY (`composants_modele_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=74 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+) ENGINE=MyISAM AUTO_INCREMENT=75 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
 INSERT INTO `composants_modele` (`composants_modele_id`, `composants_modele_nom`, `composants_modele_description`, `composants_modele_norme`, `composants_modele_graphe`) VALUES
 ('1', 'DS18B20', 'Capteur de temp&eacute;rature', 'WIR', '3'),
 ('2', 'DS2406_relais', 'Switch pour commander un relais', 'WIR', '1'),
@@ -105,7 +105,8 @@ INSERT INTO `composants_modele` (`composants_modele_id`, `composants_modele_nom`
 ('70', 'AD10', 'Interrupteur Rail-Din', 'X10', '1'),
 ('71', 'LD11', 'Interrupteur variateur Rail-Din', 'X10', '1'),
 ('72', 'SW10', 'Interrupteur Volet roulant', 'X10', '1'),
-('73', 'SW12', 'MicroModule Volet roulant', 'X10', '1');
+('73', 'SW12', 'MicroModule Volet roulant', 'X10', '1'),
+('74', '2269', 'Module Scenes', 'PLC', '1');
 
 CREATE TABLE `config` (
   `config_id` smallint(6) unsigned NOT NULL AUTO_INCREMENT,
