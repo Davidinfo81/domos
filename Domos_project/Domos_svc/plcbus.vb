@@ -1,4 +1,5 @@
 ﻿Imports System.IO.Ports
+Imports STRGS = Microsoft.VisualBasic.Strings
 
 Public Class plcbus
     Public port As New System.IO.Ports.SerialPort
@@ -106,13 +107,16 @@ Public Class plcbus
             If port_ouvert Then
                 If (Not (port Is Nothing)) Then ' The COM port exists.
                     If port.IsOpen Then
+                        'vidage des tampons
                         Dim i As Integer = 0
+                        port.DiscardOutBuffer()
                         Do While (port.BytesToWrite > 0 And i < 50) ' Wait for the transmit buffer to empty.
                             i = i + 1
                             domos_svc.log("PLC : Wait " & port.BytesToWrite & "BytesToWrite " & i, 9)
                             domos_svc.wait(10)
                         Loop
                         i = 0
+                        port.DiscardInBuffer()
                         Do While (port.BytesToRead > 0 And i < 20) ' Wait for the receipt buffer to empty.
                             i = i + 1
                             domos_svc.log("PLC : Wait " & port.BytesToRead & "BytesToRead " & i, 9)
@@ -197,8 +201,7 @@ Public Class plcbus
         'data1 et 2, voir description des actions plus haut ou doc plcbus
         Dim _adresse = 0
         Dim _cmd = 0
-        Dim valeurretour as string = ""
-        
+
         If port_ouvert Then
             Dim usercode = &HD1 'D1
             Try
@@ -211,7 +214,7 @@ Public Class plcbus
             Catch ex As Exception
                 Return ("ERR: " & commande & " n est pas une commande valide")
             End Try
-            
+
             Dim donnee() As Byte = {&H2, &H5, usercode, _adresse, _cmd, data1, data2, &H3}
             Try
                 'ecriture sur le port
@@ -235,15 +238,15 @@ Public Class plcbus
             Catch ex As Exception
                 Return ("ERR: plc_ecrire : " & ex.Message & " --> adresse:" & adresse & " commande:" & commande & "-" & data1 & "-" & data2)
             End Try
-            
+
             'renvoie la valeur ecrite
-            Select Case UCase(hex_to_com(donnee(4)))
-                    Case "ON", "ALL_LIGHTS_ON", "All_USER_LIGHTS_ON" : valeurretour = 100
-                    Case "OFF", "ALL_UNITS_OFF", "ALL_LIGHTS_OFF", "All_USER_LIGHTS_OFF", "All_USER_UNITS_OFF" : valeurretour = 0
-                    Case "PRESET_DIM" : valeurretour = data1
-                    Case Else : valeurretour = hex_to_com(donnee(4))
-                End Select
-            Return valeurretour
+            Select Case UCase(commande)
+                Case "ON", "ALL_LIGHTS_ON", "All_USER_LIGHTS_ON" : Return "ON"
+                Case "OFF", "ALL_UNITS_OFF", "ALL_LIGHTS_OFF", "All_USER_LIGHTS_OFF", "All_USER_UNITS_OFF" : Return "OFF"
+                Case "PRESET_DIM" : Return "ON" 'data1
+                Case Else : Return hex_to_com(donnee(4))
+            End Select
+
         Else
             Return ("ERR: Port fermé")
         End If
@@ -252,6 +255,8 @@ Public Class plcbus
 
     Private Sub DataReceived(ByVal sender As Object, ByVal e As SerialDataReceivedEventArgs)
         Dim reponse As String = ""
+        Dim err As String = ""
+        Dim dateheure As String
         Dim bytes As Integer
         Dim ack As Boolean = False
         'create a byte array to hold the awaiting data
@@ -304,6 +309,12 @@ Public Class plcbus
                             Try
                                 tabletmp = domos_svc.table_composants.Select("composants_adresse = '" & plcbus_adresse & "'")
                                 If tabletmp.GetUpperBound(0) >= 0 Then
+                                    'conversion de la valeur de 0 à 100 en ON/OFF
+                                    If valeur = 0 Then
+                                        valeur = "OFF"
+                                    Else
+                                        valeur = "ON"
+                                    End If
                                     '--- comparaison du relevé avec le dernier etat ---
                                     Dim x As String = tabletmp(0)("composants_etat").ToString()
                                     If valeur <> x Then
@@ -313,10 +324,10 @@ Public Class plcbus
                                         tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                                     Else
                                         domos_svc.log("PLC : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur & " (inchangé)", 7)
-										'--- Modification de la date dans la base SQL ---
+                                        '--- Modification de la date dans la base SQL ---
                                         dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-                                        Err = domos_svc.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-                                        If Err <> "" Then WriteLog("PLC: inchange precision " & Err, 2)
+                                        err = domos_svc.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
+                                        If err <> "" Then domos_svc.log("PLC: inchange precision " & err, 8)
                                     End If
                                 Else
                                     domos_svc.log("PLC: Pas de composant pour cette adresse : " & plcbus_adresse & " : " & valeur, 2)

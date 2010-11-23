@@ -154,6 +154,10 @@ Public Class rfxcom
                         If port.IsOpen Then
                             port_ouvert = False
                             Dim limite As Integer = 0
+                            'vidage des tampons
+                            port.DiscardInBuffer()
+                            port.DiscardOutBuffer()
+                            'au cas on verifie si encore quelque chose à lire
                             Do While (port.BytesToWrite > 0 And limite < 100) ' Wait for the transmit buffer to empty.
                                 limite = limite + 1
                             Loop
@@ -250,7 +254,10 @@ Public Class rfxcom
                 If Not domos_svc.Serv_DOMOS Or Not port_ouvert Then Exit While 'si on quitte Domos on quitte cette boucle
                 ProcessReceivedChar(port.ReadByte())
             End While
-            If limite >= 500 Then WriteLog("ERR: RFXCOM Datareceived : TIMEOUT")
+            If limite >= 500 Then
+                WriteLog("ERR: RFXCOM Datareceived : TIMEOUT (vidage tampon)")
+                port.DiscardInBuffer()
+            End If
         Catch Ex As Exception
             WriteLog("ERR: RFXCOM Datareceived : " & Ex.Message)
         End Try
@@ -264,7 +271,10 @@ Public Class rfxcom
                 If Not domos_svc.Serv_DOMOS Or Not port_ouvert Then Exit While 'si on quitte Domos on quitte cette boucle
                 ProcessReceivedChar(port.ReadByte())
             End While
-            If limite >= 500 Then WriteLog("ERR: RFXCOM ERRORDatareceived : TIMEOUT")
+            If limite >= 500 Then
+                WriteLog("ERR: RFXCOM ERRORDatareceived : TIMEOUT (vidage tampon)")
+                port.DiscardInBuffer()
+            End If
         Catch Ex As Exception
             WriteLog("ERR: RFXCOM ERRORDatareceived : " & Ex.Message)
         End Try

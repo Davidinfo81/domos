@@ -137,7 +137,7 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
         Dim protocole As ZiBase.Protocol
         Dim adresse, modele() as String
         Dim valeur As String = ""
-        Dim tabletmp() As DataRow
+        'Dim tabletmp() As DataRow
 
         Try
 			modele = Split(composants_modele_nom, "_")

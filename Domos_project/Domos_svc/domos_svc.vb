@@ -1807,8 +1807,9 @@ Public Class domos_svc
         Dim timer_valeur As String = ""
         Dim y As Thread
         Dim tabletemp() As DataRow
-        Dim tabletempp() As DataRow
+        'Dim tabletempp() As DataRow
         Dim tblthread() As DataRow
+        Dim timersup As Integer = 0
         Try
             liste = STRGS.Mid(liste, 2, STRGS.Len(liste) - 2) 'on supprimer les () de chaque cote de la liste
             While (posfin < STRGS.Len(liste)) 'tant que toute la liste n'a pas ete traite
@@ -1842,20 +1843,22 @@ Public Class domos_svc
                             If STRGS.Left(lastcontenu, 5) = "timer" Then
                                 log("MAC :  -> Action composant : tempo avant action : " & contenu(0) & "-" & contenu(1) & " Timer=" & contenu(UBound(contenu)), 6)
                                 timer_valeur = STRGS.Right(lastcontenu, STRGS.Len(lastcontenu) - 5) * 100
+                                timersup = 0
                             Else
                                 timer_valeur = ""
+                                timersup = 1
                             End If
 
                             Dim x As ECRIRE
-                            If UBound(contenu) = 5 Then
+                            If UBound(contenu) = (5 - timersup) Then
                                 log("MAC :  -> Action composant : Composant : " & tabletemp(0)("composants_nom") & " Etat=" & contenu(2) & "-" & contenu(3) & "-" & contenu(4), 6)
-                            	x = New ECRIRE(tabletemp(0)("composants_id"), contenu(2), contenu(3), contenu(4), timer_valeur)
-                            ElseIf UBound(contenu) = 4 Then
+                                x = New ECRIRE(tabletemp(0)("composants_id"), contenu(2), contenu(3), contenu(4), timer_valeur)
+                            ElseIf UBound(contenu) = (4 - timersup) Then
                                 log("MAC :  -> Action composant : Composant : " & tabletemp(0)("composants_nom") & " Etat=" & contenu(2) & "-" & contenu(3), 6)
-                            	x = New ECRIRE(tabletemp(0)("composants_id"), contenu(2), contenu(3), "", timer_valeur)
+                                x = New ECRIRE(tabletemp(0)("composants_id"), contenu(2), contenu(3), "", timer_valeur)
                             Else
                                 log("MAC :  -> Action composant : Composant : " & tabletemp(0)("composants_nom") & " Etat=" & contenu(2), 6)
-                            	x = New ECRIRE(tabletemp(0)("composants_id"), contenu(2), "", "", timer_valeur)
+                                x = New ECRIRE(tabletemp(0)("composants_id"), contenu(2), "", "", timer_valeur)
                             End If
                             y = New Thread(AddressOf x.action)
                             y.Name = "ecrire_" & tabletemp(0)("composants_id")
@@ -2090,7 +2093,9 @@ Public Class domos_svc
                                             SyncLock lock_tablethread
                                                 tblthread(0)("source") = "ECR_PLC"
                                             End SyncLock
-                                            If valeur2 <> "" Then
+                                            If valeur3 <> "" And valeur2 <> "" Then
+                                                err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, valeur2, valeur3)
+                                            ElseIf valeur2 <> "" Then
                                                 err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, valeur2, 0)
                                             Else
                                                 err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, 0, 0)
@@ -2103,9 +2108,9 @@ Public Class domos_svc
                                                 Else
                                                     log("ECR : PLC : ecrit " & tabletmp(0)("composants_adresse") & "=" & valeur & " " & valeur2 & "(" & err & ")", 5)
                                                     'modification de l'etat en memoire
-								                	If IsNumeric(err) Then tabletmp(0)("composants_etat") = err 'valeur renvoyé par la fonction ecrire si OK
-								                	tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-								                End If
+                                                    tabletmp(0)("composants_etat") = err 'valeur renvoyé par la fonction ecrire si OK
+                                                    tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
+                                                End If
                                             End If
                                             wait(50) 'pause de 0.5sec pour recevoir le ack et libérer le bus correctement
                                         Else
