@@ -64,6 +64,9 @@ Public Class rfxcom
     Private WithEvents tmrRead As New System.Timers.Timer
     Dim messagetemp, messagelast, adresselast, valeurlast, recbuf_last As String
     Dim nblast As Integer = 0
+
+    Private BufferIn(8192) As Byte
+
 #End Region
 
     Public Function ouvrir(ByVal numero As String) As String
@@ -239,17 +242,32 @@ Public Class rfxcom
         End Try
     End Function
 
+    'Private Sub DataReceived(ByVal sender As Object, ByVal e As SerialDataReceivedEventArgs)
+    '    Try
+    '        Dim limite As Integer = 0
+    '        While port_ouvert And port.BytesToRead > 0 And limite < 500
+    '            limite = limite + 1
+    '            If Not domos_svc.Serv_DOMOS Or Not port_ouvert Then Exit While 'si on quitte Domos on quitte cette boucle
+    '            ProcessReceivedChar(port.ReadByte())
+    '        End While
+    '        If limite >= 500 Then
+    '            WriteLog("ERR: RFXCOM Datareceived : TIMEOUT (vidage tampon)")
+    '            port.DiscardInBuffer()
+    '        End If
+    '    Catch Ex As Exception
+    '        WriteLog("ERR: RFXCOM Datareceived : " & Ex.Message)
+    '    End Try
+    'End Sub
+
     Private Sub DataReceived(ByVal sender As Object, ByVal e As SerialDataReceivedEventArgs)
         Try
-            Dim limite As Integer = 0
-            While port_ouvert And port.BytesToRead > 0 And limite < 500
-                limite = limite + 1
-                If Not domos_svc.Serv_DOMOS Or Not port_ouvert Then Exit While 'si on quitte Domos on quitte cette boucle
-                ProcessReceivedChar(port.ReadByte())
-            End While
-            If limite >= 500 Then
-                WriteLog("ERR: RFXCOM Datareceived : TIMEOUT (vidage tampon)")
-                port.DiscardInBuffer()
+            Dim count As Integer = 0
+            count = port.BytesToRead
+            If count > 0 Then
+                port.Read(BufferIn, 0, count)
+                For i As Integer = 0 To count - 1
+                    ProcessReceivedChar(BufferIn(i))
+                Next
             End If
         Catch Ex As Exception
             WriteLog("ERR: RFXCOM Datareceived : " & Ex.Message)
@@ -324,74 +342,246 @@ Public Class rfxcom
         End Try
     End Sub
 
-    Public Sub ProcessReceivedChar(ByVal sComChar As Byte)
+    'Public Sub ProcessReceivedChar(ByVal sComChar As Byte)
+    '    Try
+    '        'si Domos est actif
+    '        If domos_svc.Serv_DOMOS Then
+    '            'rassemble un message complet pour le traiter ensuite avec displaymess
+    '            Dim temp As Byte
+    '            maxticks = 0
+    '            If firstbyte = True Then
+    '                firstbyte = False
+    '                bytecnt = 0
+    '            End If
+    '            temp = sComChar
+    '            'WriteLog(VB.Right("0" & Hex(temp), 2))
+    '            If waitforack = False Then
+    '                If vresponse = True Then  'display version?
+    '                    recbuf(bytecnt) = temp
+    '                    If (bytecnt = 3) Then mess = True
+    '                Else
+    '                    Select Case protocol
+    '                        Case MODEVAR, MODEVISONIC, MODENOXLAT, MODEARC
+    '                            If bytecnt = 15 Then
+    '                                recbuf(bytecnt - 1) = temp
+    '                                mess = True
+    '                            ElseIf bytecnt = 0 Then
+    '                                recbits = temp And &H7F
+    '                                If (temp And &H80) = 0 Then slave = False Else slave = True
+    '                                If (recbits And &H7) = 0 Then recbytes = ((recbits And &H7F) >> 3) Else recbytes = ((recbits And &H7F) >> 3) + 1
+    '                            ElseIf bytecnt = recbytes Then
+    '                                recbuf(bytecnt - 1) = temp
+    '                                bytecnt -= 1
+    '                                mess = True
+    '                            Else
+    '                                recbuf(bytecnt - 1) = temp
+    '                            End If
+    '                        Case MODEB32
+    '                            recbuf(bytecnt) = temp
+    '                            If (bytecnt = 3) Then mess = True
+    '                        Case MODEKOP
+    '                            recbuf(bytecnt) = temp
+    '                            If bytecnt = 2 Then mess = True
+    '                    End Select
+    '                End If
+    '                bytecnt += 1
+    '            Else
+    '                mess = True
+    '            End If
+    '            If mess Then
+    '                'gestion pour ne pas gérer deux fois le même paquet car la norme veut que les paquets soient envoyé deux fois de suite
+    '                Dim xxx As String = ""
+    '                For i As Integer = 0 To bytecnt
+    '                    If Not domos_svc.Serv_DOMOS Then Exit Sub 'si on quitte Domos on quitte cette fonction
+    '                    xxx = xxx & (VB.Right("0" & Hex(recbuf(i)), 2))
+    '                Next
+    '                If recbuf_last <> xxx Or nblast = 2 Then 'nouveau paquet ou c'est la troisieme fois qu'on le recoit 
+    '                    display_mess()
+    '                    recbuf_last = xxx
+    '                    nblast = 1
+    '                Else 'c'est la deuxieme paquet indentique qu'on recoit, on l'ignore
+    '                    nblast = 2
+    '                    firstbyte = True
+    '                    mess = False
+    '                End If
+    '            End If
+    '        End If
+    '    Catch ex As Exception
+    '        WriteLog("ERR: RFXCOM ProcessReceivedChar : " & ex.Message)
+    '    End Try
+    'End Sub
+
+    Public Sub ProcessReceivedChar(ByVal temp As Byte)
         Try
             'si Domos est actif
-            If domos_svc.Serv_DOMOS Then
-                'rassemble un message complet pour le traiter ensuite avec displaymess
-                Dim temp As Byte
-                maxticks = 0
-                If firstbyte = True Then
-                    firstbyte = False
-                    bytecnt = 0
-                End If
-                temp = sComChar
-                'WriteLog(VB.Right("0" & Hex(temp), 2))
-                If waitforack = False Then
-                    If vresponse = True Then  'display version?
-                        recbuf(bytecnt) = temp
-                        If (bytecnt = 3) Then mess = True
-                    Else
-                        Select Case protocol
-                            Case MODEVAR, MODEVISONIC, MODENOXLAT, MODEARC
-                                If bytecnt = 15 Then
-                                    recbuf(bytecnt - 1) = temp
-                                    mess = True
-                                ElseIf bytecnt = 0 Then
-                                    recbits = temp And &H7F
-                                    If (temp And &H80) = 0 Then slave = False Else slave = True
-                                    If (recbits And &H7) = 0 Then recbytes = ((recbits And &H7F) >> 3) Else recbytes = ((recbits And &H7F) >> 3) + 1
-                                ElseIf bytecnt = recbytes Then
-                                    recbuf(bytecnt - 1) = temp
-                                    bytecnt -= 1
-                                    mess = True
-                                Else
-                                    recbuf(bytecnt - 1) = temp
-                                End If
-                            Case MODEB32
-                                recbuf(bytecnt) = temp
-                                If (bytecnt = 3) Then mess = True
-                            Case MODEKOP
-                                recbuf(bytecnt) = temp
-                                If bytecnt = 2 Then mess = True
-                        End Select
-                    End If
-                    bytecnt += 1
+            If Not domos_svc.Serv_DOMOS Then Exit Sub
+
+            'rassemble un message complet pour le traiter ensuite avec displaymess
+            'Dim temp As Byte
+            'temp = sComChar
+
+            maxticks = 0
+            If firstbyte Then
+                firstbyte = False
+                bytecnt = 0
+            End If
+            'WriteLog(VB.Right("0" & Hex(temp), 2))
+            If Not waitforack Then
+                If vresponse = True Then  'display version?
+                    recbuf(bytecnt) = temp
+                    If (bytecnt = 3) Then mess = True
                 Else
-                    mess = True
-                End If
-                If mess Then
-                    'gestion pour ne pas gérer deux fois le même paquet car la norme veut que les paquets soient envoyé deux fois de suite
-                    Dim xxx As String = ""
-                    For i As Integer = 0 To bytecnt
-                        If Not domos_svc.Serv_DOMOS Then Exit Sub 'si on quitte Domos on quitte cette fonction
-                        xxx = xxx & (VB.Right("0" & Hex(recbuf(i)), 2))
-                    Next
-                    If recbuf_last <> xxx Or nblast = 2 Then 'nouveau paquet ou c'est la troisieme fois qu'on le recoit 
-                        display_mess()
-                        recbuf_last = xxx
-                        nblast = 1
-                    Else 'c'est la deuxieme paquet indentique qu'on recoit, on l'ignore
-                        nblast = 2
-                        firstbyte = True
-                        mess = False
+                    If bytecnt = 15 Then
+                        recbuf(bytecnt - 1) = temp
+                        mess = True
+                    ElseIf bytecnt = 0 Then
+                        recbits = temp And &H7F
+                        If (temp And &H80) = 0 Then slave = False Else slave = True
+                        If (recbits And &H7) = 0 Then recbytes = ((recbits And &H7F) >> 3) Else recbytes = ((recbits And &H7F) >> 3) + 1
+                    ElseIf bytecnt = recbytes Then
+                        recbuf(bytecnt - 1) = temp
+                        bytecnt -= 1
+                        mess = True
+                    Else
+                        recbuf(bytecnt - 1) = temp
                     End If
+                End If
+                bytecnt += 1
+            Else
+                mess = True
+            End If
+            If mess Then
+                'gestion pour ne pas gérer deux fois le même paquet car la norme veut que les paquets soient envoyé deux fois de suite
+                Dim xxx As String = ""
+                For i As Integer = 0 To bytecnt
+                    If Not domos_svc.Serv_DOMOS Then Exit Sub 'si on quitte Domos on quitte cette fonction
+                    xxx = xxx & (VB.Right("0" & Hex(recbuf(i)), 2))
+                Next
+                If recbuf_last <> xxx Or nblast >= 2 Then 'nouveau paquet ou c'est la troisieme fois qu'on le recoit 
+                    display_mess()
+                    recbuf_last = xxx
+                    nblast = 1
+                Else 'c'est la deuxieme paquet indentique qu'on recoit, on l'ignore
+                    nblast = 2
+                    firstbyte = True
+                    mess = False
                 End If
             End If
         Catch ex As Exception
             WriteLog("ERR: RFXCOM ProcessReceivedChar : " & ex.Message)
         End Try
     End Sub
+
+    'Public Sub display_mess()
+    '    Try
+    '        If Not domos_svc.Serv_DOMOS Then Exit Sub 'si on quitte Domos on quitte cette fonction
+    '        'interprete le message recu
+    '        Dim parity As Integer
+    '        Dim rfxsensor, rfxpower As Boolean
+    '        Dim logtemp As String = ""
+    '        mess = False
+    '        firstbyte = True
+
+    '        'affichage de la chaine reçu
+    '        'Dim valtemp As String = ""
+    '        'Dim xxx As String = ""
+    '        'For i As Integer = 0 To bytecnt
+    '        '    'valtemp = valtemp & recbuf(i)
+    '        '    xxx = xxx & (VB.Right("0" & Hex(recbuf(i)), 2))
+    '        'Next
+    '        'WriteLog(xxx)
+    '        If waitforack = False Then
+    '            If bytecnt = 4 Then
+    '                parity = Not (((recbuf(0) And &HF0) >> 4) + (recbuf(0) And &HF) + (recbuf(1) >> 4) + (recbuf(1) And &HF) + (recbuf(2) >> 4) + (recbuf(2) And &HF) + (recbuf(3) >> 4)) And &HF
+    '                If (parity = (recbuf(3) And &HF)) And (recbuf(0) + (recbuf(1) Xor &HF) = &HFF) Then rfxsensor = True Else rfxsensor = False
+    '            ElseIf bytecnt = 6 Then
+    '                parity = Not ((recbuf(0) >> 4) + (recbuf(0) And &HF) + (recbuf(1) >> 4) + (recbuf(1) And &HF) + (recbuf(2) >> 4) + (recbuf(2) And &HF) + (recbuf(3) >> 4) + (recbuf(3) And &HF) + (recbuf(4) >> 4) + (recbuf(4) And &HF) + (recbuf(5) >> 4)) And &HF
+    '                If (parity = (recbuf(5) And &HF)) And (recbuf(0) + (recbuf(1) Xor &HF) = &HFF) Then rfxpower = True Else rfxpower = False
+    '            End If
+    '            If vresponse Then  'display version
+    '                vresponse = False
+    '                recbits = 0
+    '                If recbuf(0) = Asc("M") Then
+    '                    logtemp = " Version Master=" & VB.Right("0" & Hex(recbuf(1)), 2)
+    '                    If bytecnt > 3 Then
+    '                        If recbuf(2) = Asc("S") Then
+    '                            logtemp = logtemp & " Slave=" & VB.Right("0" & Hex(recbuf(3)), 2)
+    '                        Else
+    '                            logtemp = logtemp & VB.Right("0" & Hex(recbuf(2)), 2)
+    '                        End If
+    '                    End If
+    '                ElseIf recbuf(0) = Asc("S") Then
+    '                    logtemp = " Version Slave=" & VB.Right("0" & Hex(recbuf(1)), 2)
+    '                    If bytecnt > 3 Then
+    '                        If recbuf(2) = Asc("M") Then
+    '                            logtemp = logtemp & " Master=" & VB.Right("0" & Hex(recbuf(3)), 2)
+    '                        Else
+    '                            logtemp = logtemp & VB.Right("0" & Hex(recbuf(2)), 2)
+    '                        End If
+    '                    End If
+    '                Else
+    '                    logtemp = "Version " & VB.Right("0" & Hex(recbuf(0)), 2)
+    '                    If bytecnt > 3 Then
+    '                        If recbuf(1) = Asc("S") Then
+    '                            logtemp = logtemp & " Slave=" & VB.Right("0" & Hex(recbuf(2)), 2)
+    '                        ElseIf recbuf(1) = Asc("M") Then
+    '                            logtemp = logtemp & " Master=" & VB.Right("0" & Hex(recbuf(2)), 2)
+    '                        Else
+    '                            logtemp = logtemp & " " & VB.Right("0" & Hex(recbuf(1)), 2)
+    '                        End If
+    '                    ElseIf bytecnt = 3 Then
+    '                        logtemp = logtemp & " " & VB.Right("0" & Hex(recbuf(1)), 2)
+    '                    End If
+    '                End If
+    '                WriteLog(logtemp)
+    '            ElseIf protocol = MODEARC Then
+    '                processARC()
+    '            ElseIf protocol = MODEKOP Then
+    '                processkoppla()
+    '            ElseIf rfxsensor Then
+    '                processrfxsensor()
+    '            ElseIf rfxpower Then
+    '                processrfxmeter()
+    '            ElseIf protocol = MODEVISONIC Then
+    '                processvisonic(recbits)
+    '            ElseIf protocol = MODENOXLAT Then
+    '                If recbits = 36 Or recbits = 66 Or recbits = 72 Then
+    '                    processvisonic(recbits)
+    '                ElseIf recbits > 59 Then
+    '                    If processoregon(recbits) = False Then
+    '                        processvisonic(recbits)
+    '                    End If
+    '                Else
+    '                    processx(recbits)
+    '                End If
+    '            ElseIf protocol = MODEVAR And recbits = 20 Then
+    '                processati()
+    '            ElseIf protocol = MODEVAR And recbits = 21 Then
+    '                processatiplus()
+    '            ElseIf protocol = MODEVAR And recbits = 34 Or recbits = 38 Then
+    '                processhe()
+    '            ElseIf protocol = MODEVAR And recbits = 56 Then
+    '                processsomfy()
+    '            ElseIf protocol = MODEVAR And (recbits = 56 Or recbits > 59) Then
+    '                processoregon(recbits)
+    '            Else
+    '                processx(recbits)
+    '            End If
+    '            'If (protocol = MODEVAR Or protocol = MODENOXLAT) And recbits <> 0 Then
+    '            '    If slave Then
+    '            '        WriteMessage(" bits=" & Convert.ToString(recbits) & " from SLAVE", False)
+    '            '    Else
+    '            '        WriteMessage(" bits=" & Convert.ToString(recbits), False)
+    '            '    End If
+    '            'End If
+    '        Else
+    '            WriteLog("ACK")
+    '        End If
+    '        waitforack = False
+    '    Catch ex As Exception
+    '        WriteLog("ERR: RFXCOM display_mess : " & ex.Message)
+    '    End Try
+    'End Sub
 
     Public Sub display_mess()
         Try
@@ -411,22 +601,15 @@ Public Class rfxcom
             '    xxx = xxx & (VB.Right("0" & Hex(recbuf(i)), 2))
             'Next
             'WriteLog(xxx)
-            If waitforack = False Then
+            If Not waitforack Then
                 If bytecnt = 4 Then
-                    parity = Not (((recbuf(0) And &HF0) >> 4) + (recbuf(0) And &HF) _
-                    + (recbuf(1) >> 4) + (recbuf(1) And &HF) _
-                    + (recbuf(2) >> 4) + (recbuf(2) And &HF) + (recbuf(3) >> 4)) And &HF
+                    parity = Not (((recbuf(0) And &HF0) >> 4) + (recbuf(0) And &HF) + (recbuf(1) >> 4) + (recbuf(1) And &HF) + (recbuf(2) >> 4) + (recbuf(2) And &HF) + (recbuf(3) >> 4)) And &HF
                     If (parity = (recbuf(3) And &HF)) And (recbuf(0) + (recbuf(1) Xor &HF) = &HFF) Then rfxsensor = True Else rfxsensor = False
                 ElseIf bytecnt = 6 Then
-                    parity = Not ((recbuf(0) >> 4) + (recbuf(0) And &HF) _
-                    + (recbuf(1) >> 4) + (recbuf(1) And &HF) _
-                    + (recbuf(2) >> 4) + (recbuf(2) And &HF) _
-                    + (recbuf(3) >> 4) + (recbuf(3) And &HF) _
-                    + (recbuf(4) >> 4) + (recbuf(4) And &HF) _
-                    + (recbuf(5) >> 4)) And &HF
+                    parity = Not ((recbuf(0) >> 4) + (recbuf(0) And &HF) + (recbuf(1) >> 4) + (recbuf(1) And &HF) + (recbuf(2) >> 4) + (recbuf(2) And &HF) + (recbuf(3) >> 4) + (recbuf(3) And &HF) + (recbuf(4) >> 4) + (recbuf(4) And &HF) + (recbuf(5) >> 4)) And &HF
                     If (parity = (recbuf(5) And &HF)) And (recbuf(0) + (recbuf(1) Xor &HF) = &HFF) Then rfxpower = True Else rfxpower = False
                 End If
-                If vresponse = True Then  'display version
+                If vresponse Then  'display version
                     vresponse = False
                     recbits = 0
                     If recbuf(0) = Asc("M") Then
@@ -462,36 +645,26 @@ Public Class rfxcom
                         End If
                     End If
                     WriteLog(logtemp)
-                ElseIf protocol = MODEARC Then
-                    processARC()
-                ElseIf protocol = MODEKOP Then
-                    processkoppla()
-                ElseIf rfxsensor Then
-                    processrfxsensor()
-                ElseIf rfxpower Then
-                    processrfxmeter()
-                ElseIf protocol = MODEVISONIC Then
-                    processvisonic(recbits)
-                ElseIf protocol = MODENOXLAT Then
-                    If recbits = 36 Or recbits = 66 Or recbits = 72 Then
-                        processvisonic(recbits)
-                    ElseIf recbits > 59 Then
-                        If processoregon(recbits) = False Then
-                            processvisonic(recbits)
-                        End If
-                    Else
-                        processx(recbits)
-                    End If
-                ElseIf protocol = MODEVAR And recbits = 20 Then
-                    processati()
-                ElseIf protocol = MODEVAR And recbits = 21 Then
-                    processatiplus()
-                ElseIf protocol = MODEVAR And recbits = 34 Or recbits = 38 Then
-                    processhe()
-                ElseIf protocol = MODEVAR And recbits = 56 Then
-                    processsomfy()
-                ElseIf protocol = MODEVAR And (recbits = 56 Or recbits > 59) Then
-                    processoregon(recbits)
+                ElseIf protocol = MODEVAR And (recbits = 56 Or recbits > 59) Then : processoregon(recbits)
+                ElseIf protocol = MODEVAR And recbits = 34 Or recbits = 38 Then : processhe()
+                ElseIf protocol = MODEVAR And recbits = 20 Then : processati()
+                ElseIf protocol = MODEVAR And recbits = 21 Then : processatiplus()
+                ElseIf rfxsensor Then : processrfxsensor()
+                ElseIf rfxpower Then : processrfxmeter()
+                ElseIf protocol = MODEVAR And recbits = 56 Then : processsomfy()
+                    'ElseIf protocol = MODEARC Then : processARC()
+                    'ElseIf protocol = MODEKOP Then : processkoppla()
+                    'ElseIf protocol = MODEVISONIC Then : processvisonic(recbits)
+                    '    'ElseIf protocol = MODENOXLAT Then
+                    '    If recbits = 36 Or recbits = 66 Or recbits = 72 Then
+                    '        processvisonic(recbits)
+                    '    ElseIf recbits > 59 Then
+                    '        If processoregon(recbits) = False Then
+                    '            processvisonic(recbits)
+                    '        End If
+                    '    Else
+                    '        processx(recbits)
+                    '    End If
                 Else
                     processx(recbits)
                 End If
@@ -2269,129 +2442,172 @@ Public Class rfxcom
     End Function
 
     Function cs8() As Byte
-        Dim cs As Byte
+        Try
+            Dim cs As Byte
 
-        cs = (recbuf(0) >> 4 And &HF) + (recbuf(0) And &HF)
-        cs += (recbuf(1) >> 4 And &HF) + (recbuf(1) And &HF)
-        cs += (recbuf(2) >> 4 And &HF) + (recbuf(2) And &HF)
-        cs += (recbuf(3) >> 4 And &HF) + (recbuf(3) And &HF)
-        cs += (recbuf(4) >> 4 And &HF) + (recbuf(4) And &HF)
-        cs += (recbuf(5) >> 4 And &HF) + (recbuf(5) And &HF)
-        cs += (recbuf(6) >> 4 And &HF) + (recbuf(6) And &HF)
-        cs += (recbuf(7) >> 4 And &HF) + (recbuf(7) And &HF)
-        Return cs
+            cs = (recbuf(0) >> 4 And &HF) + (recbuf(0) And &HF)
+            cs += (recbuf(1) >> 4 And &HF) + (recbuf(1) And &HF)
+            cs += (recbuf(2) >> 4 And &HF) + (recbuf(2) And &HF)
+            cs += (recbuf(3) >> 4 And &HF) + (recbuf(3) And &HF)
+            cs += (recbuf(4) >> 4 And &HF) + (recbuf(4) And &HF)
+            cs += (recbuf(5) >> 4 And &HF) + (recbuf(5) And &HF)
+            cs += (recbuf(6) >> 4 And &HF) + (recbuf(6) And &HF)
+            cs += (recbuf(7) >> 4 And &HF) + (recbuf(7) And &HF)
+            Return cs
+        Catch ex As Exception
+            WriteLog("ERR: RFXCOM cs8 : " & ex.Message)
+            Return "ERR: " & ex.Message
+        End Try
     End Function
 
     Sub checksume()
-        Dim cs As Short
-        cs = (recbuf(0) >> 4 And &HF) + (recbuf(0) And &HF)
-        cs += (recbuf(1) >> 4 And &HF) + (recbuf(1) And &HF)
-        cs += (recbuf(2) >> 4 And &HF) + (recbuf(2) And &HF)
-        cs += (recbuf(3) >> 4 And &HF) + (recbuf(3) And &HF)
-        cs += (recbuf(4) >> 4 And &HF) + (recbuf(4) And &HF)
-        cs += (recbuf(5) >> 4 And &HF) + (recbuf(5) And &HF)
-        cs += (recbuf(6) >> 4 And &HF) + (recbuf(6) And &HF)
-        cs = (cs - recbuf(7)) And &HFF
-        If cs <> &H18 Then
-            'WriteMessage(" Checksum Error", False)
-        End If
+        Try
+            Dim cs As Short
+            cs = (recbuf(0) >> 4 And &HF) + (recbuf(0) And &HF)
+            cs += (recbuf(1) >> 4 And &HF) + (recbuf(1) And &HF)
+            cs += (recbuf(2) >> 4 And &HF) + (recbuf(2) And &HF)
+            cs += (recbuf(3) >> 4 And &HF) + (recbuf(3) And &HF)
+            cs += (recbuf(4) >> 4 And &HF) + (recbuf(4) And &HF)
+            cs += (recbuf(5) >> 4 And &HF) + (recbuf(5) And &HF)
+            cs += (recbuf(6) >> 4 And &HF) + (recbuf(6) And &HF)
+            cs = (cs - recbuf(7)) And &HFF
+            If cs <> &H18 Then
+                'WriteMessage(" Checksum Error", False)
+            End If
+        Catch ex As Exception
+            WriteLog("ERR: RFXCOM checksume : " & ex.Message)
+        End Try
     End Sub
 
     Sub checksum7()
-        Dim cs As Short
-        cs = (recbuf(0) >> 4 And &HF) + (recbuf(0) And &HF)
-        cs += (recbuf(1) >> 4 And &HF) + (recbuf(1) And &HF)
-        cs += (recbuf(2) >> 4 And &HF) + (recbuf(2) And &HF)
-        cs += (recbuf(3) >> 4 And &HF) + (recbuf(3) And &HF)
-        cs += (recbuf(4) >> 4 And &HF) + (recbuf(4) And &HF)
-        cs += (recbuf(5) >> 4 And &HF) + (recbuf(5) And &HF)
-        cs += (recbuf(6) >> 4 And &HF) + (recbuf(6) And &HF)
-        cs = (cs - recbuf(7)) And &HFF
-        If cs <> &HA Then
-            'WriteMessage(" Checksum Error", False)
-        End If
+        Try
+            Dim cs As Short
+            cs = (recbuf(0) >> 4 And &HF) + (recbuf(0) And &HF)
+            cs += (recbuf(1) >> 4 And &HF) + (recbuf(1) And &HF)
+            cs += (recbuf(2) >> 4 And &HF) + (recbuf(2) And &HF)
+            cs += (recbuf(3) >> 4 And &HF) + (recbuf(3) And &HF)
+            cs += (recbuf(4) >> 4 And &HF) + (recbuf(4) And &HF)
+            cs += (recbuf(5) >> 4 And &HF) + (recbuf(5) And &HF)
+            cs += (recbuf(6) >> 4 And &HF) + (recbuf(6) And &HF)
+            cs = (cs - recbuf(7)) And &HFF
+            If cs <> &HA Then
+                'WriteMessage(" Checksum Error", False)
+            End If
+        Catch ex As Exception
+            WriteLog("ERR: RFXCOM checksum7 : " & ex.Message)
+        End Try
     End Sub
 
     Sub checksum8()
-        Dim cs As Short
-        cs = cs8()
-        cs = (cs - recbuf(8)) And &HFF
-        If cs <> &HA Then
-            ' WriteMessage(" Checksum Error", False)
-        End If
+        Try
+            Dim cs As Short
+            cs = cs8()
+            cs = (cs - recbuf(8)) And &HFF
+            If cs <> &HA Then
+                ' WriteMessage(" Checksum Error", False)
+            End If
+        Catch ex As Exception
+            WriteLog("ERR: RFXCOM checksum8 : " & ex.Message)
+        End Try
     End Sub
 
     Sub checksum2()
-        Dim cs As Short
-        cs = cs8()
-        cs += recbuf(8) And &HF
-        cs = (cs - ((recbuf(8) >> 4 And &HF) + ((recbuf(9) << 4) And &HF0))) And &HFF
-        If cs <> &HA Then
-            'WriteMessage(" Checksum Error", False)
-        End If
+        Try
+            Dim cs As Short
+            cs = cs8()
+            cs += recbuf(8) And &HF
+            cs = (cs - ((recbuf(8) >> 4 And &HF) + ((recbuf(9) << 4) And &HF0))) And &HFF
+            If cs <> &HA Then
+                'WriteMessage(" Checksum Error", False)
+            End If
+        Catch ex As Exception
+            WriteLog("ERR: RFXCOM checksum2 : " & ex.Message)
+        End Try
     End Sub
 
     Sub checksum9()
-        Dim cs As Short
-        cs = cs8()
-        cs += (recbuf(8) >> 4 And &HF) + (recbuf(8) And &HF)
-        cs = (cs - recbuf(9)) And &HFF
-        If cs <> &HA Then
-            'WriteMessage(" Checksum Error", False)
-        End If
+        Try
+            Dim cs As Short
+            cs = cs8()
+            cs += (recbuf(8) >> 4 And &HF) + (recbuf(8) And &HF)
+            cs = (cs - recbuf(9)) And &HFF
+            If cs <> &HA Then
+                'WriteMessage(" Checksum Error", False)
+            End If
+        Catch ex As Exception
+            WriteLog("ERR: RFXCOM checksum9 : " & ex.Message)
+        End Try
     End Sub
 
     Sub checksum10()
-        Dim cs As Short
-        cs = cs8()
-        cs += (recbuf(8) >> 4 And &HF) + (recbuf(8) And &HF)
-        cs += (recbuf(9) >> 4 And &HF) + (recbuf(9) And &HF)
-        cs = (cs - recbuf(10)) And &HFF
-        If cs <> &HA Then
-            'WriteMessage(" Checksum Error", False)
-        End If
+        Try
+            Dim cs As Short
+            cs = cs8()
+            cs += (recbuf(8) >> 4 And &HF) + (recbuf(8) And &HF)
+            cs += (recbuf(9) >> 4 And &HF) + (recbuf(9) And &HF)
+            cs = (cs - recbuf(10)) And &HFF
+            If cs <> &HA Then
+                'WriteMessage(" Checksum Error", False)
+            End If
+        Catch ex As Exception
+            WriteLog("ERR: RFXCOM checksum10 : " & ex.Message)
+        End Try
     End Sub
 
     Sub checksum11()
-        Dim cs As Short
-        cs = cs8()
-        cs += (recbuf(8) >> 4 And &HF) + (recbuf(8) And &HF)
-        cs += (recbuf(9) >> 4 And &HF) + (recbuf(9) And &HF)
-        cs += (recbuf(10) >> 4 And &HF) + (recbuf(10) And &HF)
-        cs = (cs - recbuf(11)) And &HFF
-        If cs <> &HA Then
-            'WriteMessage(" Checksum Error", False)
-        End If
+        Try
+            Dim cs As Short
+            cs = cs8()
+            cs += (recbuf(8) >> 4 And &HF) + (recbuf(8) And &HF)
+            cs += (recbuf(9) >> 4 And &HF) + (recbuf(9) And &HF)
+            cs += (recbuf(10) >> 4 And &HF) + (recbuf(10) And &HF)
+            cs = (cs - recbuf(11)) And &HFF
+            If cs <> &HA Then
+                'WriteMessage(" Checksum Error", False)
+            End If
+        Catch ex As Exception
+            WriteLog("ERR: RFXCOM checksum11 : " & ex.Message)
+        End Try
     End Sub
 
     Function checksumw() As Byte
-        Dim cs As Short
+        Try
+            Dim cs As Short
 
-        cs = (recbuf(0) >> 4 And &HF) + (recbuf(0) And &HF)
-        cs += (recbuf(1) >> 4 And &HF) + (recbuf(1) And &HF)
-        cs += (recbuf(2) >> 4 And &HF) + (recbuf(2) And &HF)
-        cs += (recbuf(3) >> 4 And &HF) + (recbuf(3) And &HF)
-        cs += (recbuf(4) >> 4 And &HF) + (recbuf(4) And &HF)
-        cs += (recbuf(5) >> 4 And &HF) + (recbuf(5) And &HF)
-        cs += (recbuf(6) And &HF)
-        cs = (cs - ((recbuf(6) >> 4 And &HF) + (recbuf(7) << 4 And &HF0))) And &HFF
-        If cs <> &HA Then
-            'WriteMessage(" Checksum Error", False)
-        End If
-        Return cs
+            cs = (recbuf(0) >> 4 And &HF) + (recbuf(0) And &HF)
+            cs += (recbuf(1) >> 4 And &HF) + (recbuf(1) And &HF)
+            cs += (recbuf(2) >> 4 And &HF) + (recbuf(2) And &HF)
+            cs += (recbuf(3) >> 4 And &HF) + (recbuf(3) And &HF)
+            cs += (recbuf(4) >> 4 And &HF) + (recbuf(4) And &HF)
+            cs += (recbuf(5) >> 4 And &HF) + (recbuf(5) And &HF)
+            cs += (recbuf(6) And &HF)
+            cs = (cs - ((recbuf(6) >> 4 And &HF) + (recbuf(7) << 4 And &HF0))) And &HFF
+            If cs <> &HA Then
+                'WriteMessage(" Checksum Error", False)
+            End If
+            Return cs
+        Catch ex As Exception
+            WriteLog("ERR: RFXCOM checksumw : " & ex.Message)
+            Return "ERR: " & ex.Message
+        End Try
     End Function
 
     Function checksumr() As Byte
-        Dim cs As Short
+        Try
+            Dim cs As Short
 
-        cs = cs8()
-        cs += (recbuf(8) >> 4 And &HF) + (recbuf(8) And &HF)
-        cs += (recbuf(9) And &HF)
-        cs = (cs - ((recbuf(9) >> 4 And &HF) + (recbuf(10) << 4 And &HF0))) And &HFF
-        If cs <> &HA Then
-            ' WriteMessage(" Checksum Error", False)
-        End If
-        Return cs
+            cs = cs8()
+            cs += (recbuf(8) >> 4 And &HF) + (recbuf(8) And &HF)
+            cs += (recbuf(9) And &HF)
+            cs = (cs - ((recbuf(9) >> 4 And &HF) + (recbuf(10) << 4 And &HF0))) And &HFF
+            If cs <> &HA Then
+                ' WriteMessage(" Checksum Error", False)
+            End If
+            Return cs
+        Catch ex As Exception
+            WriteLog("ERR: RFXCOM checksumr : " & ex.Message)
+            Return "ERR: " & ex.Message
+        End Try
     End Function
 
 #End Region
@@ -2450,20 +2666,18 @@ Public Class rfxcom
         Catch ex As Exception
             domos_svc.log("RFX : WriteBattery : " & ex.Message & " --> " & adresse, 2)
         End Try
- 
     End Sub
 
     Public Sub WriteRetour(ByVal adresse As String, ByVal valeur As String)
-
-        If Not domos_svc.Serv_DOMOS Then Exit Sub 'si on quitte Domos on quitte cette boucle
-
-        'Forcer le . 
-        Thread.CurrentThread.CurrentCulture = New CultureInfo("en-US")
-        My.Application.ChangeCulture("en-US")
-
-        Dim tabletmp() As DataRow
-        Dim dateheure, Err As String
         Try
+            If Not domos_svc.Serv_DOMOS Then Exit Sub 'si on quitte Domos on quitte cette boucle
+
+            'Forcer le . 
+            Thread.CurrentThread.CurrentCulture = New CultureInfo("en-US")
+            My.Application.ChangeCulture("en-US")
+
+            Dim tabletmp() As DataRow
+            Dim dateheure, Err As String
             'log tous les paquets en mode debug
             WriteLog("DBG: WriteRetour receive from " & adresse & " -> " & valeur)
 
@@ -2473,7 +2687,8 @@ Public Class rfxcom
                 tabletmp = domos_svc.table_composants.Select("composants_adresse = '" & adresse.ToString & "' AND composants_modele_norme = 'RFX'")
                 If tabletmp.GetUpperBound(0) >= 0 Then
                     '--- On attend au moins x seconde entre deux receptions ou si valeur<>valeurlastetat (donc pas le meme composant)
-                    If (DateTime.Now - Date.Parse(tabletmp(0)("composants_etatdate"))).TotalMilliseconds > domos_svc.rfx_tpsentrereponse Or valeur <> valeurlast Then
+                    'If (DateTime.Now - Date.Parse(tabletmp(0)("composants_etatdate"))).TotalMilliseconds > domos_svc.rfx_tpsentrereponse Or valeur <> valeurlast Then
+                    If (DateTime.Now - Date.Parse(tabletmp(0)("composants_etatdate"))).TotalMilliseconds > domos_svc.rfx_tpsentrereponse Then
                         If VB.Left(valeur, 4) <> "ERR:" Then 'si y a pas erreur d'acquisition
                             '--- Remplacement de , par .
                             valeur = STRGS.Replace(valeur, ",", ".")
@@ -2561,15 +2776,12 @@ Public Class rfxcom
                     End If
                 End If
             End If
+            adresselast = adresse
+            valeurlast = valeur
+            nblast = 1
         Catch ex As Exception
             WriteLog("ERR: Writeretour Exception : " & ex.Message)
         End Try
-        adresselast = adresse
-        valeurlast = valeur
-        nblast = 1
-        'Else
-        'nblast = 2
-        'End If
     End Sub
 
     'Public Sub WriteMessage(ByVal message As String, ByVal linefeed As Boolean)

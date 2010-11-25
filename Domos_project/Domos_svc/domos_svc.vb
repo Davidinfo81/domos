@@ -845,221 +845,258 @@ Public Class domos_svc
         '    8 : Valeurs de composant ayant changé mais < à précision (inchangé precision)
         '    9 : Divers
         '   10 : DEBUG
-
-        Dim dateheure As String = ""
-        Dim fichierlog As String = ""
-        Dim textemodifie As String = ""
-        Dim erreur_log As Integer = 1
-        Dim tabletemp() As DataRow
-
-        Try
-        	If not (texte Is Nothing) Then
-	            texte = texte.Replace("'", "")
-	            'si on doit loguer une erreur et pas en mode debug et config > 0
-	            ' : gestion de la table des erreurs 
-	            If niveau = "2" And STRGS.InStr("-10", niveau) <= 0 and logs_erreur_nb>0 and logs_erreur_duree>0 Then
-	                textemodifie = Left(texte, texte.Length - 4)
-	                'si c'est une erreur générale
-	                tabletemp = table_erreur.Select("texte = '" & textemodifie & "'")
-	                If tabletemp.GetLength(0) >= 1 Then
-	                    'on a déjà une erreur de ce type en memoire
-	                    If Date.Now.ToString("yyyy-MM-dd HH:mm:ss") > tabletemp(0)("datetime").ToString Then
-	                        'ca fait au moins x minutes qu'on a eu cette erreur, on supprime
-	                        tabletemp(0).Item("datetime") = DateAdd(DateInterval.Minute, logs_erreur_duree, DateTime.Now).ToString("yyyy-MM-dd HH:mm:ss")
-	                        tabletemp(0).Item("nombre") = 1
-	                        'tabletemp(0).Delete()
-	                    ElseIf CInt(tabletemp(0).Item("nombre").ToString) >= logs_erreur_nb Then
-	                        'ca fait moins de x minutes et + de logs_erreur_nb fois, on ne logue pas
-	                        tabletemp(0).Item("nombre") = CInt(tabletemp(0).Item("nombre").ToString) + 1
-	                        erreur_log = 0
-	                    Else
-	                        'ca fait moins de x minutes et - de logs_erreur_nb fois, on logue (repeat)
-	                        tabletemp(0).Item("nombre") = CInt(tabletemp(0).Item("nombre").ToString) + 1
-	                        If CInt(tabletemp(0).Item("nombre").ToString) < logs_erreur_nb Then
-	                            texte = texte & " (" & tabletemp(0).Item("nombre") & "x)"
-	                        Else
-	                            texte = texte & " (" & tabletemp(0).Item("nombre") & "x -> erreur multiple, on ne logue plus jusqu'à " & tabletemp(0)("datetime").ToString & ")"
-	                            'envoi d'un mail car erreur redondante
-	                            SendMessage("Erreur redondante", texte, 3)
-	                        End If
-	                    End If
-	                Else
-	                    'cet erreur n'est pas encore présente, on l'ajoute
-	                    Dim newRow As DataRow
-	                    newRow = table_erreur.NewRow()
-	                    newRow.Item("texte") = textemodifie
-	                    newRow.Item("nombre") = 1
-	                    newRow.Item("datetime") = DateAdd(DateInterval.Minute, logs_erreur_duree, DateTime.Now).ToString("yyyy-MM-dd HH:mm:ss")
-	                    table_erreur.Rows.Add(newRow)
-	                End If
-	            End If
-	        End If
-        Catch ex As Exception
-        	try
-	            ecrireevtlog("LOG: Exception Table_erreur : " & ex.ToString & " --> " & texte, 1, 109)
-                SendMessage("LOG: Exception Table_erreur", ex.ToString & " --> " & texte, 4)
-	            'si erreur de corruption : Réinitialisation de la gestion de la table des erreurs
-	            If STRGS.InStr("DataTable internal index is corrupted", ex.ToString) > 0 then
-					'logs_erreur_nb=0
-					table_erreur.dispose()
-					Dim x As New DataColumn
-					x = New DataColumn
-					x.ColumnName = "texte"
-					table_erreur.Columns.Add(x)
-					x = New DataColumn
-					x.ColumnName = "nombre"
-					table_erreur.Columns.Add(x)
-					x = New DataColumn
-					x.ColumnName = "datetime"
-					table_erreur.Columns.Add(x)
-					log("LOG : Error DataTable internal index is corrupted --> Réinitialisation de la table des erreurs",2)
-					SendMessage("LOG: ERR: DataTable internal index is corrupted", "LOG : Error DataTable internal index is corrupted --> Réinitialisation de la table des erreurs",2)
-	            End If
-            Catch ex2 As Exception
-                ecrireevtlog("LOG: Exception Table_erreur Exception : " & ex2.ToString, 1, 109)
-	        End Try
-        End Try
-        
-        try
-            'si on peut loguer ou si c'est un debug
-            If erreur_log = 1 and not (texte Is Nothing) Then
-                If niveau <> "-1" And niveau <> "-2" And STRGS.InStr("-" & log_niveau, niveau) > 0 Then
-                    fichierlog = install_dir & "logs\log_" & DateAndTime.Now.ToString("yyyyMMdd") & ".txt"
-                    dateheure = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
-                    If Not Directory.Exists(install_dir & "logs") Then
-                        Directory.CreateDirectory(install_dir & "logs")
-                    End If
-                    If log_dest = 0 Or log_dest = 2 Then
-                        domos_svc.EcrireFichier(fichierlog, dateheure & " " & niveau & " " & texte & Environment.NewLine())
-                    End If
-                    If (log_dest = 1 Or log_dest = 2) And mysql.connected Then
-                        texte = STRGS.Replace(texte, "'", "&#39;")
-                        texte = STRGS.Replace(texte, """", "&quot;")
-                        mysql.mysql_nonquery("INSERT INTO logs(logs_source,logs_description,logs_date) VALUES('" & niveau & "', '" & texte & "', '" & dateheure & "')")
-                    End If
-                End If
-                'Log dans les events logs / mail
-                Select Case niveau
-                    Case "-2" : SendMessage("Message", texte, 1)
-                    Case "-1" : ecrireevtlog(texte, 3, 100)
-                    Case "1"
-                        ecrireevtlog(texte, 1, 101)
-                        SendMessage("Erreur critique", texte, 2)
-                    Case "2" : SendMessage("Erreur", texte, 4)
-                    Case "3" : ecrireevtlog(texte, 3, 103)
-                    Case "4" : ecrireevtlog(texte, 3, 104)
-                End Select
-            End If
-        Catch ex As Exception
-            ecrireevtlog("LOG: Exception : " & ex.ToString & " --> " & texte, 1, 109)
-            SendMessage("LOG: Exception", ex.ToString & " --> " & texte, 2)
-        End Try
+        Dim y As Thread
+        Dim logaction As logclasse = New logclasse(texte, "", niveau)
+        y = New Thread(AddressOf logaction.actionlog)
+        y.Start()
     End Sub
 
-    Private Shared Sub ecrireevtlog(ByVal message As String, ByVal type As Integer, ByVal evtid As Integer)
-        'message = text to write to event log
-        'type = 1:error, 2:warning, 3:information 
-        Dim myEventLog = New EventLog()
-        Try
-            myEventLog.Source = "Domos"
-            Select Case type
-                Case 1 : myEventLog.WriteEntry(message, EventLogEntryType.Error, evtid)
-                Case 2 : myEventLog.WriteEntry(message, EventLogEntryType.Warning, evtid)
-                Case 3 : myEventLog.WriteEntry(message, EventLogEntryType.Information, evtid)
-            End Select
-            'Diagnostics.EventLog.WriteEntry("Domos", message)
-        Catch ex As Exception
-            log("LOG : EcrireEvtLog Execption : " & ex.ToString, 2)
-        End Try
-    End Sub
-
-    Private Shared Sub EcrireFichier(ByVal CheminFichier As String, ByVal Texte As String)
-        'ecrit texte dans le fichier CheminFichier
-        Dim FreeF As Integer
-        Try
-            FreeF = FreeFile()
-            Texte = Replace(Texte, vbLf, vbCrLf)
-            SyncLock lock_logfile
-            	FileOpen(FreeF, CheminFichier, OpenMode.Append)
-            	Print(FreeF, Texte)
-            	FileClose(FreeF)
-            End SyncLock
-        Catch ex As IOException
-            wait(500)
-            EcrireFichier(CheminFichier, Texte)
-        Catch ex As Exception
-            wait(500)
-            log("LOG : EcrireFichier Exception : " & Texte & " ::: " & ex.ToString, 2)
-        End Try
-    End Sub
-
-    Public Shared Sub SendMessage(ByVal subject As String, ByVal messageBody As String, ByVal niveau As Integer)
-    	'niveau : 
-    	'0=manuel
-    	'1=auto par Domos
-    	'2=erreur critique
-    	'3=erreur redondantes
-    	'4=erreurs
-    
-    	'mail_action :
-    	'0=desactive 
-    	'1=manuel 
-    	'2=manuel-auto 
-    	'3=manuel-auto-erreurcritique 
-    	'4=manuel-auto-erreurcritique-erreursredondante 
-    	'5=manuel-auto-erreurs
-    	
+    Public Shared Sub sendmessage(ByVal sujet As String, ByVal message As String, ByVal niveau As String)
         'envoi un email
-        Dim message As New MailMessage()
-        Dim client As New SmtpClient()
-        dim envoiemailautorise as boolean=true
-        Try
-        	'on verifie si on peut envoyer un mail
-        	If mail_from = "" or mail_smtp = "" or mail_to = "" Then envoiemailautorise = false
-        	If mail_action = 0 then envoiemailautorise = false
-        	If mail_action = 1 and niveau > 0 then envoiemailautorise = false
-        	If mail_action = 2 and niveau > 1 then envoiemailautorise = false
-        	If mail_action = 3 and niveau > 2 then envoiemailautorise = false
-        	If mail_action = 4 and niveau > 3 then envoiemailautorise = false
-        	If mail_action = 5 and niveau = 3 then envoiemailautorise = false 'car une erreur redondante est déjà envoyé voir fonction log
-        	
-            If envoiemailautorise Then
-                Dim fromAddress As String = mail_from
-                Dim toAddress As String = mail_to
-                Dim ccAddress As String = ""
-                Dim smtpserver As String = mail_smtp
-
-                'Set the sender's address
-                message.From = New MailAddress(fromAddress)
-
-                'Allow multiple "To" addresses to be separated by a semi-colon
-                If (toAddress.Trim.Length > 0) Then
-                    For Each addr As String In toAddress.Split(";"c)
-                        message.To.Add(New MailAddress(addr))
-                    Next
-                End If
-
-                'Allow multiple "Cc" addresses to be separated by a semi-colon
-                If (ccAddress.Trim.Length > 0) Then
-                    For Each addr As String In ccAddress.Split(";"c)
-                        message.CC.Add(New MailAddress(addr))
-                    Next
-                End If
-
-                'Set the subject and message body text
-                message.Subject = "[DOMOS] " & subject
-                message.Body = messageBody
-
-                'Set the SMTP server to be used to send the message
-                client.Host = smtpserver
-
-                'Send the e-mail message
-                client.Send(message)
-            End If
-        Catch ex As Exception
-            log("LOG : Send_message Execption : " & ex.ToString, 2)
-        End Try
+        'niveau : 
+        '0=manuel
+        '1=auto par Domos
+        '2=erreur critique
+        '3=erreur redondantes
+        '4=erreurs
+        Dim y As Thread
+        Dim logaction As logclasse = New logclasse(sujet, message, niveau)
+        y = New Thread(AddressOf logaction.actionsend)
+        y.Start()
     End Sub
+
+    'Public Shared Sub log(ByVal texte As String, ByVal niveau As String)
+    '    'log les infos dans un fichier texte et/ou sql
+    '    ' texte : string contenant le texte à logger
+    '    ' niveau : int contenant le type de log
+    '    '   -2 : uniquement mail
+    '    '   -1 : uniquement pour les eventslogs
+    '    '    0 : Programme : Lancement / Arrêt / redémarrage...
+    '    '    1 : Erreurs critiques : erreurs faisant ou pouvant planter le programme ou bloquant le fonctionnement
+    '    '    2 : Erreurs générales : erreurs de base : composant non trouvé...
+    '    '    3 : Messages reçues
+    '    '    4 : Lancement d'une macro/timer
+    '    '    5 : Actions d'une macro/timer
+    '    '    6 : Valeurs de composant ayant changé
+    '    '    7 : Valeurs de composant n'ayant pas changé (inchangé)
+    '    '    8 : Valeurs de composant ayant changé mais < à précision (inchangé precision)
+    '    '    9 : Divers
+    '    '   10 : DEBUG
+
+    '    Dim dateheure As String = ""
+    '    Dim fichierlog As String = ""
+    '    Dim textemodifie As String = ""
+    '    Dim erreur_log As Integer = 1
+    '    Dim tabletemp() As DataRow
+
+    '    Try
+    '    	If not (texte Is Nothing) Then
+    '         texte = texte.Replace("'", "")
+    '         'si on doit loguer une erreur et pas en mode debug et config > 0
+    '         ' : gestion de la table des erreurs 
+    '         If niveau = "2" And STRGS.InStr("-10", niveau) <= 0 and logs_erreur_nb>0 and logs_erreur_duree>0 Then
+    '             textemodifie = Left(texte, texte.Length - 4)
+    '             'si c'est une erreur générale
+    '             tabletemp = table_erreur.Select("texte = '" & textemodifie & "'")
+    '             If tabletemp.GetLength(0) >= 1 Then
+    '                 'on a déjà une erreur de ce type en memoire
+    '                 If Date.Now.ToString("yyyy-MM-dd HH:mm:ss") > tabletemp(0)("datetime").ToString Then
+    '                     'ca fait au moins x minutes qu'on a eu cette erreur, on supprime
+    '                     tabletemp(0).Item("datetime") = DateAdd(DateInterval.Minute, logs_erreur_duree, DateTime.Now).ToString("yyyy-MM-dd HH:mm:ss")
+    '                     tabletemp(0).Item("nombre") = 1
+    '                     'tabletemp(0).Delete()
+    '                 ElseIf CInt(tabletemp(0).Item("nombre").ToString) >= logs_erreur_nb Then
+    '                     'ca fait moins de x minutes et + de logs_erreur_nb fois, on ne logue pas
+    '                     tabletemp(0).Item("nombre") = CInt(tabletemp(0).Item("nombre").ToString) + 1
+    '                     erreur_log = 0
+    '                 Else
+    '                     'ca fait moins de x minutes et - de logs_erreur_nb fois, on logue (repeat)
+    '                     tabletemp(0).Item("nombre") = CInt(tabletemp(0).Item("nombre").ToString) + 1
+    '                     If CInt(tabletemp(0).Item("nombre").ToString) < logs_erreur_nb Then
+    '                         texte = texte & " (" & tabletemp(0).Item("nombre") & "x)"
+    '                     Else
+    '                         texte = texte & " (" & tabletemp(0).Item("nombre") & "x -> erreur multiple, on ne logue plus jusqu'à " & tabletemp(0)("datetime").ToString & ")"
+    '                         'envoi d'un mail car erreur redondante
+    '                         SendMessage("Erreur redondante", texte, 3)
+    '                     End If
+    '                 End If
+    '             Else
+    '                 'cet erreur n'est pas encore présente, on l'ajoute
+    '                 Dim newRow As DataRow
+    '                 newRow = table_erreur.NewRow()
+    '                 newRow.Item("texte") = textemodifie
+    '                 newRow.Item("nombre") = 1
+    '                 newRow.Item("datetime") = DateAdd(DateInterval.Minute, logs_erreur_duree, DateTime.Now).ToString("yyyy-MM-dd HH:mm:ss")
+    '                 table_erreur.Rows.Add(newRow)
+    '             End If
+    '         End If
+    '     End If
+    '    Catch ex As Exception
+    '    	try
+    '         ecrireevtlog("LOG: Exception Table_erreur : " & ex.ToString & " --> " & texte, 1, 109)
+    '            SendMessage("LOG: Exception Table_erreur", ex.ToString & " --> " & texte, 4)
+    '         'si erreur de corruption : Réinitialisation de la gestion de la table des erreurs
+    '         If STRGS.InStr("DataTable internal index is corrupted", ex.ToString) > 0 then
+    '	'logs_erreur_nb=0
+    '	table_erreur.dispose()
+    '	Dim x As New DataColumn
+    '	x = New DataColumn
+    '	x.ColumnName = "texte"
+    '	table_erreur.Columns.Add(x)
+    '	x = New DataColumn
+    '	x.ColumnName = "nombre"
+    '	table_erreur.Columns.Add(x)
+    '	x = New DataColumn
+    '	x.ColumnName = "datetime"
+    '	table_erreur.Columns.Add(x)
+    '	log("LOG : Error DataTable internal index is corrupted --> Réinitialisation de la table des erreurs",2)
+    '	SendMessage("LOG: ERR: DataTable internal index is corrupted", "LOG : Error DataTable internal index is corrupted --> Réinitialisation de la table des erreurs",2)
+    '         End If
+    '        Catch ex2 As Exception
+    '            ecrireevtlog("LOG: Exception Table_erreur Exception : " & ex2.ToString, 1, 109)
+    '     End Try
+    '    End Try
+
+    '    try
+    '        'si on peut loguer ou si c'est un debug
+    '        If erreur_log = 1 and not (texte Is Nothing) Then
+    '            If niveau <> "-1" And niveau <> "-2" And STRGS.InStr("-" & log_niveau, niveau) > 0 Then
+    '                fichierlog = install_dir & "logs\log_" & DateAndTime.Now.ToString("yyyyMMdd") & ".txt"
+    '                dateheure = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+    '                If Not Directory.Exists(install_dir & "logs") Then
+    '                    Directory.CreateDirectory(install_dir & "logs")
+    '                End If
+    '                If log_dest = 0 Or log_dest = 2 Then
+    '                    domos_svc.EcrireFichier(fichierlog, dateheure & " " & niveau & " " & texte & Environment.NewLine())
+    '                End If
+    '                If (log_dest = 1 Or log_dest = 2) And mysql.connected Then
+    '                    texte = STRGS.Replace(texte, "'", "&#39;")
+    '                    texte = STRGS.Replace(texte, """", "&quot;")
+    '                    mysql.mysql_nonquery("INSERT INTO logs(logs_source,logs_description,logs_date) VALUES('" & niveau & "', '" & texte & "', '" & dateheure & "')")
+    '                End If
+    '            End If
+    '            'Log dans les events logs / mail
+    '            Select Case niveau
+    '                Case "-2" : SendMessage("Message", texte, 1)
+    '                Case "-1" : ecrireevtlog(texte, 3, 100)
+    '                Case "1"
+    '                    ecrireevtlog(texte, 1, 101)
+    '                    SendMessage("Erreur critique", texte, 2)
+    '                Case "2" : SendMessage("Erreur", texte, 4)
+    '                Case "3" : ecrireevtlog(texte, 3, 103)
+    '                Case "4" : ecrireevtlog(texte, 3, 104)
+    '            End Select
+    '        End If
+    '    Catch ex As Exception
+    '        ecrireevtlog("LOG: Exception : " & ex.ToString & " --> " & texte, 1, 109)
+    '        SendMessage("LOG: Exception", ex.ToString & " --> " & texte, 2)
+    '    End Try
+    'End Sub
+
+    'Private Shared Sub ecrireevtlog(ByVal message As String, ByVal type As Integer, ByVal evtid As Integer)
+    '    'message = text to write to event log
+    '    'type = 1:error, 2:warning, 3:information 
+    '    Dim myEventLog = New EventLog()
+    '    Try
+    '        myEventLog.Source = "Domos"
+    '        Select Case type
+    '            Case 1 : myEventLog.WriteEntry(message, EventLogEntryType.Error, evtid)
+    '            Case 2 : myEventLog.WriteEntry(message, EventLogEntryType.Warning, evtid)
+    '            Case 3 : myEventLog.WriteEntry(message, EventLogEntryType.Information, evtid)
+    '        End Select
+    '        'Diagnostics.EventLog.WriteEntry("Domos", message)
+    '    Catch ex As Exception
+    '        log("LOG : EcrireEvtLog Execption : " & ex.ToString, 2)
+    '    End Try
+    'End Sub
+
+    'Private Shared Sub EcrireFichier(ByVal CheminFichier As String, ByVal Texte As String)
+    '    'ecrit texte dans le fichier CheminFichier
+    '    Dim FreeF As Integer
+    '    Try
+    '        FreeF = FreeFile()
+    '        Texte = Replace(Texte, vbLf, vbCrLf)
+    '        SyncLock lock_logfile
+    '        	FileOpen(FreeF, CheminFichier, OpenMode.Append)
+    '        	Print(FreeF, Texte)
+    '        	FileClose(FreeF)
+    '        End SyncLock
+    '    Catch ex As IOException
+    '        wait(500)
+    '        EcrireFichier(CheminFichier, Texte)
+    '    Catch ex As Exception
+    '        wait(500)
+    '        log("LOG : EcrireFichier Exception : " & Texte & " ::: " & ex.ToString, 2)
+    '    End Try
+    'End Sub
+
+    'Public Shared Sub SendMessage(ByVal subject As String, ByVal messageBody As String, ByVal niveau As Integer)
+    '	'niveau : 
+    '	'0=manuel
+    '	'1=auto par Domos
+    '	'2=erreur critique
+    '	'3=erreur redondantes
+    '	'4=erreurs
+
+    '	'mail_action :
+    '	'0=desactive 
+    '	'1=manuel 
+    '	'2=manuel-auto 
+    '	'3=manuel-auto-erreurcritique 
+    '	'4=manuel-auto-erreurcritique-erreursredondante 
+    '	'5=manuel-auto-erreurs
+
+    '    'envoi un email
+    '    Dim message As New MailMessage()
+    '    Dim client As New SmtpClient()
+    '    dim envoiemailautorise as boolean=true
+    '    Try
+    '    	'on verifie si on peut envoyer un mail
+    '    	If mail_from = "" or mail_smtp = "" or mail_to = "" Then envoiemailautorise = false
+    '    	If mail_action = 0 then envoiemailautorise = false
+    '    	If mail_action = 1 and niveau > 0 then envoiemailautorise = false
+    '    	If mail_action = 2 and niveau > 1 then envoiemailautorise = false
+    '    	If mail_action = 3 and niveau > 2 then envoiemailautorise = false
+    '    	If mail_action = 4 and niveau > 3 then envoiemailautorise = false
+    '    	If mail_action = 5 and niveau = 3 then envoiemailautorise = false 'car une erreur redondante est déjà envoyé voir fonction log
+
+    '        If envoiemailautorise Then
+    '            Dim fromAddress As String = mail_from
+    '            Dim toAddress As String = mail_to
+    '            Dim ccAddress As String = ""
+    '            Dim smtpserver As String = mail_smtp
+
+    '            'Set the sender's address
+    '            message.From = New MailAddress(fromAddress)
+
+    '            'Allow multiple "To" addresses to be separated by a semi-colon
+    '            If (toAddress.Trim.Length > 0) Then
+    '                For Each addr As String In toAddress.Split(";"c)
+    '                    message.To.Add(New MailAddress(addr))
+    '                Next
+    '            End If
+
+    '            'Allow multiple "Cc" addresses to be separated by a semi-colon
+    '            If (ccAddress.Trim.Length > 0) Then
+    '                For Each addr As String In ccAddress.Split(";"c)
+    '                    message.CC.Add(New MailAddress(addr))
+    '                Next
+    '            End If
+
+    '            'Set the subject and message body text
+    '            message.Subject = "[DOMOS] " & subject
+    '            message.Body = messageBody
+
+    '            'Set the SMTP server to be used to send the message
+    '            client.Host = smtpserver
+
+    '            'Send the e-mail message
+    '            client.Send(message)
+    '        End If
+    '    Catch ex As Exception
+    '        log("LOG : Send_message Execption : " & ex.ToString, 2)
+    '    End Try
+    'End Sub
 
     Public Shared Sub wait(ByVal msec As Integer)
         '100msec = 1 secondes
@@ -1434,6 +1471,7 @@ Public Class domos_svc
         Dim tabletemp() As DataRow
         Dim tabletemp2() As DataRow
         Dim dateettime As DateTime
+        'Dim date_pooling As Date
         Try
             dateettime = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
             tabletemp = table_composants.Select("composants_polling <> '0'")
@@ -1441,43 +1479,43 @@ Public Class domos_svc
                 For i = 0 To tabletemp.GetUpperBound(0)
                     If tabletemp(i)("timer") <= dateettime Then
                         '--- maj du timer du composant ---
-                        Dim date_pooling As Date
-                        date_pooling = DateAndTime.Now.AddSeconds(tabletemp(i)("composants_polling")) 'on initialise
-                        tabletemp(i)("timer") = date_pooling.ToString("yyyy-MM-dd HH:mm:ss")
+                        'date_pooling = DateAndTime.Now.AddSeconds(tabletemp(i)("composants_polling")) 'on initialise
+                        'tabletemp(i)("timer") = date_pooling.ToString("yyyy-MM-dd HH:mm:ss")
+                        tabletemp(i)("timer") = DateAndTime.Now.AddSeconds(tabletemp(i)("composants_polling")).ToString("yyyy-MM-dd HH:mm:ss")
                         '--- test pour savoir si un thread est deja lancé sur ce composant ---
                         SyncLock lock_tablethread
                             tabletemp2 = table_thread.Select("composant_id = '" & tabletemp(i)("composants_id") & "'")
                         End SyncLock
                         If Not IsNothing(tabletemp2) Then
-	                        If tabletemp2.GetUpperBound(0) < 0 Then
-	                            Select Case tabletemp(i)("composants_modele_nom").ToString() 'choix de l'action en fonction du modele
-	                                Case "DS18B20", "DS2423_A", "DS2423_B", "DS2406_capteur", "DS2406_relais" 'WIR ou WI2 : compteur, temperature, switch, relais
-	                                    Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "", "", "", "")
-	                                    y = New Thread(AddressOf ecrire.action)
-	                                    y.Name = "ecrire_" & tabletemp(i)("composants_id")
-	                                    thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
-	                                    y.Start()
-	                                Case "2267-2268", "2263-2264" 'PLC : MicroModule lampes ou MicroModule Appareils
-	                                    Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "STATUS_REQUEST", "", "", "")
-	                                    y = New Thread(AddressOf ecrire.action)
-	                                    y.Name = "ecrire_" & tabletemp(i)("composants_id")
-	                                    thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
-	                                    y.Start()
-	                                Case "ZIB_STA" 'ZIB : switch
-	                                    Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "STATUS_REQUEST", "", "", "")
-	                                    y = New Thread(AddressOf ecrire.action)
-	                                    y.Name = "ecrire_" & tabletemp(i)("composants_id")
-	                                    thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
-	                                    y.Start()
-	                                Case Else
-	                                    log("POL : Pas de fonction associé à " & tabletemp(i)("composants_modele_nom").ToString() & ":" & tabletemp(i)("composants_nom").ToString(), 2)
-	                            End Select
-	                        Else
-	                            log("POL : Un thread est déjà associé à " & tabletemp(i)("composants_nom").ToString(), 2)
-	                        End If
-			            Else
-			                log("POL : table_thread.select donne un objet vide", 2)
-			            End If
+                            If tabletemp2.GetUpperBound(0) < 0 Then
+                                Select Case tabletemp(i)("composants_modele_nom").ToString() 'choix de l'action en fonction du modele
+                                    Case "DS18B20", "DS2423_A", "DS2423_B", "DS2406_capteur", "DS2406_relais" 'WIR ou WI2 : compteur, temperature, switch, relais
+                                        Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "", "", "", "")
+                                        y = New Thread(AddressOf ecrire.action)
+                                        y.Name = "ecrire_" & tabletemp(i)("composants_id")
+                                        thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
+                                        y.Start()
+                                    Case "2267-2268", "2263-2264" 'PLC : MicroModule lampes ou MicroModule Appareils
+                                        Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "STATUS_REQUEST", "", "", "")
+                                        y = New Thread(AddressOf ecrire.action)
+                                        y.Name = "ecrire_" & tabletemp(i)("composants_id")
+                                        thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
+                                        y.Start()
+                                    Case "ZIB_STA" 'ZIB : switch
+                                        Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "STATUS_REQUEST", "", "", "")
+                                        y = New Thread(AddressOf ecrire.action)
+                                        y.Name = "ecrire_" & tabletemp(i)("composants_id")
+                                        thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
+                                        y.Start()
+                                    Case Else
+                                        log("POL : Pas de fonction associé à " & tabletemp(i)("composants_modele_nom").ToString() & ":" & tabletemp(i)("composants_nom").ToString(), 2)
+                                End Select
+                            Else
+                                log("POL : Un thread est déjà associé à " & tabletemp(i)("composants_nom").ToString(), 2)
+                            End If
+                        Else
+                            log("POL : table_thread.select donne un objet vide", 2)
+                        End If
                     End If
                 Next
             Else
@@ -2043,6 +2081,7 @@ Public Class domos_svc
         End Try
     End Sub
 
+    'classe pour ecrire sur les ports (PLC, 1-wire...)
     Private Class ECRIRE
         Private compid As Integer
         Private valeur As String = ""
@@ -2133,7 +2172,7 @@ Public Class domos_svc
 
                                         'verification si on a pas déjà un thread qui ecrit sur le bus sinon on boucle pour attendre WIR_timeout/10 = 5 sec par défaut
                                         SyncLock lock_tablethread
-											tblthread = table_thread.Select("norme='WIR' AND source='ECR_WIR' AND composant_id<>'" & compid & "'")
+                                            tblthread = table_thread.Select("norme='WIR' AND source='ECR_WIR' AND composant_id<>'" & compid & "'")
                                         End SyncLock
                                         While (tblthread.GetLength(0) > 0 And limite < (WIR_timeout / 10))
                                             wait(10)
@@ -2353,8 +2392,8 @@ Public Class domos_svc
                                             Else
                                                 log("ECR : ZIB : ecrit " & tabletmp(0)("composants_adresse") & "=" & valeur & "(" & err & ")", 5)
                                                 'modification de l'etat en memoire
-								                tabletmp(0)("composants_etat") = err 'valeur renvoyé par la fonction ecrire si OK
-								                tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
+                                                tabletmp(0)("composants_etat") = err 'valeur renvoyé par la fonction ecrire si OK
+                                                tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                                             End If
                                             wait(50) 'pause de 0.5sec pour libérer le bus correctement
                                         Else
@@ -2380,7 +2419,7 @@ Public Class domos_svc
             Catch ex As Exception
                 log("ECR: Exception Traitement : " & ex.ToString & " --> composant ID=" & compid, 2)
             End Try
-            
+
             Try
                 '--- suppresion du thread de la liste des threads lancés ---
                 SyncLock lock_tablethread
@@ -2400,194 +2439,237 @@ Public Class domos_svc
         End Sub
     End Class
 
-    'Private Class POL_DS18B20
-    '    Private _id As Integer
-    '    Public Sub New(ByVal composant_id As Integer)
-    '        _id = composant_id
-    '    End Sub
-    '    Public Sub Execute()
-    '        'Forcer le . 
-    '        Thread.CurrentThread.CurrentCulture = New CultureInfo("en-US")
-    '        My.Application.ChangeCulture("en-US")
+    'classe pour loguer/mailer
+    Private Class logclasse
 
-    '        Dim valeur As String
-    '        Dim valeur2 As Double
-    '        Dim wir1_2 As Boolean = False '= true si sur le deuxieme bus 1-wire
-    '        Dim tabletmp() As DataRow
-    '        Dim dateheure, Err As String
-    '        Try
-    '            tabletmp = table_composants.Select("composants_id = '" & _id & "'")
-    '            '--- test pour savoir si on est sur la premiere ou deuxieme clé WIR/WI2 ---
-    '            If tabletmp(0)("composants_modele_norme").ToString() = "WIR" Then
-    '                valeur = onewire.temp_get(tabletmp(0)("composants_adresse").ToString(), WIR_res)
-    '            Else
-    '                valeur = onewire2.temp_get(tabletmp(0)("composants_adresse").ToString(), WIR_res)
-    '            End If
-    '            If STRGS.Left(valeur, 4) <> "ERR:" Then 'si y a pas erreur d'acquisition, action
-    '                If (tabletmp(0)("composants_correction") <> "") Then
-    '                    valeur2 = Math.Round(CDbl(valeur) + CDbl(tabletmp(0)("composants_correction")), 1) 'correction de la temperature
-    '                Else
-    '                    valeur2 = Math.Round(CDbl(valeur), 1)
-    '                End If
-    '                'correction de l'etat si pas encore initialisé à une valeur
-    '                If tabletmp(0)("composants_etat").ToString() = "" Then tabletmp(0)("composants_etat") = 0
-    '                'comparaison du relevé avec le dernier etat
-    '                If valeur2.ToString <> tabletmp(0)("composants_etat").ToString() Then
-    '                    If domos_svc.lastetat And valeur2.ToString = tabletmp(0)("lastetat").ToString() Then
-    '                        domos_svc.log("POL : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur2 & "°C (inchangé lastetat)", 8)
-    '                        '--- Modification de la date dans la base SQL ---
-    '                        dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-    '                        Err = domos_svc.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-    '                        If Err <> "" Then log("SQL: table_comp_changed " & Err, 2)
-    '                    Else
-    '                        If IsNumeric(valeur2) Then
-    '                            'on vérifie que la valeur a changé de plus de composants_precision sinon inchangé
-    '                            'If (valeur2 + CDbl(tabletmp(0)("composants_precision"))).ToString >= tabletmp(0)("composants_etat").ToString() And (valeur2 - CDbl(tabletmp(0)("composants_precision"))).ToString <= tabletmp(0)("composants_etat").ToString() Then
-    '                            If (CDbl(valeur2) + CDbl(tabletmp(0)("composants_precision"))) >= CDbl(tabletmp(0)("composants_etat")) And (CDbl(valeur2) - CDbl(tabletmp(0)("composants_precision"))) <= CDbl(tabletmp(0)("composants_etat")) Then
-    '                                domos_svc.log("POL : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur2 & "°C (inchangé precision)", 8)
-    '                                '--- Modification de la date dans la base SQL ---
-    '                                dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-    '                                Err = domos_svc.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-    '                                If Err <> "" Then log("SQL: table_comp_changed " & Err, 2)
-    '                            Else
-    '                                domos_svc.log("POL : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur2 & "°C ", 6)
-    '                                '--- modification de l'etat du composant dans la table en memoire ---
-    '                                tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
-    '                                tabletmp(0)("composants_etat") = valeur2
-    '                                tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-    '                            End If
-    '                        Else
-    '                            domos_svc.log("POL : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur2 & "°C ", 6)
-    '                            '--- modification de l'etat du composant dans la table en memoire ---
-    '                            tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
-    '                            tabletmp(0)("composants_etat") = valeur2
-    '                            tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-    '                        End If
-    '                    End If
-    '                Else
-    '                    domos_svc.log("POL : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur2 & "°C (inchangé)", 7)
-    '                    '--- Modification de la date dans la base SQL ---
-    '                    dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-    '                    Err = domos_svc.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-    '                    If Err <> "" Then log("SQL: table_comp_changed " & Err, 2)
-    '                End If
-    '            Else
-    '                'erreur
-    '                domos_svc.log("POL : DS18B20 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur, 2)
-    '            End If
-    '            '--- suppresion du thread de la liste des thread lancé ---
-    '            tabletmp = table_thread.Select("composant_id = '" & _id & "'")
-    '            If tabletmp.GetUpperBound(0) >= 0 Then
-    '                tabletmp(0).Delete()
-    '            End If
-    '        Catch ex As Exception
-    '            '--- suppresion du thread de la liste des thread lancé ---
-    '            tabletmp = table_thread.Select("composant_id = '" & _id & "'")
-    '            If tabletmp.GetUpperBound(0) >= 0 Then
-    '                tabletmp(0).Delete()
-    '            End If
-    '            domos_svc.log("POL : DS18B20 " & ex.ToString, 2)
-    '        End Try
-    '    End Sub
-    'End Class
+        Private textetemp As String = ""
+        Private textetemp2 As String = ""
+        Private niveautemp As Integer = 2
+        Public Sub New(ByVal _texte As String, ByVal _texte2 As String, ByVal _niveau As Integer)
+            textetemp = _texte
+            textetemp2 = _texte2
+            niveautemp = _niveau
+        End Sub
+        Public Sub actionlog()
+            log(textetemp, niveautemp)
+        End Sub
+        Public Sub actionsend()
+            SendMessage(textetemp, textetemp2, niveautemp)
+        End Sub
+        Public Sub log(ByVal texte As String, ByVal niveau As Integer)
+            'log les infos dans un fichier texte et/ou sql
+            ' texte : string contenant le texte à logger
+            ' niveau : int contenant le type de log
+            '   -2 : uniquement mail
+            '   -1 : uniquement pour les eventslogs
+            '    0 : Programme : Lancement / Arrêt / redémarrage...
+            '    1 : Erreurs critiques : erreurs faisant ou pouvant planter le programme ou bloquant le fonctionnement
+            '    2 : Erreurs générales : erreurs de base : composant non trouvé...
+            '    3 : Messages reçues
+            '    4 : Lancement d'une macro/timer
+            '    5 : Actions d'une macro/timer
+            '    6 : Valeurs de composant ayant changé
+            '    7 : Valeurs de composant n'ayant pas changé (inchangé)
+            '    8 : Valeurs de composant ayant changé mais < à précision (inchangé precision)
+            '    9 : Divers
+            '   10 : DEBUG
 
-    'Private Class POL_DS2406_capteur
-    '    Private _id As Integer
-    '    Public Sub New(ByVal composant_id As Integer)
-    '        _id = composant_id
-    '    End Sub
-    '    Public Sub Execute()
-    '        'Forcer le . 
-    '        Thread.CurrentThread.CurrentCulture = New CultureInfo("en-US")
-    '        My.Application.ChangeCulture("en-US")
+            Dim dateheure As String = ""
+            Dim fichierlog As String = ""
+            Dim textemodifie As String = ""
+            Dim erreur_log As Integer = 1
+            Dim tabletemp() As DataRow
 
-    '        Dim valeur, valeur_etat, valeur_activite As String
-    '        Dim tabletmp() As DataRow
-    '        Try
-    '            tabletmp = table_composants.Select("composants_id = '" & _id & "'")
-    '            valeur = onewire.switch_get(tabletmp(0)("composants_adresse").ToString())
-    '            If STRGS.Left(valeur, 4) <> "ERR:" Then 'si y a pas erreur d'acquisition, action
-    '                '--- comparaison du relevé avec le dernier etat ---
-    '                valeur_etat = STRGS.Left(valeur, 1)
-    '                valeur_activite = STRGS.Right(valeur, 1)
-    '                If valeur_activite <> tabletmp(0)("composants_etat").ToString() Then
-    '                    domos_svc.log("POL DS2406_capteur : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur_activite & " ", 6)
-    '                    '--- modification de l'etat du composant dans la table en memoire ---
-    '                    tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
-    '                    tabletmp(0)("composants_etat") = valeur_activite
-    '                    tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-    '                Else
-    '                    domos_svc.log("POL DS2406_capteur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur_activite, 7)
-    '                End If
-    '            Else
-    '                'erreur
-    '                domos_svc.log("POL DS2406_capteur : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur, 2)
-    '            End If
-    '            '--- suppresion du thread de la liste des thread lancé ---
-    '            tabletmp = table_thread.Select("composant_id = '" & _id & "'")
-    '            If tabletmp.GetUpperBound(0) >= 0 Then
-    '                tabletmp(0).Delete()
-    '            End If
-    '        Catch ex As Exception
-    '            '--- suppresion du thread de la liste des thread lancé ---
-    '            tabletmp = table_thread.Select("composant_id = '" & _id & "'")
-    '            If tabletmp.GetUpperBound(0) >= 0 Then
-    '                tabletmp(0).Delete()
-    '            End If
-    '            domos_svc.log("POL : DS2406_capteur " & ex.ToString, 2)
-    '        End Try
+            Try
+                If Not (texte Is Nothing) Then
+                    texte = texte.Replace("'", "")
+                    'si on doit loguer une erreur et pas en mode debug et config > 0
+                    ' : gestion de la table des erreurs 
+                    If niveau = "2" And STRGS.InStr("-10", niveau) <= 0 And logs_erreur_nb > 0 And logs_erreur_duree > 0 Then
+                        textemodifie = Left(texte, texte.Length - 4)
+                        'si c'est une erreur générale
+                        tabletemp = table_erreur.Select("texte = '" & textemodifie & "'")
+                        If tabletemp.GetLength(0) >= 1 Then
+                            'on a déjà une erreur de ce type en memoire
+                            If Date.Now.ToString("yyyy-MM-dd HH:mm:ss") > tabletemp(0)("datetime").ToString Then
+                                'ca fait au moins x minutes qu'on a eu cette erreur, on supprime
+                                tabletemp(0).Item("datetime") = DateAdd(DateInterval.Minute, logs_erreur_duree, DateTime.Now).ToString("yyyy-MM-dd HH:mm:ss")
+                                tabletemp(0).Item("nombre") = 1
+                                'tabletemp(0).Delete()
+                            ElseIf CInt(tabletemp(0).Item("nombre").ToString) >= logs_erreur_nb Then
+                                'ca fait moins de x minutes et + de logs_erreur_nb fois, on ne logue pas
+                                tabletemp(0).Item("nombre") = CInt(tabletemp(0).Item("nombre").ToString) + 1
+                                erreur_log = 0
+                            Else
+                                'ca fait moins de x minutes et - de logs_erreur_nb fois, on logue (repeat)
+                                tabletemp(0).Item("nombre") = CInt(tabletemp(0).Item("nombre").ToString) + 1
+                                If CInt(tabletemp(0).Item("nombre").ToString) < logs_erreur_nb Then
+                                    texte = texte & " (" & tabletemp(0).Item("nombre") & "x)"
+                                Else
+                                    texte = texte & " (" & tabletemp(0).Item("nombre") & "x -> erreur multiple, on ne logue plus jusqu'à " & tabletemp(0)("datetime").ToString & ")"
+                                    'envoi d'un mail car erreur redondante
+                                    SendMessage("Erreur redondante", texte, 3)
+                                End If
+                            End If
+                        Else
+                            'cet erreur n'est pas encore présente, on l'ajoute
+                            Dim newRow As DataRow
+                            newRow = table_erreur.NewRow()
+                            newRow.Item("texte") = textemodifie
+                            newRow.Item("nombre") = 1
+                            newRow.Item("datetime") = DateAdd(DateInterval.Minute, logs_erreur_duree, DateTime.Now).ToString("yyyy-MM-dd HH:mm:ss")
+                            table_erreur.Rows.Add(newRow)
+                        End If
+                    End If
+                End If
+            Catch ex As Exception
+                Try
+                    ecrireevtlog("LOG: Exception Table_erreur : " & ex.ToString & " --> " & texte, 1, 109)
+                    SendMessage("LOG: Exception Table_erreur", ex.ToString & " --> " & texte, 4)
+                    'si erreur de corruption : Réinitialisation de la gestion de la table des erreurs
+                    If STRGS.InStr("DataTable internal index is corrupted", ex.ToString) > 0 Then
+                        'logs_erreur_nb=0
+                        table_erreur.Dispose()
+                        Dim x As New DataColumn
+                        x = New DataColumn
+                        x.ColumnName = "texte"
+                        table_erreur.Columns.Add(x)
+                        x = New DataColumn
+                        x.ColumnName = "nombre"
+                        table_erreur.Columns.Add(x)
+                        x = New DataColumn
+                        x.ColumnName = "datetime"
+                        table_erreur.Columns.Add(x)
+                        log("LOG : Error DataTable internal index is corrupted --> Réinitialisation de la table des erreurs", 2)
+                        SendMessage("LOG: ERR: DataTable internal index is corrupted", "LOG : Error DataTable internal index is corrupted --> Réinitialisation de la table des erreurs", 2)
+                    End If
+                Catch ex2 As Exception
+                    ecrireevtlog("LOG: Exception Table_erreur Exception : " & ex2.ToString, 1, 109)
+                End Try
+            End Try
 
-    '    End Sub
-    'End Class
+            Try
+                'si on peut loguer ou si c'est un debug
+                If erreur_log = 1 And Not (texte Is Nothing) Then
+                    If niveau <> "-1" And niveau <> "-2" And STRGS.InStr("-" & log_niveau, niveau) > 0 Then
+                        fichierlog = install_dir & "logs\log_" & DateAndTime.Now.ToString("yyyyMMdd") & ".txt"
+                        dateheure = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                        If Not Directory.Exists(install_dir & "logs") Then
+                            Directory.CreateDirectory(install_dir & "logs")
+                        End If
+                        If log_dest = 0 Or log_dest = 2 Then
+                            EcrireFichier(fichierlog, dateheure & " " & niveau & " " & texte & Environment.NewLine())
+                        End If
+                        If (log_dest = 1 Or log_dest = 2) And mysql.connected Then
+                            texte = STRGS.Replace(texte, "'", "&#39;")
+                            texte = STRGS.Replace(texte, """", "&quot;")
+                            mysql.mysql_nonquery("INSERT INTO logs(logs_source,logs_description,logs_date) VALUES('" & niveau & "', '" & texte & "', '" & dateheure & "')")
+                        End If
+                    End If
+                    'Log dans les events logs / mail
+                    Select Case niveau
+                        Case "-2" : SendMessage("Message", texte, 1)
+                        Case "-1" : ecrireevtlog(texte, 3, 100)
+                        Case "1"
+                            ecrireevtlog(texte, 1, 101)
+                            SendMessage("Erreur critique", texte, 2)
+                        Case "2" : SendMessage("Erreur", texte, 4)
+                        Case "3" : ecrireevtlog(texte, 3, 103)
+                        Case "4" : ecrireevtlog(texte, 3, 104)
+                    End Select
+                End If
+            Catch ex As Exception
+                ecrireevtlog("LOG: Exception : " & ex.ToString & " --> " & texte, 1, 109)
+                SendMessage("LOG: Exception", ex.ToString & " --> " & texte, 2)
+            End Try
+        End Sub
+        Public Sub ecrireevtlog(ByVal message As String, ByVal type As Integer, ByVal evtid As Integer)
+            'message = text to write to event log
+            'type = 1:error, 2:warning, 3:information 
+            Dim myEventLog = New EventLog()
+            Try
+                myEventLog.Source = "Domos"
+                Select Case type
+                    Case 1 : myEventLog.WriteEntry(message, EventLogEntryType.Error, evtid)
+                    Case 2 : myEventLog.WriteEntry(message, EventLogEntryType.Warning, evtid)
+                    Case 3 : myEventLog.WriteEntry(message, EventLogEntryType.Information, evtid)
+                End Select
+                'Diagnostics.EventLog.WriteEntry("Domos", message)
+            Catch ex As Exception
+                log("LOG : EcrireEvtLog Execption : " & ex.ToString, 2)
+            End Try
+        End Sub
+        Public Sub EcrireFichier(ByVal CheminFichier As String, ByVal Texte As String)
+            'ecrit texte dans le fichier CheminFichier
+            Dim FreeF As Integer
+            Try
+                FreeF = FreeFile()
+                Texte = Replace(Texte, vbLf, vbCrLf)
+                SyncLock lock_logfile
+                    FileOpen(FreeF, CheminFichier, OpenMode.Append)
+                    Print(FreeF, Texte)
+                    FileClose(FreeF)
+                End SyncLock
+            Catch ex As IOException
+                wait(500)
+                EcrireFichier(CheminFichier, Texte)
+            Catch ex As Exception
+                wait(500)
+                log("LOG : EcrireFichier Exception : " & Texte & " ::: " & ex.ToString, 2)
+            End Try
+        End Sub
+        Public Sub SendMessage(ByVal subject As String, ByVal messageBody As String, ByVal niveau As Integer)
+            'envoi un email
+            Dim message As New MailMessage()
+            Dim client As New SmtpClient()
+            Dim envoiemailautorise As Boolean = True
+            Try
+                'on verifie si on peut envoyer un mail
+                If mail_from = "" Or mail_smtp = "" Or mail_to = "" Then envoiemailautorise = False
+                If mail_action = 0 Then envoiemailautorise = False
+                If mail_action = 1 And niveau > 0 Then envoiemailautorise = False
+                If mail_action = 2 And niveau > 1 Then envoiemailautorise = False
+                If mail_action = 3 And niveau > 2 Then envoiemailautorise = False
+                If mail_action = 4 And niveau > 3 Then envoiemailautorise = False
+                If mail_action = 5 And niveau = 3 Then envoiemailautorise = False 'car une erreur redondante est déjà envoyé voir fonction log
 
-    'Private Class POL_DS2423
-    '    Private _id As Integer
-    '    Private _AorB As Boolean
-    '    Public Sub New(ByVal composant_id As Integer, ByVal AorB As Boolean)
-    '        _id = composant_id
-    '        _AorB = AorB
-    '    End Sub
-    '    Public Sub Execute()
-    '        'Forcer le . 
-    '        Thread.CurrentThread.CurrentCulture = New CultureInfo("en-US")
-    '        My.Application.ChangeCulture("en-US")
+                If envoiemailautorise Then
+                    Dim fromAddress As String = mail_from
+                    Dim toAddress As String = mail_to
+                    Dim ccAddress As String = ""
+                    Dim smtpserver As String = mail_smtp
 
-    '        Dim valeur As String
-    '        Dim tabletmp() As DataRow
-    '        Try
-    '            tabletmp = table_composants.Select("composants_id = '" & _id & "'")
-    '            valeur = onewire.counter(tabletmp(0)("composants_adresse").ToString(), _AorB)
-    '            If STRGS.Left(valeur, 4) <> "ERR:" Then 'si y a pas erreur d'acquisition, action
-    '                '--- comparaison du relevé avec le dernier etat ---
-    '                If valeur <> tabletmp(0)("composants_etat").ToString() Then
-    '                    domos_svc.log("POL DS2423 : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur & " ", 6)
-    '                    '--- modification de l'etat du composant dans la table en memoire ---
-    '                    tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
-    '                    tabletmp(0)("composants_etat") = valeur
-    '                    tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
+                    'Set the sender's address
+                    message.From = New MailAddress(fromAddress)
 
-    '                Else
-    '                    domos_svc.log("POL DS2423 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur, 7)
-    '                End If
-    '            Else
-    '                'erreur
-    '                domos_svc.log("POL DS2423 : " & tabletmp(0)("composants_nom").ToString() & ":" & tabletmp(0)("composants_adresse").ToString() & " : " & valeur, 2)
-    '            End If
-    '            '--- suppresion du thread de la liste des thread lancé ---
-    '            tabletmp = table_thread.Select("composant_id = '" & _id & "'")
-    '            If tabletmp.GetUpperBound(0) >= 0 Then
-    '                tabletmp(0).Delete()
-    '            End If
-    '        Catch ex As Exception
-    '            '--- suppresion du thread de la liste des thread lancé ---
-    '            tabletmp = table_thread.Select("composant_id = '" & _id & "'")
-    '            If tabletmp.GetUpperBound(0) >= 0 Then
-    '                tabletmp(0).Delete()
-    '            End If
-    '            domos_svc.log("POL : DS2423 " & ex.ToString, 2)
-    '        End Try
+                    'Allow multiple "To" addresses to be separated by a semi-colon
+                    If (toAddress.Trim.Length > 0) Then
+                        For Each addr As String In toAddress.Split(";"c)
+                            message.To.Add(New MailAddress(addr))
+                        Next
+                    End If
 
-    '    End Sub
-    'End Class
+                    'Allow multiple "Cc" addresses to be separated by a semi-colon
+                    If (ccAddress.Trim.Length > 0) Then
+                        For Each addr As String In ccAddress.Split(";"c)
+                            message.CC.Add(New MailAddress(addr))
+                        Next
+                    End If
+
+                    'Set the subject and message body text
+                    message.Subject = "[DOMOS] " & subject
+                    message.Body = messageBody
+
+                    'Set the SMTP server to be used to send the message
+                    client.Host = smtpserver
+
+                    'Send the e-mail message
+                    client.Send(message)
+                End If
+            Catch ex As Exception
+                log("LOG : Send_message Execption : " & ex.ToString, 2)
+            End Try
+        End Sub
+    End Class
 
 End Class

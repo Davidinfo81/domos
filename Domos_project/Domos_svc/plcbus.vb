@@ -6,6 +6,7 @@ Public Class plcbus
     Private port_ouvert As Boolean = False
     Private ackreceived As Boolean = False
     Private port_name As String = ""
+    'Private table_ack As New DataTable
 
     Dim com_to_hex As New Dictionary(Of String, String)
     Dim hex_to_com As New Dictionary(Of String, String)
@@ -73,6 +74,25 @@ Public Class plcbus
         hex_to_com.Add(29, "GetOnlyOnIdPulse")
         hex_to_com.Add(30, "ReportAllIdPulse3Phase")
         hex_to_com.Add(31, "ReportOnlyOnIdPulse3Phase")
+
+        '---------- Creation table des acks ----------
+        'table_ack.Dispose()
+        'Dim x As New DataColumn
+        'x = New DataColumn
+        'x.ColumnName = "adresse"
+        'table_ack.Columns.Add(x)
+        'x = New DataColumn
+        'x.ColumnName = "ordre"
+        'table_ack.Columns.Add(x)
+        'x = New DataColumn
+        'x.ColumnName = "data1"
+        'table_ack.Columns.Add(x)
+        'x = New DataColumn
+        'x.ColumnName = "data2"
+        'table_ack.Columns.Add(x)
+        'x = New DataColumn
+        'x.ColumnName = "datetime"
+        'table_ack.Columns.Add(x)
 
     End Sub
 
@@ -201,6 +221,7 @@ Public Class plcbus
         'data1 et 2, voir description des actions plus haut ou doc plcbus
         Dim _adresse = 0
         Dim _cmd = 0
+        'Dim tblack() As DataRow
 
         If port_ouvert Then
             Dim usercode = &HD1 'D1
@@ -219,22 +240,37 @@ Public Class plcbus
             Try
                 'ecriture sur le port
                 port.Write(donnee, 0, donnee.Length)
-                'test si on recoit le ack
-                'Dim nbtest As Integer = 0
-                'While nbtest < 10
-                '    If ackreceived Then 'ack recu on sort
-                '        ackreceived = False
-                '        nbtest = 100
-                '    Else
-                '        nbtest = nbtest + 1
-                '        Domos.wait(20) 'on attend 0.2s
-                '    End If
-                'End While
-                'If nbtest = 100 Then
-                '    Return "ecrit : " & adresse & " --> " & hex_to_com(donnee(4)) & "-" & data1 & "-" & data2
+
+                'gestion des acks
+                If Not attente_ack() Then
+                    'pas de ack, on relance l ordre
+                    domos_svc.log("PLC : plc_ecrire : Pas de Ack -> resend : adresse:" & adresse & " commande:" & commande & "-" & data1 & "-" & data2, 9)
+                    port.Write(donnee, 0, donnee.Length)
+                    If Not attente_ack() Then
+                        'pas de ack > NOK
+                        Return ("ERR: plc_ecrire : Pas de Ack * 2 --> adresse:" & adresse & " commande:" & commande & "-" & data1 & "-" & data2)
+                    End If
+                End If
+                ''gestion de la table des acks
+                'tblack = table_ack.Select("adresse = '" & adresse & "'")
+                'If tblack.GetLength(0) = 0 Then
+                '    'pas encore de ack en attente, on ajoute
+                '    Dim newRow As DataRow
+                '    newRow = table_ack.NewRow()
+                '    newRow.Item("adresse") = adresse
+                '    newRow.Item("ordre") = commande
+                '    newRow.Item("data1") = data1
+                '    newRow.Item("data2") = data2
+                '    newRow.Item("datetime") = DateAdd(DateInterval.Second, 5, Now).ToString("yyyy-MM-dd HH:mm:ss")
+                '    newRow.Item("nombre") = 1
+                '    table_ack.Rows.Add(newRow)
                 'Else
-                '    Return "ERR: PLC : pas de ack de : " & adresse & " --> " & hex_to_com(donnee(4)) & "-" & data1 & "-" & data2
+                '    'deja un ack en attente, on incremente
+                '    tblack(0).Item("nombre") = CInt(tblack(0).Item("nombre")) + 1
                 'End If
+
+
+
             Catch ex As Exception
                 Return ("ERR: plc_ecrire : " & ex.Message & " --> adresse:" & adresse & " commande:" & commande & "-" & data1 & "-" & data2)
             End Try
@@ -251,6 +287,21 @@ Public Class plcbus
             Return ("ERR: Port fermé")
         End If
 
+    End Function
+
+    Private Function attente_ack() As Boolean
+        'test si on recoit le ack
+        Dim nbtest As Integer = 0
+        While nbtest < 20
+            If ackreceived Then 'ack recu on sort
+                ackreceived = False
+                nbtest = 100
+            Else
+                nbtest = nbtest + 1
+                domos_svc.wait(10) 'on attend 0.1s
+            End If
+        End While
+        If nbtest = 100 Then Return True Else Return False
     End Function
 
     Private Sub DataReceived(ByVal sender As Object, ByVal e As SerialDataReceivedEventArgs)
@@ -330,10 +381,10 @@ Public Class plcbus
                                         If err <> "" Then domos_svc.log("PLC: inchange precision " & err, 8)
                                     End If
                                 Else
-                                    domos_svc.log("PLC: Pas de composant pour cette adresse : " & plcbus_adresse & " : " & valeur, 2)
+                                    domos_svc.log("PLC : Pas de composant pour cette adresse : " & plcbus_adresse & " : " & valeur, 2)
                                 End If
                             Catch ex As Exception
-                                domos_svc.log("PLC: ERROR acces table_composants : " & ex.Message, 2)
+                                domos_svc.log("PLC : ERROR acces table_composants : " & ex.Message, 2)
                             End Try
 
                         End If
