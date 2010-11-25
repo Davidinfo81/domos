@@ -186,54 +186,47 @@ Public Class rfxcom
         Dim cmd() As Byte = {commande, commande2}
         Dim message As String = ""
         Try
-            If commande2 = MODEB32 Then
-                protocol = MODEB32
-                message = "Init cmd to receiver => F0" & VB.Right("0" & Hex(MODEB32), 2) & " Mode: 32 bit"
-            End If
-            If commande2 = MODEVAR Then
-                protocol = MODEVAR
-                message = "Init cmd to receiver => F0" & VB.Right("0" & Hex(MODEVAR), 2) & " Mode: Variable length mode"
-            End If
-            If commande2 = MODEKOP Then
-                protocol = MODEVAR
-                message = "Init cmd to receiver => F0" & VB.Right("0" & Hex(MODEKOP), 2) & " Mode: 24 bit KOPPLA"
-            End If
-            If commande2 = MODEARC Then
-                protocol = MODEARC
-                message = "Init cmd to receiver => F0" & VB.Right("0" & Hex(MODEARC), 2) & "Mode: Arc"
-            End If
-            If commande2 = MODEHS Then
-                protocol = MODEHS
-                message = "Init cmd to receiver => F0" & VB.Right("0" & Hex(MODEHS), 2) & "Mode: RFXCOM-HS plugin mode"
-            End If
-            If commande2 = MODEVISONIC Then
-                protocol = MODEVISONIC
-                message = "Init cmd to receiver => F0" & VB.Right("0" & Hex(MODEVISONIC), 2) & "Mode: Visonic only"
-            End If
-            If commande2 = MODENOXLAT Then
-                protocol = MODENOXLAT
-                message = "Init cmd to receiver => F0" & VB.Right("0" & Hex(MODENOXLAT), 2) & "Mode: Visonic & Variable mode"
-            End If
-            If commande2 = MODEBD Then message = "Init cmd to receiver => F0" & VB.Right("0" & Hex(MODEBD), 2) & "Mode: Bd"
-            If commande2 = MODEVISAUX Then message = "Init cmd to receiver => F0" & VB.Right("0" & Hex(MODEVISAUX), 2) & "Mode: Visionic AUX"
-
-            If commande2 = DISKOP Then message = "Disable Koppla RF => F0" & VB.Right("0" & Hex(DISKOP), 2)
-            If commande2 = DISX10 Then message = "Disable X10 RF => F0" & VB.Right("0" & Hex(DISX10), 2)
-            If commande2 = DISARC Then message = "Disable ARC RF => F0" & VB.Right("0" & Hex(DISARC), 2)
-            If commande2 = DISOREGON Then message = "Disable Oregon RF => F0" & VB.Right("0" & Hex(DISOREGON), 2)
-            If commande2 = DISATI Then message = "Disable ATI Wonder RF => F0" & VB.Right("0" & Hex(DISATI), 2)
-            If commande2 = DISHE Then message = "Disable HomeEasy RF => F0" & VB.Right("0" & Hex(DISHE), 2)
-            If commande2 = DISVIS Then message = "Disable Visonic RF => F0" & VB.Right("0" & Hex(DISVIS), 2)
-
-            If commande2 = ENALL Then message = "Enable ALL RF => F0" & VB.Right("0" & Hex(ENALL), 2)
-
-            If commande2 = SWVERS Then
-                maxticks = 0
-                firstbyte = True
-                waitforack = True
-                vresponse = True
-                message = "Version request to receiver => F0" & VB.Right("0" & Hex(SWVERS), 2)
-            End If
+        	Select Case commande2
+        		Case MODEB32
+	                protocol = MODEB32
+	                message = "Init cmd to receiver => F0" & VB.Right("0" & Hex(MODEB32), 2) & " Mode: 32 bit"
+	            Case MODEVAR
+	                protocol = MODEVAR
+	                message = "Init cmd to receiver => F0" & VB.Right("0" & Hex(MODEVAR), 2) & " Mode: Variable length mode"
+	            Case MODEKOP
+	                protocol = MODEKOP
+	                message = "Init cmd to receiver => F0" & VB.Right("0" & Hex(MODEKOP), 2) & " Mode: 24 bit KOPPLA"
+	            Case MODEARC
+	                protocol = MODEARC
+	                message = "Init cmd to receiver => F0" & VB.Right("0" & Hex(MODEARC), 2) & "Mode: Arc"
+	            Case MODEHS
+	                protocol = MODEHS
+	                message = "Init cmd to receiver => F0" & VB.Right("0" & Hex(MODEHS), 2) & "Mode: RFXCOM-HS plugin mode"
+	            Case MODEVISONIC
+	                protocol = MODEVISONIC
+	                message = "Init cmd to receiver => F0" & VB.Right("0" & Hex(MODEVISONIC), 2) & "Mode: Visonic only"
+	            Case MODENOXLAT
+	                protocol = MODENOXLAT
+	                message = "Init cmd to receiver => F0" & VB.Right("0" & Hex(MODENOXLAT), 2) & "Mode: Visonic & Variable mode"
+	            Case MODEBD : message = "Init cmd to receiver => F0" & VB.Right("0" & Hex(MODEBD), 2) & "Mode: Bd"
+	            Case MODEVISAUX : message = "Init cmd to receiver => F0" & VB.Right("0" & Hex(MODEVISAUX), 2) & "Mode: Visionic AUX"
+				Case DISKOP : message = "Disable Koppla RF => F0" & VB.Right("0" & Hex(DISKOP), 2)
+	            Case DISX10 : message = "Disable X10 RF => F0" & VB.Right("0" & Hex(DISX10), 2)
+	            Case DISARC : message = "Disable ARC RF => F0" & VB.Right("0" & Hex(DISARC), 2)
+	            Case DISOREGON : message = "Disable Oregon RF => F0" & VB.Right("0" & Hex(DISOREGON), 2)
+	            Case DISATI : message = "Disable ATI Wonder RF => F0" & VB.Right("0" & Hex(DISATI), 2)
+	            Case DISHE : message = "Disable HomeEasy RF => F0" & VB.Right("0" & Hex(DISHE), 2)
+	            Case DISVIS : message = "Disable Visonic RF => F0" & VB.Right("0" & Hex(DISVIS), 2)
+				Case DISSOMFY : message = "Disable Somfy RF => F0" & VB.Right("0" & Hex(DISSOMFY), 2)
+	            Case ENALL : message = "Enable ALL RF => F0" & VB.Right("0" & Hex(ENALL), 2)
+	            Case SWVERS
+	                maxticks = 0
+	                firstbyte = True
+	                waitforack = True
+	                vresponse = True
+	                message = "Version request to receiver => F0" & VB.Right("0" & Hex(SWVERS), 2)
+            End Select
+            
             If tcp Then
                 stream.Write(cmd, 0, cmd.Length)
             Else
