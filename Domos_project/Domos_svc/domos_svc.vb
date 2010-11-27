@@ -26,7 +26,7 @@ Public Class domos_svc
     Public Shared Port_PLC, Port_X10, Port_RFX, Port_WIR, Port_WI2, socket_ip, WIR_adaptername As String
     Public Shared PLC_timeout, X10_timeout, Action_timeout, rfx_tpsentrereponse, socket_port, lastetat, WIR_res As Integer
     Public Shared WIR_timeout, ZIB_timeout, TSK_timeout, heure_coucher_correction, heure_lever_correction As Integer
-    Public Shared RFX_ignoreadresse, ZIB_ignoreadresse, PLC_triphase As Integer
+    Public Shared RFX_ignoreadresse, ZIB_ignoreadresse, PLC_triphase As Boolean
     Public Shared logs_erreur_nb, logs_erreur_duree As Integer
     Public Shared gps_longitude, gps_latitude, mail_smtp, mail_from, mail_to As String
     Public Shared mail_action as integer
@@ -112,9 +112,9 @@ Public Class domos_svc
         logs_erreur_nb = 0
         logs_erreur_duree = 60
 		mail_action = 0
-        RFX_ignoreadresse = 0
-        ZIB_ignoreadresse = 0
-        PLC_triphase = 0
+        RFX_ignoreadresse = False
+        ZIB_ignoreadresse = False
+        PLC_triphase = False
 
         svc_start()
     End Sub
@@ -1511,10 +1511,10 @@ Public Class domos_svc
                                         y.Start()
                                     Case "fastpooling" 'PLC : composant fastpooling
                                         If PLC_triphase Then
-                                            Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "GetOnlyOnIdPulse", "", "", "")
+                                            Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "ReportOnlyOnIdPulse3Phase", "", "", "")
                                             y = New Thread(AddressOf ecrire.action)
                                         Else
-                                            Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "ReportOnlyOnIdPulse3Phase", "", "", "")
+                                            Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "GetOnlyOnIdPulse", "", "", "")
                                             y = New Thread(AddressOf ecrire.action)
                                         End If
                                         y.Name = "ecrire_" & tabletemp(i)("composants_id")
@@ -2153,7 +2153,7 @@ Public Class domos_svc
                                             End SyncLock
                                             If valeur2 = "" Then valeur2 = 0
                                             If valeur3 = "" Then valeur3 = 0
-                                            If valeur = "STATUS_REQUEST" Or valeur = "GetOnlyOnIdPulse" Or valeur <> "ReportOnlyOnIdPulse3Phase" Then
+                                            If valeur = "STATUS_REQUEST" Or valeur = "GetOnlyOnIdPulse" Or valeur = "ReportOnlyOnIdPulse3Phase" Then
                                                 log("DBG: ECR : PLC : ecrit " & tabletmp(0)("composants_adresse") & " : " & valeur, 10)
                                             Else
                                                 log("ECR : PLC : ecrit " & tabletmp(0)("composants_adresse") & " : " & valeur & " " & valeur2 & "-" & valeur3, 5)
@@ -2162,7 +2162,11 @@ Public Class domos_svc
                                             If err <> "" Then
                                                 'modification de l'etat en memoire
                                                 tabletmp(0)("composants_etat") = err 'valeur renvoyé par la fonction ecrire si OK
-                                                tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
+                                                tabletmp(0)("composants_etatdate") = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                                            Else
+                                                'pas de retour, on met à jour la date
+                                                err = mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss") & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
+                                                If err <> "" Then log("ECR : PLC : UpdateSQL date : " & err, 2)
                                             End If
                                             'If STRGS.Left(err, 4) = "ERR:" Then
                                             '    log("ECR : PLC : " & err, 2)
@@ -2221,7 +2225,7 @@ Public Class domos_svc
                                                 Dim wirvaleur, wirvaleur_etat, wirvaleur_activite As String
                                                 Dim wirvaleur2 As Double
                                                 Dim wirdateheure As String
-                                                wirdateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
+                                                wirdateheure = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
 
                                                 'traitement du DS18B20
                                                 If modelewir = "DS18B20" Then
@@ -2420,7 +2424,7 @@ Public Class domos_svc
                                                 log("ECR : ZIB : ecrit " & tabletmp(0)("composants_adresse") & "=" & valeur & "(" & err & ")", 5)
                                                 'modification de l'etat en memoire
                                                 tabletmp(0)("composants_etat") = err 'valeur renvoyé par la fonction ecrire si OK
-                                                tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
+                                                tabletmp(0)("composants_etatdate") = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                                             End If
                                             wait(50) 'pause de 0.5sec pour libérer le bus correctement
                                         Else
