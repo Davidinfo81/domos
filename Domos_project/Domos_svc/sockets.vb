@@ -75,7 +75,7 @@ Public Class sockets
                 Dim responseString As String = "ACK"
                 Dim sendBytes As [Byte]() = System.Text.Encoding.ASCII.GetBytes(responseString)
                 mystream2.Write(sendBytes, 0, sendBytes.Length)
-                WriteLog("message envoyé : " & responseString)
+                WriteLog("DBG: message envoyé : " & responseString)
 
                 'on ferme le flux
                 mystream2.Close()
@@ -96,6 +96,8 @@ Public Class sockets
         'utilise la fonction de base pour loguer un event
         If STRGS.InStr(message, "ERR:") > 0 Then
             domos_svc.log("SOC : " & message, 2)
+        ElseIf STRGS.InStr(message, "DBG:") > 0 Then
+            domos_svc.log("SOC : " & message, 10)
         Else
             domos_svc.log("SOC : " & message, 3)
         End If

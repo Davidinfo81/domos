@@ -283,20 +283,22 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
 		tabletmp = domos_svc.table_composants.Select("composants_adresse LIKE '" & adresse.ToString & "%' AND composants_modele_norme = 'ZIB'")
 		If tabletmp.GetUpperBound(0) >= 0 Then
 			WriteLog("ERR: " & tabletmp(0)("composants_nom").ToString() & "  Battery Empty")
-		Else
-			'erreur d'adresse composant
-			If adresse <> adresselast Then
-				tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_adresse LIKE '" & adresse.ToString & "%' AND composants_bannis_norme = 'ZIB'")
-				If tabletmp.GetUpperBound(0) >= 0 Then
-					'on logue en debug car c'est une adresse bannie
+        ElseIf Not domos_svc.ZIB_ignoreadresse Then
+            'erreur d'adresse composant
+            If adresse <> adresselast Then
+                tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_adresse LIKE '" & adresse.ToString & "%' AND composants_bannis_norme = 'ZIB'")
+                If tabletmp.GetUpperBound(0) >= 0 Then
+                    'on logue en debug car c'est une adresse bannie
                     WriteLog("DBG: WriteBattery Empty : Adresse Bannie : " & adresse.ToString)
-				Else
+                Else
                     WriteLog("ERR: WriteBattery Empty : Adresse composant : " & adresse.ToString)
-				End If
-			Else
-				'on logue en debug car c'est la même adresse non trouvé depuis le dernier message
+                End If
+            Else
+                'on logue en debug car c'est la même adresse non trouvé depuis le dernier message
                 WriteLog("DBG: WriteBattery Empty : Adresse composant : " & adresse.ToString)
-			End If
+            End If
+        Else
+            WriteLog("DBG: WriteBattery Empty : Adresse composant : " & adresse.ToString & " : ")
 		End If
 	End Sub
 
@@ -372,25 +374,27 @@ Public Class zibasemodule : Implements ISynchronizeInvoke
                 Else
                     WriteLog("DBG: IGNORE : Etat recu il y a moins de 2 sec : " & adresse & " : " & valeur)
                 End If
-            Else
+            ElseIf Not domos_svc.ZIB_ignoreadresse Then
                 'erreur d'adresse composant
                 tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_adresse = '" & adresse & "' AND composants_bannis_norme = 'ZIB'")
                 If tabletmp.GetUpperBound(0) >= 0 Then
                     'on logue en debug car c'est une adresse bannie
                     WriteLog("DBG: IGNORE : Adresse Bannie : " & adresse & " : " & valeur)
                 Else
-                	'si c'est un pb de batterie et que l'adresse pas connu on verifie si un composant porte la meme adresse sans le _THE
-					If Ucase(VB.Left(valeur, 12)) = "ERR: BATTERY" Then
-						tabletmp = domos_svc.table_composants.Select("composants_adresse LIKE '" & VB.Left(adresse, adresse.length - 4) & "%' AND composants_modele_norme = 'ZIB'")
-						If tabletmp.GetUpperBound(0) >= 0 Then 
-							WriteLog("ERR: " & tabletmp(0)("composants_nom").ToString() & " : " & valeur)
-						Else
-							WriteLog("ERR: Adresse composant : " & adresse & " : " & valeur)
-						End If
-					Else
-                    	WriteLog("ERR: Adresse composant : " & adresse & " : " & valeur)
+                    'si c'est un pb de batterie et que l'adresse pas connu on verifie si un composant porte la meme adresse sans le _THE
+                    If UCase(VB.Left(valeur, 12)) = "ERR: BATTERY" Then
+                        tabletmp = domos_svc.table_composants.Select("composants_adresse LIKE '" & VB.Left(adresse, adresse.Length - 4) & "%' AND composants_modele_norme = 'ZIB'")
+                        If tabletmp.GetUpperBound(0) >= 0 Then
+                            WriteLog("ERR: " & tabletmp(0)("composants_nom").ToString() & " : " & valeur)
+                        Else
+                            WriteLog("ERR: Adresse composant : " & adresse & " : " & valeur)
+                        End If
+                    Else
+                        WriteLog("ERR: Adresse composant : " & adresse & " : " & valeur)
                     End If
                 End If
+            Else
+                WriteLog("DBG: IGNORE : Adresse composant : " & adresse.ToString & " : " & valeur.ToString)
             End If
 
         Catch ex As Exception

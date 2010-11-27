@@ -26,6 +26,7 @@ Public Class domos_svc
     Public Shared Port_PLC, Port_X10, Port_RFX, Port_WIR, Port_WI2, socket_ip, WIR_adaptername As String
     Public Shared PLC_timeout, X10_timeout, Action_timeout, rfx_tpsentrereponse, socket_port, lastetat, WIR_res As Integer
     Public Shared WIR_timeout, ZIB_timeout, TSK_timeout, heure_coucher_correction, heure_lever_correction As Integer
+    Public Shared RFX_ignoreadresse, ZIB_ignoreadresse, PLC_triphase As Integer
     Public Shared logs_erreur_nb, logs_erreur_duree As Integer
     Public Shared gps_longitude, gps_latitude, mail_smtp, mail_from, mail_to As String
     Public Shared mail_action as integer
@@ -111,7 +112,10 @@ Public Class domos_svc
         logs_erreur_nb = 0
         logs_erreur_duree = 60
 		mail_action = 0
-		
+        RFX_ignoreadresse = 0
+        ZIB_ignoreadresse = 0
+        PLC_triphase = 0
+
         svc_start()
     End Sub
 
@@ -260,11 +264,15 @@ Public Class domos_svc
                 mail_action = table_config.Select("config_nom = 'mail_action'")(0)("config_valeur")
                 logs_erreur_nb = table_config.Select("config_nom = 'logs_erreur_nb'")(0)("config_valeur")
                 logs_erreur_duree = table_config.Select("config_nom = 'logs_erreur_duree'")(0)("config_valeur")
+                RFX_ignoreadresse = table_config.Select("config_nom = 'RFX_ignoreadresse'")(0)("config_valeur")
+                PLC_triphase = table_config.Select("config_nom = 'PLC_triphase'")(0)("config_valeur")
+                ZIB_ignoreadresse = table_config.Select("config_nom = 'ZIB_ignoreadresse'")(0)("config_valeur")
                 log("      -> LOG_NIVEAU=" & log_niveau & " LOG_DESTINATION=" & log_dest, 0)
                 log("      -> WIR=" & Serv_WIR & " WI2=" & Serv_WI2 & " PLC=" & Serv_PLC & ":" & Port_PLC & " X10=" & Serv_X10 & ":" & Port_X10, 0)
                 log("      -> ZIB=" & Serv_ZIB & " TSK=" & Serv_TSK & " RFX=" & Serv_RFX & ":" & Port_RFX, 0)
                 log("      -> Action_timeout=" & Action_timeout & " PLC_timeout=" & PLC_timeout & " X10_timeout=" & X10_timeout & " WIR_timeout=" & WIR_timeout & " ZIB_timeout=" & ZIB_timeout & " TSK_timeout=" & TSK_timeout, 0)
                 log("      -> RFX_tpsentrereponse=" & rfx_tpsentrereponse & " Lastetat=" & lastetat, 0)
+                log("      -> RFX_ignoreadresse=" & RFX_ignoreadresse & " ZIB_ignoreadresse=" & ZIB_ignoreadresse & " PLC_triphase=" & PLC_triphase, 0)
                 log("      -> heure_lever_correction=" & heure_lever_correction & " heure_coucher_correction=" & heure_coucher_correction, 0)
                 log("      -> longitude=" & gps_longitude & " latitude=" & gps_latitude, 0)
                 log("      -> Mail smtp=" & mail_smtp & " From=" & mail_from & " To=" & mail_to & " Action=" & mail_action, 0)
@@ -1501,6 +1509,17 @@ Public Class domos_svc
                                         y.Name = "ecrire_" & tabletemp(i)("composants_id")
                                         thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
                                         y.Start()
+                                    Case "fastpooling" 'PLC : composant fastpooling
+                                        If PLC_triphase Then
+                                            Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "GetOnlyOnIdPulse", "", "", "")
+                                            y = New Thread(AddressOf ecrire.action)
+                                        Else
+                                            Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "ReportOnlyOnIdPulse3Phase", "", "", "")
+                                            y = New Thread(AddressOf ecrire.action)
+                                        End If
+                                        y.Name = "ecrire_" & tabletemp(i)("composants_id")
+                                        thread_ajout(tabletemp(i)("composants_id").ToString, tabletemp(i)("composants_modele_norme").ToString, "ECR", y)
+                                        y.Start()
                                     Case "ZIB_STA" 'ZIB : switch
                                         Dim ecrire As ECRIRE = New ECRIRE(tabletemp(i)("composants_id"), "STATUS_REQUEST", "", "", "")
                                         y = New Thread(AddressOf ecrire.action)
@@ -2132,26 +2151,34 @@ Public Class domos_svc
                                             SyncLock lock_tablethread
                                                 tblthread(0)("source") = "ECR_PLC"
                                             End SyncLock
-                                            If valeur3 <> "" And valeur2 <> "" Then
-                                                err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, valeur2, valeur3)
-                                            ElseIf valeur2 <> "" Then
-                                                err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, valeur2, 0)
+                                            If valeur2 = "" Then valeur2 = 0
+                                            If valeur3 = "" Then valeur3 = 0
+                                            If valeur = "STATUS_REQUEST" Or valeur = "GetOnlyOnIdPulse" Or valeur <> "ReportOnlyOnIdPulse3Phase" Then
+                                                log("DBG: ECR : PLC : ecrit " & tabletmp(0)("composants_adresse") & " : " & valeur, 10)
                                             Else
-                                                err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, 0, 0)
+                                                log("ECR : PLC : ecrit " & tabletmp(0)("composants_adresse") & " : " & valeur & " " & valeur2 & "-" & valeur3, 5)
                                             End If
-                                            If STRGS.Left(err, 4) = "ERR:" Then
-                                                log("ECR : PLC : " & err, 2)
-                                            Else
-                                                If STRGS.InStr(err, "STATUS_REQUEST") > 0 Then
-                                                    log("DBG: ECR : PLC : " & err, 10)
-                                                Else
-                                                    log("ECR : PLC : ecrit " & tabletmp(0)("composants_adresse") & "=" & valeur & " " & valeur2 & "(" & err & ")", 5)
-                                                    'modification de l'etat en memoire
-                                                    tabletmp(0)("composants_etat") = err 'valeur renvoyé par la fonction ecrire si OK
-                                                    tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-                                                End If
+                                            err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, valeur2, valeur3)
+                                            If err <> "" Then
+                                                'modification de l'etat en memoire
+                                                tabletmp(0)("composants_etat") = err 'valeur renvoyé par la fonction ecrire si OK
+                                                tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
                                             End If
-                                            wait(50) 'pause de 0.5sec pour recevoir le ack et libérer le bus correctement
+                                            'If STRGS.Left(err, 4) = "ERR:" Then
+                                            '    log("ECR : PLC : " & err, 2)
+                                            'ElseIf STRGS.Left(err, 4) = "DBG:" Then
+                                            '    log("ECR : PLC : " & err, 10)
+                                            'Else
+                                            '    If STRGS.InStr(err, "STATUS_REQUEST") > 0 Then
+                                            '        log("DBG: ECR : PLC : " & err, 10)
+                                            '    Else
+                                            '        log("ECR : PLC : ecrit " & tabletmp(0)("composants_adresse") & "=" & valeur & " " & valeur2 & "(" & err & ")", 5)
+                                            '        'modification de l'etat en memoire
+                                            '        tabletmp(0)("composants_etat") = err 'valeur renvoyé par la fonction ecrire si OK
+                                            '        tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
+                                            '    End If
+                                            'End If
+                                            'wait(50) 'pause de 0.5sec pour recevoir le ack et libérer le bus correctement
                                         Else
                                             log("ECR : PLC : Thread non trouvé : composant ID=" & compid, 2)
                                         End If

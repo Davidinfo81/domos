@@ -94,7 +94,7 @@ Public Class rfxcom
                     port.Encoding = System.Text.Encoding.GetEncoding(1252)  'Extended ASCII (8-bits)
                     port.StopBits = StopBits.One
                     port.Handshake = Handshake.None
-                    port.ReadBufferSize = CInt(4096)
+                    port.ReadBufferSize = CInt(8192)
                     port.ReceivedBytesThreshold = 1
                     port.ReadTimeout = 100
                     port.WriteTimeout = 500
@@ -258,12 +258,28 @@ Public Class rfxcom
     '        WriteLog("ERR: RFXCOM Datareceived : " & Ex.Message)
     '    End Try
     'End Sub
+    'Sub ReadErrorEvent(ByVal sender As Object, ByVal ev As SerialErrorReceivedEventArgs)
+    '    Try
+    '        Dim limite As Integer = 0
+    '        While port_ouvert And port.BytesToRead > 0 And limite < 500
+    '            limite = limite + 1
+    '            If Not domos_svc.Serv_DOMOS Or Not port_ouvert Then Exit While 'si on quitte Domos on quitte cette boucle
+    '            ProcessReceivedChar(port.ReadByte())
+    '        End While
+    '        If limite >= 500 Then
+    '            WriteLog("ERR: RFXCOM ERRORDatareceived : TIMEOUT (vidage tampon)")
+    '            port.DiscardInBuffer()
+    '        End If
+    '    Catch Ex As Exception
+    '        WriteLog("ERR: RFXCOM ERRORDatareceived : " & Ex.Message)
+    '    End Try
+    'End Sub
 
     Private Sub DataReceived(ByVal sender As Object, ByVal e As SerialDataReceivedEventArgs)
         Try
             Dim count As Integer = 0
             count = port.BytesToRead
-            If count > 0 Then
+            If port_ouvert And count > 0 Then
                 port.Read(BufferIn, 0, count)
                 For i As Integer = 0 To count - 1
                     ProcessReceivedChar(BufferIn(i))
@@ -276,15 +292,13 @@ Public Class rfxcom
 
     Sub ReadErrorEvent(ByVal sender As Object, ByVal ev As SerialErrorReceivedEventArgs)
         Try
-            Dim limite As Integer = 0
-            While port_ouvert And port.BytesToRead > 0 And limite < 500
-                limite = limite + 1
-                If Not domos_svc.Serv_DOMOS Or Not port_ouvert Then Exit While 'si on quitte Domos on quitte cette boucle
-                ProcessReceivedChar(port.ReadByte())
-            End While
-            If limite >= 500 Then
-                WriteLog("ERR: RFXCOM ERRORDatareceived : TIMEOUT (vidage tampon)")
-                port.DiscardInBuffer()
+            Dim count As Integer = 0
+            count = port.BytesToRead
+            If port_ouvert And count > 0 Then
+                port.Read(BufferIn, 0, count)
+                For i As Integer = 0 To count - 1
+                    ProcessReceivedChar(BufferIn(i))
+                Next
             End If
         Catch Ex As Exception
             WriteLog("ERR: RFXCOM ERRORDatareceived : " & Ex.Message)
@@ -294,14 +308,11 @@ Public Class rfxcom
     Private Sub TCPDataReceived(ByVal ar As IAsyncResult)
         Dim intCount As Integer
         Try
-            If port_ouvert Then intCount = stream.EndRead(ar)
-            'intCount = client.GetStream.EndRead(ar)
-            If port_ouvert Then ProcessNewTCPData(TCPData, 0, intCount)
-            'Start a new read.
-            'stream.BeginRead(TCPData, 0, 1024, AddressOf TCPDataReceived, Nothing)
-            If port_ouvert Then stream.BeginRead(TCPData, 0, 1024, AddressOf TCPDataReceived, Nothing)
-            'If port_ouvert Then TCPDataReceived(stream.BeginRead(TCPData, 0, 1024, Nothing, Nothing))
-            'client.GetStream.BeginRead(TCPData, 0, 1024, AddressOf TCPDataReceived, Nothing)
+            If port_ouvert Then
+                intCount = stream.EndRead(ar)
+                ProcessNewTCPData(TCPData, 0, intCount)
+                stream.BeginRead(TCPData, 0, 1024, AddressOf TCPDataReceived, Nothing)
+            End If
         Catch Ex As Exception
             WriteLog("ERR: RFXCOM TCPDatareceived : " & Ex.Message)
         End Try
@@ -311,7 +322,7 @@ Public Class rfxcom
         Dim intIndex As Integer
         Try
             For intIndex = offset To offset + count - 1
-                If Not domos_svc.Serv_DOMOS Then Exit For 'si on quitte Domos on quitte cette boucle
+                'If Not port_ouvert Then Exit Sub 'si on ferme le port on quitte cette boucle
                 ProcessReceivedChar(Bytes(intIndex))
             Next
         Catch ex As Exception
@@ -334,8 +345,6 @@ Public Class rfxcom
                 Else
                     WriteLog(" Buffer flushed due to timeout")
                 End If
-            Else
-
             End If
         Catch ex As Exception
             WriteLog("ERR: RFXCOM tmrRead_Elapsed : " & ex.Message)
@@ -414,7 +423,7 @@ Public Class rfxcom
     Public Sub ProcessReceivedChar(ByVal temp As Byte)
         Try
             'si Domos est actif
-            If Not domos_svc.Serv_DOMOS Then Exit Sub
+            'If Not domos_svc.Serv_DOMOS Then Exit Sub
 
             'rassemble un message complet pour le traiter ensuite avec displaymess
             'Dim temp As Byte
@@ -454,7 +463,7 @@ Public Class rfxcom
                 'gestion pour ne pas gérer deux fois le même paquet car la norme veut que les paquets soient envoyé deux fois de suite
                 Dim xxx As String = ""
                 For i As Integer = 0 To bytecnt
-                    If Not domos_svc.Serv_DOMOS Then Exit Sub 'si on quitte Domos on quitte cette fonction
+                    'If Not domos_svc.Serv_DOMOS Then Exit Sub 'si on quitte Domos on quitte cette fonction
                     xxx = xxx & (VB.Right("0" & Hex(recbuf(i)), 2))
                 Next
                 If recbuf_last <> xxx Or nblast >= 2 Then 'nouveau paquet ou c'est la troisieme fois qu'on le recoit 
@@ -585,7 +594,7 @@ Public Class rfxcom
 
     Public Sub display_mess()
         Try
-            If Not domos_svc.Serv_DOMOS Then Exit Sub 'si on quitte Domos on quitte cette fonction
+            If Not port_ouvert Then Exit Sub 'si on ferme le port on quitte cette boucle
             'interprete le message recu
             Dim parity As Integer
             Dim rfxsensor, rfxpower As Boolean
@@ -2647,8 +2656,8 @@ Public Class rfxcom
                     Else
                         WriteLog("DBG: BatteryEmpty recu il y a moins de " & domos_svc.rfx_tpsentrereponse & " msec : " & adresse.ToString)
                     End If
-                Else
-                    'erreur d'adresse composan
+                ElseIf Not domos_svc.RFX_ignoreadresse Then
+                    'erreur d'adresse composant
                     If adresse <> adresselast Then
                         tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_adresse = '" & adresse.ToString & "' AND composants_bannis_norme = 'RFX'")
                         If tabletmp.GetUpperBound(0) >= 0 Then
@@ -2661,6 +2670,8 @@ Public Class rfxcom
                         'on logue en debug car c'est la même adresse non trouvé depuis le dernier message
                         WriteLog("DBG: WriteBattery Empty : Adresse composant : " & adresse.ToString)
                     End If
+                Else
+                    WriteLog("DBG: WriteBattery Empty : Adresse composant : " & adresse.ToString & " : ")
                 End If
             End If
         Catch ex As Exception
@@ -2670,7 +2681,7 @@ Public Class rfxcom
 
     Public Sub WriteRetour(ByVal adresse As String, ByVal valeur As String)
         Try
-            If Not domos_svc.Serv_DOMOS Then Exit Sub 'si on quitte Domos on quitte cette boucle
+            If Not port_ouvert Then Exit Sub 'si on ferme le port on quitte cette boucle
 
             'Forcer le . 
             Thread.CurrentThread.CurrentCulture = New CultureInfo("en-US")
@@ -2760,7 +2771,7 @@ Public Class rfxcom
                         WriteLog("DBG: IGNORE : Etat recu il y a moins de " & domos_svc.rfx_tpsentrereponse & " msec : " & adresse.ToString & " : " & valeur.ToString)
                         'End If
                     End If
-                Else
+                ElseIf Not domos_svc.RFX_ignoreadresse Then
                     'erreur d'adresse composant
                     If adresse <> adresselast Then
                         tabletmp = domos_svc.table_composants_bannis.Select("composants_bannis_adresse = '" & adresse.ToString & "' AND composants_bannis_norme = 'RFX'")
@@ -2774,6 +2785,8 @@ Public Class rfxcom
                         'on logue en debug car c'est la même adresse non trouvé depuis le dernier message
                         WriteLog("DBG: IGNORE : Adresse composant : " & adresse.ToString & " : " & valeur.ToString)
                     End If
+                Else
+                    WriteLog("DBG: IGNORE : Adresse composant : " & adresse.ToString & " : " & valeur.ToString)
                 End If
             End If
             adresselast = adresse

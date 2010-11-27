@@ -33,6 +33,9 @@ Public Class x10
     Public Const STANDARD_FUNCTION As Byte = &H6
     Public Const ENHANCED_ADDRESS As Byte = &H5
     Public Const ENHANCED_FUNCTION As Byte = &H7
+
+    Private BufferIn(8192) As Byte
+
 #End Region
 
     Public Sub New()
@@ -157,11 +160,25 @@ Public Class x10
         Return "Handler COM OK"
     End Function
 
+    'Private Sub DataReceived(ByVal sender As Object, ByVal e As SerialDataReceivedEventArgs)
+    '    Try
+    '        While port_ouvert And port.BytesToRead > 0
+    '            ProcessReceivedChar(port.ReadByte())
+    '        End While
+    '    Catch Ex As Exception
+    '        WriteLog("ERR: X10 Datareceived : " & Ex.Message)
+    '    End Try
+    'End Sub
     Private Sub DataReceived(ByVal sender As Object, ByVal e As SerialDataReceivedEventArgs)
         Try
-            While port_ouvert And port.BytesToRead > 0
-                ProcessReceivedChar(port.ReadByte())
-            End While
+            Dim count As Integer = 0
+            count = port.BytesToRead
+            If count > 0 And port_ouvert Then
+                port.Read(BufferIn, 0, count)
+                For i As Integer = 0 To count - 1
+                    ProcessReceivedChar(BufferIn(i))
+                Next
+            End If
         Catch Ex As Exception
             WriteLog("ERR: X10 Datareceived : " & Ex.Message)
         End Try
