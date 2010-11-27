@@ -31,7 +31,7 @@ echo "<div class=cadregauche>";
 	$res = mysql_query ($sql);
 	if(mysql_num_rows($res)>0){
 		while($row=mysql_fetch_array($res)){
-			if(strlen($row['logs_description'])>95) {echo ("<tr><td align='center' width='140'>".$row['logs_date']."</td><td align=left>".substr($row['logs_description'],0,95)."...</td></tr>");}
+			if(strlen($row['logs_description'])>88) {echo ("<tr><td align='center' width='140'>".$row['logs_date']."</td><td align=left>".substr($row['logs_description'],0,88)."...</td></tr>");}
 			else {echo ("<tr><td align='center' width='140'>".$row['logs_date']."</td><td align=left>".$row['logs_description']."</td></tr>");}
 		}
 	} else {echo "<tr><td colspan='2'><br />Aucune erreur pour l'instant. <br /><br /></td></tr>";}
