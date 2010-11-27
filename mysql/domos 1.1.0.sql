@@ -35,7 +35,7 @@ CREATE TABLE `composants_modele` (
   `composants_modele_norme` tinytext NOT NULL,
   `composants_modele_graphe` smallint(6) unsigned NOT NULL,
   PRIMARY KEY (`composants_modele_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=75 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+) ENGINE=MyISAM AUTO_INCREMENT=76 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
 INSERT INTO `composants_modele` (`composants_modele_id`, `composants_modele_nom`, `composants_modele_description`, `composants_modele_norme`, `composants_modele_graphe`) VALUES
 ('1', 'DS18B20', 'Capteur de temp&eacute;rature', 'WIR', '3'),
 ('2', 'DS2406_relais', 'Switch pour commander un relais', 'WIR', '1'),
@@ -106,7 +106,8 @@ INSERT INTO `composants_modele` (`composants_modele_id`, `composants_modele_nom`
 ('71', 'LD11', 'Interrupteur variateur Rail-Din', 'X10', '1'),
 ('72', 'SW10', 'Interrupteur Volet roulant', 'X10', '1'),
 ('73', 'SW12', 'MicroModule Volet roulant', 'X10', '1'),
-('74', '2269', 'Module Scenes', 'PLC', '1');
+('74', '2269', 'Module Scenes', 'PLC', '1'),
+('75', 'fastpooling', 'composant permettant d'effectuer un fastpooling sur le range de son adresse', 'PLC', '0');
 
 CREATE TABLE `config` (
   `config_id` smallint(6) unsigned NOT NULL AUTO_INCREMENT,
@@ -114,7 +115,7 @@ CREATE TABLE `config` (
   `config_valeur` text NOT NULL,
   `config_description` text NOT NULL,
   PRIMARY KEY (`config_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=43 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=46 DEFAULT CHARSET=latin1;
 INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_description`) VALUES
 ('1', 'Serv_X10', '1', 'X10 : 0=desactive 1=active'),
 ('2', 'Serv_WIR', '1', '1-wire : 0=desactive 1=active'),
@@ -158,6 +159,9 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('40', 'ZIB_timeout', '500', 'Timeout pour attendre que le port ZIB soit disponible en ecriture (Defaut : 500 = 5 sec)'),
 ('41', 'TSK_timeout', '500', 'Timeout pour attendre que le port TSK soit disponible en ecriture (Defaut : 500 = 5 sec)'),
 ('42', 'mail_action', '4', 'activer les mails 0=desactive 1=manuel 2=manuel-auto 3=manuel-auto-erreurcritique 4=manuel-auto-erreurcritique-erreursredondante 5=manuel-auto-erreurs'),
+('43', 'PLC_triphase', '0', 'Configuration TriPhase PLCBUS (0:normal, 1:triphase)'), 
+('44', 'RFX_ignoreadresse', '0', 'Ignore les adresses composants incorrectes (0:affiche, 1:ignore)'),
+('45', 'ZIB_ignoreadresse', '0', 'Ignore les adresses composants incorrectes (0:affiche, 1:ignore)');
 
 CREATE TABLE `logs` (
   `logs_id` bigint(20) NOT NULL AUTO_INCREMENT,

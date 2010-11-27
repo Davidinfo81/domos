@@ -75,7 +75,8 @@ INSERT INTO `composants_modele` (`composants_modele_id`, `composants_modele_nom`
 ('71', 'LD11', 'Interrupteur variateur Rail-Din', 'X10', '1'),
 ('72', 'SW10', 'Interrupteur Volet roulant', 'X10', '1'),
 ('73', 'SW12', 'MicroModule Volet roulant', 'X10', '1'),
-('74', '2269', 'Module Scenes', 'PLC', '1');
+('74', '2269', 'Module Scenes', 'PLC', '1'),
+('75', 'fastpooling', 'composant permettant d'effectuer un fastpooling sur le range de son adresse', 'PLC', '0');
 
 UPDATE `config` SET `config_description`='X10 : 0=desactive 1=active' where `config_id`=1
 UPDATE `config` SET `config_description`='1-wire : 0=desactive 1=active' where `config_id`=2
@@ -102,3 +103,6 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('40', 'ZIB_timeout', '500', 'Timeout pour attendre que le port ZIB soit disponible en ecriture (Defaut : 500 = 5 sec)'),
 ('41', 'TSK_timeout', '500', 'Timeout pour attendre que le port TSK soit disponible en ecriture (Defaut : 500 = 5 sec)'),
 ('42', 'mail_action', '4', 'activer les mails 0=desactive 1=manuel 2=manuel-auto 3=manuel-auto-erreurcritique 4=manuel-auto-erreurcritique-erreursredondante 5=manuel-auto-erreurs'),
+('43', 'PLC_triphase', '0', 'Configuration TriPhase PLCBUS (0:normal, 1:triphase)'), 
+('44', 'RFX_ignoreadresse', '0', 'Ignore les adresses composants incorrectes (0:affiche, 1:ignore)'),
+('45', 'ZIB_ignoreadresse', '0', 'Ignore les adresses composants incorrectes (0:affiche, 1:ignore)');
