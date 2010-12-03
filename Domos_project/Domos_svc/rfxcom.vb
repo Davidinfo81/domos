@@ -654,13 +654,13 @@ Public Class rfxcom
                         End If
                     End If
                     WriteLog(logtemp)
-                ElseIf protocol = MODEVAR And (recbits = 56 Or recbits > 59) Then : processoregon(recbits)
-                ElseIf protocol = MODEVAR And recbits = 34 Or recbits = 38 Then : processhe()
-                ElseIf protocol = MODEVAR And recbits = 20 Then : processati()
-                ElseIf protocol = MODEVAR And recbits = 21 Then : processatiplus()
                 ElseIf rfxsensor Then : processrfxsensor()
                 ElseIf rfxpower Then : processrfxmeter()
+                ElseIf protocol = MODEVAR And recbits = 20 Then : processati()
+                ElseIf protocol = MODEVAR And recbits = 21 Then : processatiplus()
+                ElseIf protocol = MODEVAR And (recbits = 12 Or recbits = 34 Or recbits = 38) Then : processhe()
                 ElseIf protocol = MODEVAR And recbits = 56 Then : processsomfy()
+                ElseIf protocol = MODEVAR And (recbits = 56 Or recbits > 59) Then : processoregon(recbits)
                     'ElseIf protocol = MODEARC Then : processARC()
                     'ElseIf protocol = MODEKOP Then : processkoppla()
                     'ElseIf protocol = MODEVISONIC Then : processvisonic(recbits)
@@ -2738,7 +2738,12 @@ Public Class rfxcom
                                         End If
                                     End If
                                 Else
-                                    domos_svc.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString, 6)
+                                    'si la valeur a changer et = ON ou OFF on logue sinon debug
+                                    If valeur.ToString = tabletmp(0)("composants_etat").ToString() And (valeur.ToString = "ON" Or valeur.ToString = "OFF") Then
+                                        WriteLog("DBG: inchange ON-OFF: " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString)
+                                    Else
+                                        domos_svc.log("RFX : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur.ToString, 6)
+                                    End If
                                     '  --- modification de l'etat du composant dans la table en memoire ---
                                     If VB.Left(valeur, 4) <> "CFG:" Then
                                         tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat

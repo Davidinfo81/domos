@@ -1627,15 +1627,21 @@ Public Class domos_svc
         '--- si on a un changement de l'etat d'un composant ---
         Try
             If args.Column.ColumnName = "composants_etat" Then
-                '--- Enregistrement du releve dans la base SQL ---
-                dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-                etat_temp = args.Row.Item("composants_etat")
-                etat_temp = STRGS.Replace(etat_temp, ",", ".") 'correction pour avoir un point au lieu d'une virgule
-                err = mysql.mysql_nonquery("INSERT INTO releve(releve_Composants,releve_Valeur,releve_DateHeure) VALUES('" & args.Row.Item("composants_id") & "', '" & etat_temp & "', '" & dateheure & "')")
-                If err <> "" Then log("DOM : table_comp_changed SQL " & err, 2)
-                '--- modification de l'etat du composant dans la base ---
-                err = mysql.mysql_nonquery("UPDATE composants SET composants_etat='" & etat_temp & "',composants_etatdate='" & dateheure & "' WHERE composants_id='" & args.Row.Item("composants_id") & "'")
-                If err <> "" Then log("DOM : table_comp_changed SQL" & err, 2)
+                dateheure = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                If (args.Row.Item("composants_etat") = "ON" Or args.Row.Item("composants_etat") = "OFF") And args.Row.Item("composants_etat") = args.Row.Item("lastetat") Then
+                    'on modifie uniquement la data car le status ON-OFF n'a pas changé (detecteur de mouvement par ex)
+                    err = mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & args.Row.Item("composants_id") & "'")
+                    If err <> "" Then log("DOM: table_comp_changed SQL : " & err, 2)
+                Else
+                    '--- Enregistrement du releve dans la base SQL ---
+                    etat_temp = args.Row.Item("composants_etat")
+                    etat_temp = STRGS.Replace(etat_temp, ",", ".") 'correction pour avoir un point au lieu d'une virgule
+                    err = mysql.mysql_nonquery("INSERT INTO releve(releve_Composants,releve_Valeur,releve_DateHeure) VALUES('" & args.Row.Item("composants_id") & "', '" & etat_temp & "', '" & dateheure & "')")
+                    If err <> "" Then log("DOM : table_comp_changed SQL " & err, 2)
+                    '--- modification de l'etat du composant dans la base ---
+                    err = mysql.mysql_nonquery("UPDATE composants SET composants_etat='" & etat_temp & "',composants_etatdate='" & dateheure & "' WHERE composants_id='" & args.Row.Item("composants_id") & "'")
+                    If err <> "" Then log("DOM : table_comp_changed SQL : " & err, 2)
+                End If
                 '--- gestion des macros ---
                 macro(args.Row.Item("composants_id"), args.Row.Item("composants_etat"))
             End If
@@ -2161,6 +2167,7 @@ Public Class domos_svc
                                             err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, valeur2, valeur3)
                                             If err <> "" Then
                                                 'modification de l'etat en memoire
+                                                tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
                                                 tabletmp(0)("composants_etat") = err 'valeur renvoyé par la fonction ecrire si OK
                                                 tabletmp(0)("composants_etatdate") = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                                             Else

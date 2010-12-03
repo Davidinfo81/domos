@@ -466,6 +466,7 @@ Public Class plcbus
                     If valeurretour <> x Then
                         domos_svc.log("PLC : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeurretour, 6)
                         '  --- modification de l'etat du composant dans la table en memoire ---
+                        tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
                         tabletmp(0)("composants_etat") = valeurretour
                         tabletmp(0)("composants_etatdate") = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                     Else
