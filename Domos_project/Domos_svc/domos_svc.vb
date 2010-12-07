@@ -2090,6 +2090,8 @@ Public Class domos_svc
                     Else
                         log("MAC : EM# : macro " & tabletemp(0)("macro_nom") & " n existe pas", 2)
                     End If
+                Else
+                	log("MAC : " & contenu(0) & " n est pas un ordre correct !", 2)
                 End If
 
                 'on a pas fini de traiter la liste d'actions, on avance à l'element suivant
@@ -2318,7 +2320,7 @@ Public Class domos_svc
                                                         wirvaleur_etat = STRGS.Left(wirvaleur, 1)
                                                         wirvaleur_activite = STRGS.Right(wirvaleur, 1)
                                                         If wirvaleur_activite <> tabletmp(0)("composants_etat").ToString() Then
-                                                            log("WIR (ECR): DS2406_capteur : " & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur_activite & " ", 6)
+                                                            log("ECR : WIR DS2406_capteur : " & tabletmp(0)("composants_adresse").ToString() & " : " & wirvaleur_activite & " ", 6)
                                                             '--- modification de l'etat du composant dans la table en memoire ---
                                                             tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
                                                             tabletmp(0)("composants_etat") = wirvaleur_activite
@@ -2353,9 +2355,25 @@ Public Class domos_svc
                             Case "WI2"
                                 '???
                             Case "VIR"
-                                '???
+                            	Try
+                                	log("ECR : VIR : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur & " ", 6)
+                                    '--- modification de l'etat du composant dans la table en memoire ---
+                                	tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
+                                	tabletmp(0)("composants_etat") = valeur
+                                	tabletmp(0)("composants_etatdate") = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                                Catch ex1 As Exception
+                                    log("ECR : VIR Exception : " & ex1.ToString & " --> ID=" & compid & " / " & valeur, 2)
+                                End Try
                             Case "RFX"
-                                '???
+                            	Try
+                                	log("ECR : RFX : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur & " ", 6)
+                                    '--- modification de l'etat du composant dans la table en memoire ---
+                                	tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
+                                	tabletmp(0)("composants_etat") = valeur
+                                	tabletmp(0)("composants_etatdate") = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                                Catch ex1 As Exception
+                                    log("ECR : RFX Exception : " & ex1.ToString & " --> ID=" & compid & " / " & valeur, 2)
+                                End Try
                             Case "X10"
                                 Try
                                     'verification si on a pas déjà un thread qui ecrit sur le x10 sinon on boucle pour attendre X10_timeout/10 = 5 sec par défaut
@@ -2442,6 +2460,16 @@ Public Class domos_svc
                                     End If
                                 Catch ex1 As Exception
                                     log("ECR : ZIB Exception : " & ex1.ToString & " --> ID=" & compid & " / " & valeur, 2)
+                                End Try
+                            Case "TSK"
+                            	Try
+                                	log("ECR : TSK : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur & " ", 6)
+                                    '--- modification de l'etat du composant dans la table en memoire ---
+                                	tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat
+                                	tabletmp(0)("composants_etat") = valeur
+                                	tabletmp(0)("composants_etatdate") = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                                Catch ex1 As Exception
+                                    log("ECR : TSK Exception : " & ex1.ToString & " --> ID=" & compid & " / " & valeur, 2)
                                 End Try
                             Case Else
                                 log("ECR : norme non gérée : " & tabletmp(0)("composants_modele_norme").ToString & " comp: " & tabletmp(0)("composants_adresse").ToString, 2)
