@@ -210,6 +210,7 @@ Partial Class notify
         Me.TestsToolStripMenuItem.Name = "TestsToolStripMenuItem"
         Me.TestsToolStripMenuItem.Size = New System.Drawing.Size(152, 22)
         Me.TestsToolStripMenuItem.Text = "tests"
+        Me.TestsToolStripMenuItem.Visible = False
         '
         'X10openToolStripMenuItem
         '

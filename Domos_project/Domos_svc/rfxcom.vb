@@ -38,6 +38,7 @@ Public Class rfxcom
     Public Const DISATI As Byte = &H44
     Public Const DISVIS As Byte = &H45
     Public Const DISSOMFY As Byte = &H46
+    Public Const DISEU As Byte = &H47
 
     'liste des variables de base
     Private slave As Boolean
@@ -654,17 +655,17 @@ Public Class rfxcom
                         End If
                     End If
                     WriteLog(logtemp)
+                    'ElseIf protocol = MODEARC Then : processARC()
+                    'ElseIf protocol = MODEKOP Then : processkoppla()
                 ElseIf rfxsensor Then : processrfxsensor()
                 ElseIf rfxpower Then : processrfxmeter()
+                    'ElseIf protocol = MODEVISONIC Then : processvisonic(recbits)
                 ElseIf protocol = MODEVAR And recbits = 20 Then : processati()
                 ElseIf protocol = MODEVAR And recbits = 21 Then : processatiplus()
                 ElseIf protocol = MODEVAR And (recbits = 12 Or recbits = 34 Or recbits = 38) Then : processhe()
                 ElseIf protocol = MODEVAR And recbits = 56 Then : processsomfy()
                 ElseIf protocol = MODEVAR And (recbits = 56 Or recbits > 59) Then : processoregon(recbits)
-                    'ElseIf protocol = MODEARC Then : processARC()
-                    'ElseIf protocol = MODEKOP Then : processkoppla()
-                    'ElseIf protocol = MODEVISONIC Then : processvisonic(recbits)
-                    '    'ElseIf protocol = MODENOXLAT Then
+                    '    ElseIf protocol = MODENOXLAT Then
                     '    If recbits = 36 Or recbits = 66 Or recbits = 72 Then
                     '        processvisonic(recbits)
                     '    ElseIf recbits > 59 Then
@@ -713,43 +714,28 @@ Public Class rfxcom
             ElseIf (recbuf(0) = ((recbuf(1) And &HF0) + (&HF - (recbuf(1) And &HF)))) And ((recbuf(2) Xor recbuf(3)) = &HFF) Then
                 processx10security()
             ElseIf ((recbuf(2) Xor recbuf(3)) = &HFF) Then
+                adresse = (recbuf(0) * 256 + recbuf(1)).ToString
                 Select Case recbuf(2)
-                    Case &H44
-                        adresse = (recbuf(0) * 256 + recbuf(1)).ToString
-                        valeur = "S DWS Visonic door sensor Alert + Tamper"
-                    Case &HC4
-                        adresse = (recbuf(0) * 256 + recbuf(1)).ToString
-                        valeur = "S DWS Visonic door sensor Normal + Tamper)"
-                    Case &H4
-                        adresse = (recbuf(0) * 256 + recbuf(1)).ToString
-                        valeur = "S DWS Visonic door sensor Alert "
+                    Case &H44 : valeur = "ON" '"S DWS Visonic door sensor Alert + Tamper"
+                    Case &HC4 : valeur = "OFF" '"S DWS Visonic door sensor Normal + Tamper)"
+                    Case &H4 : valeur = "ON" '"S DWS Visonic door sensor Alert "
                     Case &H5
-                        adresse = (recbuf(0) * 256 + recbuf(1)).ToString
-                        valeur = "S DWS Visonic door sensor Alert (battery low)"
-                    Case &H84
-                        adresse = (recbuf(0) * 256 + recbuf(1)).ToString
-                        valeur = "S DWS Visonic door sensor Normal"
+                        valeur = "ON" '"S DWS Visonic door sensor Alert (battery low)"
+                        WriteBattery(adresse)
+                    Case &H84 : valeur = "OFF" '"S DWS Visonic door sensor Normal"
                     Case &H85
-                        adresse = (recbuf(0) * 256 + recbuf(1)).ToString
-                        valeur = "S DWS Visonic door sensor Normal (battery low)"
-                    Case &H4C
-                        adresse = (recbuf(0) * 256 + recbuf(1)).ToString
-                        valeur = "S DWS Visonic motion sensor Alert + Tamper"
-                    Case &HCC
-                        adresse = (recbuf(0) * 256 + recbuf(1)).ToString
-                        valeur = "S DWS Visonic motion sensor Normal + Tamper)"
-                    Case &HC
-                        adresse = (recbuf(0) * 256 + recbuf(1)).ToString
-                        valeur = "S DWS Visonic motion sensor Alert "
+                        valeur = "OFF" '"S DWS Visonic door sensor Normal (battery low)"
+                        WriteBattery(adresse)
+                    Case &H4C : valeur = "ON" '"S DWS Visonic motion sensor Alert + Tamper"
+                    Case &HCC : valeur = "OFF" '"S DWS Visonic motion sensor Normal + Tamper)"
+                    Case &HC : valeur = "ON" '"S DWS Visonic motion sensor Alert "
                     Case &HD
-                        adresse = (recbuf(0) * 256 + recbuf(1)).ToString
-                        valeur = "S DWS Visonic motion sensor Alert (battery low)"
-                    Case &H8C
-                        adresse = (recbuf(0) * 256 + recbuf(1)).ToString
-                        valeur = "S DWS Visonic motion sensor Normal"
+                        valeur = "ON" '"S DWS Visonic motion sensor Alert (battery low)"
+                        WriteBattery(adresse)
+                    Case &H8C : valeur = "OFF" '"S DWS Visonic motion sensor Normal"
                     Case &H8D
-                        adresse = (recbuf(0) * 256 + recbuf(1)).ToString
-                        valeur = "S DWS Visonic motion sensor Normal (battery low)"
+                        valeur = "OFF" '"S DWS Visonic motion sensor Normal (battery low)"
+                        WriteBattery(adresse)
                     Case &HE0
                         If recbuf(0) = &HFF Then
                             WriteLog("X10Security : Master receiver jamming detected")
@@ -766,21 +752,11 @@ Public Class rfxcom
                         Else
                             WriteLog("ERR: unknown cmd")
                         End If
-                    Case &H2
-                        adresse = (recbuf(0) * 256 + recbuf(1)).ToString
-                        valeur = "S REMOTE Visonic keyfob ARM Away (max)"
-                    Case &HE
-                        adresse = (recbuf(0) * 256 + recbuf(1)).ToString
-                        valeur = "S REMOTE Visonic keyfob ARM Home (min)"
-                    Case &H22
-                        adresse = (recbuf(0) * 256 + recbuf(1)).ToString
-                        valeur = "S REMOTE Visonic keyfob Panic   "
-                    Case &H42
-                        adresse = (recbuf(0) * 256 + recbuf(1)).ToString
-                        valeur = "S REMOTE Visonic keyfob Lights On"
-                    Case &H82
-                        adresse = (recbuf(0) * 256 + recbuf(1)).ToString
-                        valeur = "S REMOTE Visonic keyfob Disarm  "
+                    Case &H2 : valeur = "S REMOTE Visonic keyfob ARM Away (max)"
+                    Case &HE : valeur = "S REMOTE Visonic keyfob ARM Home (min)"
+                    Case &H22 : valeur = "S REMOTE Visonic keyfob Panic   "
+                    Case &H42 : valeur = "S REMOTE Visonic keyfob Lights On"
+                    Case &H82 : valeur = "S REMOTE Visonic keyfob Disarm  "
                     Case Else : WriteLog("ERR: Unknown data packet received")
                 End Select
                 'hsaddr = createhsaddr()
@@ -789,7 +765,7 @@ Public Class rfxcom
                 'Else
                 '    WriteLog("X10Security : addr:" & VB.Right("0" & Hex(recbuf(0)), 2) & VB.Right("0" & Hex(recbuf(1)), 2) & " " & VB.Right("0" & Hex(recbuf(4)), 2) & " ID:" & VB.Right("    " & Str(hsaddr), 5))
                 'End If
-                If adresse <> "" Then WriteRetour(adresse, valeur)
+                If valeur <> "" Then WriteRetour(adresse, valeur)
 
             ElseIf protocol = MODEVAR Or protocol = MODENOXLAT Then
                 If recbits = 32 And recbuf(0) = &H52 And recbuf(1) = &H46 Then
@@ -892,9 +868,9 @@ Public Class rfxcom
                 Case &H2 : valeur = "power"
                 Case &H3 : valeur = "TV"
                 Case &H4 : valeur = "DVD"
-                Case &H5 : If remote = &HC5 Then valeur = "?" Else valeur = "Photo"
-                Case &H6 : If remote = &HC5 Then valeur = "Guide" Else valeur = "Music"
-                Case &H7 : valeur = "Drag"
+                Case &H5 : If remote = &HC5 Then valeur = "WEB" Else valeur = "PHOTO"
+                Case &H6 : If remote = &HC5 Then valeur = "GUIDE" Else valeur = "MUSIC"
+                Case &H7 : valeur = "DRAG"
                 Case &H8 : If remote = &HC5 Then valeur = "VOL+" Else valeur = "VOL-"
                 Case &H9 : If remote = &HC5 Then valeur = "VOL-" Else valeur = "VOL+"
                 Case &HA : valeur = "MUTE"
@@ -909,53 +885,53 @@ Public Class rfxcom
                 Case &H13 : valeur = "7"
                 Case &H14 : valeur = "8"
                 Case &H15 : valeur = "9"
-                Case &H16 : valeur = "txt"
+                Case &H16 : valeur = "TXT"
                 Case &H17 : valeur = "0"
-                Case &H18 : valeur = "snapshot ESC"
+                Case &H18 : valeur = "SNAPSHOT"
                 Case &H19 : If remote = &HC5 Then valeur = "C" Else valeur = "DVD MENU"
-                Case &H1A : valeur = "^"
-                Case &H1B : If remote = &HC5 Then valeur = "D" Else valeur = "Setup"
-                Case &H1C : valeur = "TV/RADIO"
-                Case &H1D : valeur = "<"
+                Case &H1A : valeur = "CURSOR-UP"
+                Case &H1B : If remote = &HC5 Then valeur = "D" Else valeur = "SETUP"
+                Case &H1C : valeur = "TV-RADIO"
+                Case &H1D : valeur = "CURSOR-LEFT"
                 Case &H1E : valeur = "OK"
-                Case &H1F : valeur = ">"
-                Case &H20 : valeur = "<-"
+                Case &H1F : valeur = "CURSOR-RIGHT"
+                Case &H20 : valeur = "RETURN"
                 Case &H21 : valeur = "E"
-                Case &H22 : valeur = "v"
+                Case &H22 : valeur = "CURSOR-DOWN"
                 Case &H23 : valeur = "F"
-                Case &H24 : valeur = "Rewind"
-                Case &H25 : valeur = "Play"
-                Case &H26 : valeur = "Fast forward"
-                Case &H27 : valeur = "Record"
-                Case &H28 : valeur = "Stop"
-                Case &H29 : valeur = "Pause"
+                Case &H24 : valeur = "REWIND"
+                Case &H25 : valeur = "PLAY"
+                Case &H26 : valeur = "FAST-FORWARD"
+                Case &H27 : valeur = "RECORD"
+                Case &H28 : valeur = "STOP"
+                Case &H29 : valeur = "PAUSE"
                 Case &H2C : valeur = "TV"
                 Case &H2D : valeur = "VCR"
                 Case &H2E : valeur = "RADIO"
-                Case &H2F : valeur = "TV Preview"
-                Case &H30 : valeur = "Channel list"
-                Case &H31 : valeur = "Video Desktop"
-                Case &H32 : valeur = "red"
-                Case &H33 : valeur = "green"
-                Case &H34 : valeur = "yellow"
-                Case &H35 : valeur = "blue"
-                Case &H36 : valeur = "rename TAB"
-                Case &H37 : valeur = "Acquire image"
-                Case &H38 : valeur = "edit image"
-                Case &H39 : valeur = "Full screen"
-                Case &H3A : valeur = "DVD Audio"
-                Case &H70 : valeur = "Cursor-left"
-                Case &H71 : valeur = "Cursor-right"
-                Case &H72 : valeur = "Cursor-up"
-                Case &H73 : valeur = "Cursor-down"
-                Case &H74 : valeur = "Cursor-up-left"
-                Case &H75 : valeur = "Cursor-up-right"
-                Case &H76 : valeur = "Cursor-down-right"
-                Case &H77 : valeur = "Cursor-down-left"
+                Case &H2F : valeur = "TV-PREVIEW"
+                Case &H30 : valeur = "CHANNEL-LIST"
+                Case &H31 : valeur = "VIDEO-DESKTOP"
+                Case &H32 : valeur = "RED"
+                Case &H33 : valeur = "GREEN"
+                Case &H34 : valeur = "YELLOW"
+                Case &H35 : valeur = "BLUE"
+                Case &H36 : valeur = "RENAME-TAB"
+                Case &H37 : valeur = "SNAPSHOT"
+                Case &H38 : valeur = "EDIT-IMAGE"
+                Case &H39 : valeur = "FULL-SCREEN"
+                Case &H3A : valeur = "DVD-AUDIO"
+                Case &H70 : valeur = "MOUSE-LEFT"
+                Case &H71 : valeur = "MOUSE-RIGHT"
+                Case &H72 : valeur = "MOUSE-UP"
+                Case &H73 : valeur = "MOUSE-DOWN"
+                Case &H74 : valeur = "MOUSE-UP-LEFT"
+                Case &H75 : valeur = "MOUSE-UP-RIGHT"
+                Case &H76 : valeur = "MOUSE-DOWN-RIGHT"
+                Case &H77 : valeur = "MOUSE-DOWN-LEFT"
                 Case &H78 : valeur = "V"
-                Case &H79 : valeur = "V-End"
+                Case &H79 : valeur = "V-END"
                 Case &H7C : valeur = "X"
-                Case &H7D : valeur = "X-End"
+                Case &H7D : valeur = "X-END"
                 Case Else : valeur = "unknown"
             End Select
             WriteRetour(adresse, valeur)
@@ -981,12 +957,12 @@ Public Class rfxcom
             Select Case (recbuf(1) And &H7F)
                 Case &H0 : valeur = "A"
                 Case &H1 : valeur = "B"
-                Case &H2 : valeur = "power"
+                Case &H2 : valeur = "POWER"
                 Case &H3 : valeur = "TV"
                 Case &H4 : valeur = "DVD"
                 Case &H5 : valeur = "?"
-                Case &H6 : valeur = "Guide"
-                Case &H7 : valeur = "Drag"
+                Case &H6 : valeur = "GUIDE"
+                Case &H7 : valeur = "DRAG"
                 Case &H8 : valeur = "VOL+"
                 Case &H9 : valeur = "VOL-"
                 Case &HA : valeur = "MUTE"
@@ -1001,55 +977,55 @@ Public Class rfxcom
                 Case &H13 : valeur = "7"
                 Case &H14 : valeur = "8"
                 Case &H15 : valeur = "9"
-                Case &H16 : valeur = "txt"
+                Case &H16 : valeur = "TXT"
                 Case &H17 : valeur = "0"
-                Case &H18 : valeur = "Open Setup Menu"
+                Case &H18 : valeur = "SETUP-MENU"
                 Case &H19 : valeur = "C"
-                Case &H1A : valeur = "^"
+                Case &H1A : valeur = "CURSOR-UP"
                 Case &H1B : valeur = "D"
                 Case &H1C : valeur = "FM"
-                Case &H1D : valeur = "<"
+                Case &H1D : valeur = "CURSOR-LEFT"
                 Case &H1E : valeur = "OK"
-                Case &H1F : valeur = ">"
-                Case &H20 : valeur = "Max/Restore window"
+                Case &H1F : valeur = "CURSOR-RIGHT"
+                Case &H20 : valeur = "MAX-RESTORE-WINDOW"
                 Case &H21 : valeur = "E"
-                Case &H22 : valeur = "v"
+                Case &H22 : valeur = "CURSOR-DOWN"
                 Case &H23 : valeur = "F"
-                Case &H24 : valeur = "Rewind"
-                Case &H25 : valeur = "Play"
-                Case &H26 : valeur = "Fast forward"
-                Case &H27 : valeur = "Record"
-                Case &H28 : valeur = "Stop"
-                Case &H29 : valeur = "Pause"
+                Case &H24 : valeur = "REWIND"
+                Case &H25 : valeur = "PLAY"
+                Case &H26 : valeur = "FAST-FORWARD"
+                Case &H27 : valeur = "RECORD"
+                Case &H28 : valeur = "STOP"
+                Case &H29 : valeur = "PAUSE"
                 Case &H2A : valeur = "TV2"
-                Case &H2B : valeur = "Clock"
-                Case &H2C : valeur = "i"
+                Case &H2B : valeur = "CLOCK"
+                Case &H2C : valeur = "I"
                 Case &H2D : valeur = "ATI"
                 Case &H2E : valeur = "RADIO"
-                Case &H2F : valeur = "TV Preview"
-                Case &H30 : valeur = "Channel list"
-                Case &H31 : valeur = "Video Desktop"
-                Case &H32 : valeur = "red"
-                Case &H33 : valeur = "green"
-                Case &H34 : valeur = "yellow"
-                Case &H35 : valeur = "blue"
-                Case &H36 : valeur = "rename TAB"
-                Case &H37 : valeur = "Acquire image"
-                Case &H38 : valeur = "edit image"
-                Case &H39 : valeur = "Full screen"
-                Case &H3A : valeur = "DVD Audio"
-                Case &H70 : valeur = "Cursor-left"
-                Case &H71 : valeur = "Cursor-right"
-                Case &H72 : valeur = "Cursor-up"
-                Case &H73 : valeur = "Cursor-down"
-                Case &H74 : valeur = "Cursor-up-left"
-                Case &H75 : valeur = "Cursor-up-right"
-                Case &H76 : valeur = "Cursor-down-right"
-                Case &H77 : valeur = "Cursor-down-left"
-                Case &H78 : valeur = "Left Mouse Button"
-                Case &H79 : valeur = "V-End"
-                Case &H7C : valeur = "Right Mouse Button"
-                Case &H7D : valeur = "X-End"
+                Case &H2F : valeur = "TV-PREVIEW"
+                Case &H30 : valeur = "CHANNEL-LIST"
+                Case &H31 : valeur = "VIDEO-DESKTOP"
+                Case &H32 : valeur = "RED"
+                Case &H33 : valeur = "GREEN"
+                Case &H34 : valeur = "YELLOW"
+                Case &H35 : valeur = "BLUE"
+                Case &H36 : valeur = "RENAME-TAB"
+                Case &H37 : valeur = "SNAPSHOT"
+                Case &H38 : valeur = "EDIT-IMAGE"
+                Case &H39 : valeur = "FULL-SCREEN"
+                Case &H3A : valeur = "DVD-AUDIO"
+                Case &H70 : valeur = "MOUSE-LEFT"
+                Case &H71 : valeur = "MOUSE-RIGHT"
+                Case &H72 : valeur = "MOUSE-UP"
+                Case &H73 : valeur = "MOUSE-DOWN"
+                Case &H74 : valeur = "MOUSE-UP-LEFT"
+                Case &H75 : valeur = "MOUSE-UP-RIGHT"
+                Case &H76 : valeur = "MOUSE-DOWN-RIGHT"
+                Case &H77 : valeur = "MOUSE-DOWN-LEFT"
+                Case &H78 : valeur = "LEFT-MOUSE-BUTTON"
+                Case &H79 : valeur = "V-END"
+                Case &H7C : valeur = "RIGHT-MOUSE-BUTTON"
+                Case &H7D : valeur = "X-END"
                 Case Else : valeur = "unknown"
             End Select
             WriteRetour(adresse, valeur)
@@ -1067,7 +1043,6 @@ Public Class rfxcom
     'OK
     Private Sub processARC()
         Try
-            'WriteLog("ERR: Process ARC pas encore géré")
             Dim group As Byte
             Dim unit As Byte
             Dim housecode As Char
@@ -1379,7 +1354,7 @@ Public Class rfxcom
     'pas géré
     Private Sub processrfxsensor()
         Try
-            'WriteLog("ERR: Process RFXSENSOR pas encore géré ")
+            WriteLog("ERR: Process RFXSENSOR pas encore géré ")
             'Dim barometer As Integer
             'Dim measured_value, humidity As Single
 
@@ -1658,10 +1633,10 @@ Public Class rfxcom
                 Case Else : adresse = "Unknown unit-"
             End Select
             Select Case recbuf(2)
-                Case &H80 : valeur = "All lights off"
-                Case &H90 : valeur = "All lights on"
-                Case &H88 : valeur = "Bright"
-                Case &H98 : valeur = "Dim"
+                Case &H80 : valeur = "ALL-LIGHTS-OFF "
+                Case &H90 : valeur = "ALL-LIGHTS-ON"
+                Case &H88 : valeur = "BRIGHT"
+                Case &H98 : valeur = "DIM"
                 Case Else
                     If (recbuf(2) And &H10) = 0 Then recbytes = 0 Else recbytes = &H1
                     If (recbuf(2) And &H8) <> 0 Then recbytes = recbytes + &H2
@@ -2252,6 +2227,24 @@ Public Class rfxcom
                 'Next
                 valeur = CStr(Round((((recbuf(4) And &HF) * 4096) + (recbuf(3) * 16) + (recbuf(2) >> 4) / 400.8), 1))
                 WriteRetour(adresse, valeur) 'en kg
+
+                ' 
+            ElseIf (recbuf(0) = &H1A Or recbuf(0) = &H2A Or recbuf(0) = &H3A) And recbits = 108 Then
+                '------------- OWL CM119 ---------------
+                oregon = True
+                adresse = CStr(recbuf(2) * 256)
+                'addr:" & Hex(RecBuf[2], 2)
+                'counter:" & CSng(RecBuf[1] AND &HF)
+                valeur = CLng(recbuf(10)) << 36
+                valeur += CLng(recbuf(9)) << 28
+                valeur += CLng(recbuf(8)) << 20
+                valeur += CLng(recbuf(7)) << 12
+                valeur += CLng(recbuf(6)) << 4
+                valeur += (CLng(recbuf(5)) >> 4) And &HF
+                valeur = valeur / 223000
+                'Checksum12() 
+                WriteRetour(adresse, valeur) 'total en kWh
+                'WriteRetour(adresse, CSng((recbuf(5) And &HF) * 65536) + CSng(recbuf(4) * 256) + CSng(recbuf(3))) 'now en Watt
             End If
             Return oregon
         Catch ex As Exception

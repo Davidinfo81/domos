@@ -1487,8 +1487,6 @@ Public Class domos_svc
                 For i = 0 To tabletemp.GetUpperBound(0)
                     If tabletemp(i)("timer") <= dateettime Then
                         '--- maj du timer du composant ---
-                        'date_pooling = DateAndTime.Now.AddSeconds(tabletemp(i)("composants_polling")) 'on initialise
-                        'tabletemp(i)("timer") = date_pooling.ToString("yyyy-MM-dd HH:mm:ss")
                         tabletemp(i)("timer") = DateAndTime.Now.AddSeconds(tabletemp(i)("composants_polling")).ToString("yyyy-MM-dd HH:mm:ss")
                         '--- test pour savoir si un thread est deja lancé sur ce composant ---
                         SyncLock lock_tablethread
@@ -1628,7 +1626,7 @@ Public Class domos_svc
         Try
             If args.Column.ColumnName = "composants_etat" Then
                 dateheure = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
-                If (args.Row.Item("composants_etat") = "ON" Or args.Row.Item("composants_etat") = "OFF") And args.Row.Item("composants_etat") = args.Row.Item("lastetat") Then
+                If (args.Row.Item("composants_etat").ToString = "ON" Or args.Row.Item("composants_etat").ToString = "OFF") And args.Row.Item("composants_etat").ToString = args.Row.Item("lastetat").ToString Then
                     'on modifie uniquement la data car le status ON-OFF n'a pas changé (detecteur de mouvement par ex)
                     err = mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & args.Row.Item("composants_id") & "'")
                     If err <> "" Then log("DOM: table_comp_changed SQL : " & err, 2)
@@ -1938,7 +1936,7 @@ Public Class domos_svc
                     Else
                         log("MAC :  -> Action composant : composant ID=" & contenu(1) & " non trouvé", 2)
                     End If
-                    wait(100)
+                    wait(50) 'pause de 0.5 secondes entre chaque action
 
                     '--------------------------- ME = Etat d'un composant -------------------------
                 ElseIf contenu(0) = "ME" Then 'c'est l'etat d'un composant à modifier :  : [ME#compid#Etat]

@@ -246,35 +246,36 @@ Public Class plcbus
                 Return ""
             End Try
 
-            '--- TriPhase ---
-            If domos_svc.PLC_triphase Then _cmd = _cmd Or &H40
-            '--- request ack ---
-            'If bAck Then _cmd = _cmd Or &H20
-
-            'correction data suivant la commande
-            If commande = "ON" Then
-                data1 = 100
-                data2 = 0
-            ElseIf commande = "OFF" Then
-                data1 = 0
-                data2 = 0
-            End If
-
-            Dim donnee() As Byte = {&H2, &H5, usercode, _adresse, _cmd, data1, data2, &H3}
             Try
+                '--- TriPhase ---
+                If domos_svc.PLC_triphase Then _cmd = _cmd Or &H40
+                '--- request ack ---
+                'If bAck Then _cmd = _cmd Or &H20
+
+                'correction data suivant la commande
+                If commande = "ON" Then
+                    data1 = 100
+                    data2 = 0
+                ElseIf commande = "OFF" Then
+                    data1 = 0
+                    data2 = 0
+                End If
+
+                Dim donnee() As Byte = {&H2, &H5, usercode, _adresse, _cmd, data1, data2, &H3}
+
                 'ecriture sur le port
                 port.Write(donnee, 0, donnee.Length)
-                port.Write(donnee, 0, donnee.Length) 'on ecrit deux fois : voir la norme PLCBUS
+                'port.Write(donnee, 0, donnee.Length) 'on ecrit deux fois : voir la norme PLCBUS
 
                 'gestion des acks (sauf pour les status_request car pas important et encombre le port)
                 If Not attente_ack() And commande <> "STATUS_REQUEST" And commande <> "GetOnlyOnIdPulse" And commande <> "GetAllIdPulse" And commande <> "ReportAllIdPulse3Phase" And commande <> "ReportOnlyOnIdPulse3Phase" Then
                     'pas de ack, on relance l ordre
-                    domos_svc.log("PLC : Ecrire : Pas de Ack -> resend : " & adresse & " : " & commande & " " & data1 & "-" & data2, 10)
+                    domos_svc.log("PLC : Ecrire : Pas de Ack -> resend : " & adresse & " : " & commande & " " & data1 & "-" & data2, 2)
                     port.Write(donnee, 0, donnee.Length)
-                    port.Write(donnee, 0, donnee.Length) 'on ecrit deux fois : voir la norme PLCBUS
+                    'port.Write(donnee, 0, donnee.Length) 'on ecrit deux fois : voir la norme PLCBUS
                     If Not attente_ack() Then
                         'pas de ack > NOK
-                        domos_svc.log("PLC : Ecrire : Pas de Ack * 2 --> " & adresse & " : " & commande & " " & data1 & "-" & data2, 2)
+                        domos_svc.log("PLC : Ecrire : Pas de Ack --> " & adresse & " : " & commande & " " & data1 & "-" & data2, 2)
                         Return "" 'on renvoi rien car le composant n'a pas recu l'ordre
                     End If
                 End If
@@ -298,18 +299,18 @@ Public Class plcbus
     End Function
 
     Private Function attente_ack() As Boolean
-        'test si on recoit le ack
+        'test si on recoit le ack pendant 1.5 secondes
         Dim nbtest As Integer = 0
-        While nbtest < 13
+        While nbtest < 15
             If ackreceived Then 'ack recu on sort
                 ackreceived = False
-                nbtest = 100
+                Return True
             Else
                 nbtest += 1
                 domos_svc.wait(10) 'on attend 0.1s
             End If
         End While
-        If nbtest = 100 Then Return True Else Return False
+        Return False
     End Function
 
     Private Sub DataReceived(ByVal sender As Object, ByVal e As SerialDataReceivedEventArgs)
