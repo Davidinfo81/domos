@@ -35,7 +35,7 @@
 		<tr><td align=center><div class=\"plan\" id=\"plan\" style=\"padding:5px;\">
 			<link rel=\"stylesheet\" type=\"text/css\" href=\"dhtmlx/dhtmlx.css\">
 			<script  src=\"dhtmlx/dhtmlx.js\"></script>
-			<div id=\"gridbox\" style=\"width:915px;height:515px;overflow:hidden\"></div> 
+			<div id=\"gridbox\" style=\"width:915px;height:535px;overflow:hidden\"></div> 
 			<script>
 				mygrid = new dhtmlXGridObject('gridbox');
 				mygrid.setImagePath('./dhtmlx/imgs/');
@@ -43,7 +43,7 @@
 				mygrid.setHeader('Norme,Nom,Graphe,Description');
 				mygrid.setInitWidths('100,100,100,*');
 				mygrid.setColAlign('center,left,center,left');
-				mygrid.setColTypes('co,ed,co,ed'); 
+				mygrid.setColTypes('coro,ro,coro,ro'); 
 				mygrid.setColSorting('str,str,str,str');
 				mygrid.getCombo(0).put('WIR','1-Wire');
 				mygrid.getCombo(0).put('WI2','1-Wire 2');
@@ -61,12 +61,7 @@
 				myDataProcessor = new dataProcessor('pages/dhtmlx_update_modeles.php');
 				myDataProcessor.init(mygrid);
 				myDataProcessor.enableUTFencoding(false);
-				function deletee() {
-					if (confirm('Supprimer ?')) {mygrid.deleteRow(mygrid.getSelectedId());}
-				}
 			</script>
-			<input type=\"button\" name=\"a1\" value=\"Ajouter\" onClick=\"mygrid.addRow((new Date()).valueOf(),['WIR','','0',''],0)\" class=\"formsubmit\">
-			<input type=\"button\" name=\"a1\" value=\"Supprimer\" onClick=\"deletee()\" class=\"formsubmit\">
 		</div></td></tr>
 	";
 ?>
