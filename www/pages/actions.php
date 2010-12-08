@@ -12,7 +12,7 @@ case "releve" :
 	header("Cache-Control: no-cache, must-revalidate");
 	header("Content-type: application/xml"); 
 	$xml="<resultats>\n";
-	$request="select composants_id,composants_nom,composants_etat,plan_nomplan,plan_top,plan_left from composants, plan where plan.plan_nomplan like \"$plan%\" and plan.plan_visible=\"1\" and plan.plan_composant=composants.composants_id";
+	$request="select composants_id,composants_nom,composants_etat,composants_etatdate,plan_nomplan,plan_top,plan_left from composants, plan where plan.plan_nomplan like \"$plan%\" and plan.plan_visible=\"1\" and plan.plan_composant=composants.composants_id";
 	$resultat = mysql_query($request);
 	$num = mysql_num_rows($resultat);
 	for ($i=0;$i<$num;$i++) {
@@ -22,7 +22,8 @@ case "releve" :
 		$pos_top = mysql_result($resultat,$i,"plan_top");
 		$pos_left = mysql_result($resultat,$i,"plan_left");
 		$valeur = mysql_result($resultat,$i,"composants_etat");
-		$xml.= "<resultat type=\"".$plan[1]."\" comp=\"$comp\" compnom=\"".dequote($compnom)."\" top=\"$pos_top\" left=\"$pos_left\" valeur=\"$valeur\" />\n";
+		$etatdate = mysql_result($resultat,$i,"composants_etatdate");
+		$xml.= "<resultat type=\"".$plan[1]."\" comp=\"$comp\" compnom=\"".dequote($compnom)."\" top=\"$pos_top\" left=\"$pos_left\" valeur=\"$valeur\" etatdate=\"$etatdate\" />\n";
 	}
 	$xml.="</resultats>";
 	echo utf8_encode($xml);

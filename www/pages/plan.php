@@ -41,7 +41,7 @@ echo "<script type=\"text/javascript\">
 						monspan.className = 'spanun';
 						var mona = document.createElement('a');
 						mona.setAttribute('href','composants-grapher-' + resultat.getAttribute('comp') + '.html');
-						mona.setAttribute('title',resultat.getAttribute('compnom'));
+						mona.setAttribute('title',resultat.getAttribute('compnom') + ' - ' + resultat.getAttribute('etatdate'));
 						var monimg = document.createElement('img');
 						monimg.setAttribute('src',\"./images/temp.png\");
 						monimg.style.width = '12px';
@@ -58,7 +58,7 @@ echo "<script type=\"text/javascript\">
 						monspan.className = 'spanun';
 						var mona = document.createElement('a');
 						mona.setAttribute('href','composants-grapher-' + resultat.getAttribute('comp') + '.html');
-						mona.setAttribute('title',resultat.getAttribute('compnom'));
+						mona.setAttribute('title',resultat.getAttribute('compnom') + ' - ' + resultat.getAttribute('etatdate'));
 						var monimg = document.createElement('img');
 						monimg.setAttribute('src',\"./images/water.png\");
 						monimg.style.width = '12px';
@@ -76,7 +76,7 @@ echo "<script type=\"text/javascript\">
 						monspan.style.width = '150px';
 						var mona = document.createElement('a');
 						mona.setAttribute('href','composants-relever-' + resultat.getAttribute('comp') + '.html');
-						mona.setAttribute('title',resultat.getAttribute('compnom'));
+						mona.setAttribute('title',resultat.getAttribute('compnom') + ' - ' + resultat.getAttribute('etatdate'));
 						texte=resultat.getAttribute('valeur');
 						monaText = document.createTextNode(texte);
 						mona.appendChild(monaText);
@@ -88,7 +88,7 @@ echo "<script type=\"text/javascript\">
 						monspan.style.width = '12px';
 						var mona = document.createElement('a');
 						mona.setAttribute('href','javascript:sendsocket(\"([AC#' + resultat.getAttribute('comp') + '#OFF])\")');
-						mona.setAttribute('title','Ouvrir ' + resultat.getAttribute('compnom'));
+						mona.setAttribute('title','Ouvrir ' + resultat.getAttribute('compnom') + ' - ' + resultat.getAttribute('etatdate'));
 						var monimg = document.createElement('img');
 						monimg.setAttribute('src',\"./images/s_up.png\");
 						monimg.style.width = '12px';
@@ -99,7 +99,7 @@ echo "<script type=\"text/javascript\">
 						monspan.appendChild(monbr);
 						var mona = document.createElement('a');
 						mona.setAttribute('href','javascript:sendsocket(\"([AC#' + resultat.getAttribute('comp') + '#ON])\")');
-						mona.setAttribute('title','Fermer ' + resultat.getAttribute('compnom'));
+						mona.setAttribute('title','Fermer ' + resultat.getAttribute('compnom') + ' - ' + resultat.getAttribute('etatdate'));
 						var monimg = document.createElement('img');
 						monimg.setAttribute('src',\"./images/s_down.png\");
 						monimg.style.width = '12px';
@@ -113,7 +113,7 @@ echo "<script type=\"text/javascript\">
 						monspan.style.width = '35px';
 						var mona = document.createElement('a');
 						mona.setAttribute('href','javascript:sendsocket(\"([AC#' + resultat.getAttribute('comp') + '#OFF])\")');
-						mona.setAttribute('title','Ouvrir ' + resultat.getAttribute('compnom'));
+						mona.setAttribute('title','Ouvrir ' + resultat.getAttribute('compnom') + ' - ' + resultat.getAttribute('etatdate'));
 						var monimg = document.createElement('img');
 						monimg.setAttribute('src',\"./images/s_up.png\");
 						monimg.style.width = '12px';
@@ -124,7 +124,7 @@ echo "<script type=\"text/javascript\">
 						monspan.appendChild(monbr);	
 						var mona = document.createElement('a');
 						mona.setAttribute('href','javascript:sendsocket(\"([AC#' + resultat.getAttribute('comp') + '#ON])\")');
-						mona.setAttribute('title','Fermer ' + resultat.getAttribute('compnom'));
+						mona.setAttribute('title','Fermer ' + resultat.getAttribute('compnom') + ' - ' + resultat.getAttribute('etatdate'));
 						var monimg = document.createElement('img');
 						monimg.setAttribute('src',\"./images/s_down.png\");
 						monimg.style.width = '12px';
@@ -140,10 +140,10 @@ echo "<script type=\"text/javascript\">
 						var monimg = document.createElement('img');
 						if (resultat.getAttribute('valeur')==0) {
 							monimg.setAttribute('src',\"./images/volet_ferme.gif\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' Fermé');
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' Fermé' + ' - ' + resultat.getAttribute('etatdate'));
 						} else {
 							monimg.setAttribute('src',\"./images/volet_ouvert.gif\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' Ouvert');
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' Ouvert' + ' - ' + resultat.getAttribute('etatdate'));
 						}
 						monimg.style.width = '19px';
 						monimg.style.border = '0px';
@@ -156,18 +156,12 @@ echo "<script type=\"text/javascript\">
 						var mona = document.createElement('a');
 						mona.setAttribute('href','composants-relever-' + resultat.getAttribute('comp') + '.html');
 						var monimg = document.createElement('img');
-						var date_du_jour, heure, minute;
-						date_du_jour = new Date();
-						heure = date_du_jour.getHours();
-						minute = date_du_jour.getMinutes();
-						if (heure<10) {heure = '0'+heure;}
-						if (minute<10) {minute = '0'+ minute}
 						if (resultat.getAttribute('valeur')==0) {
 							monimg.setAttribute('src',\"./images/jour_nuit.png\");
-							mona.setAttribute('title','Nuit - '+heure+':'+minute);
+							mona.setAttribute('title','Nuit - ' + resultat.getAttribute('etatdate'));
 						} else {
 							monimg.setAttribute('src',\"./images/jour_jour.png\");
-							mona.setAttribute('title','Jour - '+heure+':'+minute);
+							mona.setAttribute('title','Jour - ' + resultat.getAttribute('etatdate'));
 						}
 						monimg.style.width = '60px';
 						monimg.style.border = '0px';
@@ -182,16 +176,16 @@ echo "<script type=\"text/javascript\">
 						var monimg = document.createElement('img');
 						if (resultat.getAttribute('valeur')=='OFF') {
 							monimg.setAttribute('src',\"./images/ampoule_off.png\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF');
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF' + ' - ' + resultat.getAttribute('etatdate'));
 						} else if (resultat.getAttribute('valeur')=='ON') {
 							monimg.setAttribute('src',\"./images/ampoule_on.png\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON');
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON' + ' - ' + resultat.getAttribute('etatdate'));
 						} else if (resultat.getAttribute('valeur') = 0){
 							monimg.setAttribute('src',\"./images/ampoule_off.png\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF');
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF' + ' - ' + resultat.getAttribute('etatdate'));
 						} else {
 							monimg.setAttribute('src',\"./images/ampoule_on.png\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON-' + resultat.getAttribute('valeur'));
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON-' + resultat.getAttribute('valeur') + ' - ' + resultat.getAttribute('etatdate'));
 						}
 						monimg.style.width = '16px';
 						monimg.style.height = '16px';
@@ -206,7 +200,7 @@ echo "<script type=\"text/javascript\">
 						monspan.style.width = '35px';
 						var mona = document.createElement('a');
 						mona.setAttribute('href','javascript:sendsocket(\"([AC#' + resultat.getAttribute('comp') + '#ON])\")');
-						mona.setAttribute('title','Allumer ' + resultat.getAttribute('compnom'));
+						mona.setAttribute('title','Allumer ' + resultat.getAttribute('compnom') + ' - ' + resultat.getAttribute('etatdate'));
 						var monimg = document.createElement('img');
 						monimg.setAttribute('src',\"./images/s_on.gif\");
 						monimg.style.width = '12px';
@@ -218,7 +212,7 @@ echo "<script type=\"text/javascript\">
 						monspan.appendChild(monbr);
 						var mona = document.createElement('a');
 						mona.setAttribute('href','javascript:sendsocket(\"([AC#' + resultat.getAttribute('comp') + '#OFF])\")');
-						mona.setAttribute('title','Eteindre ' + resultat.getAttribute('compnom'));
+						mona.setAttribute('title','Eteindre ' + resultat.getAttribute('compnom') + ' - ' + resultat.getAttribute('etatdate'));
 						var monimg = document.createElement('img');
 						monimg.setAttribute('src',\"./images/s_off.gif\");
 						monimg.style.width = '12px';
@@ -238,16 +232,16 @@ echo "<script type=\"text/javascript\">
 						var monimg = document.createElement('img');
 						if (resultat.getAttribute('valeur')=='OFF') {
 							monimg.setAttribute('src',\"./images/ampoule_off.png\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF');
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF' + ' - ' + resultat.getAttribute('etatdate'));
 						} else if (resultat.getAttribute('valeur')=='ON') {
 							monimg.setAttribute('src',\"./images/ampoule_on.png\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON');
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON' + ' - ' + resultat.getAttribute('etatdate'));
 						} else if (resultat.getAttribute('valeur') == 0){
 							monimg.setAttribute('src',\"./images/ampoule_off.png\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF');
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF' + ' - ' + resultat.getAttribute('etatdate'));
 						} else {
 							monimg.setAttribute('src',\"./images/ampoule_on.png\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON-' + resultat.getAttribute('valeur'));
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON-' + resultat.getAttribute('valeur') + ' - ' + resultat.getAttribute('etatdate'));
 						}
 						monimg.style.width = '16px';
 						monimg.style.height = '16px';
@@ -263,10 +257,10 @@ echo "<script type=\"text/javascript\">
 						var monimg = document.createElement('img');
 						if (resultat.getAttribute('valeur')=='OFF') {
 							monimg.setAttribute('src',\"./images/motion_off.gif\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF');
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' OFF' + ' - ' + resultat.getAttribute('etatdate'));
 						} else {
 							monimg.setAttribute('src',\"./images/motion_on.gif\");
-							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON');
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' ON' + ' - ' + resultat.getAttribute('etatdate'));
 						}
 						monimg.style.width = '16px';
 						monimg.style.height = '16px';
@@ -279,7 +273,7 @@ echo "<script type=\"text/javascript\">
 						monspan.className = 'spanun';
 						var mona = document.createElement('a');
 						mona.setAttribute('href','composants-relever-' + resultat.getAttribute('comp') + '.html');
-						mona.setAttribute('title',resultat.getAttribute('compnom'));
+						mona.setAttribute('title',resultat.getAttribute('compnom') + ' - ' + resultat.getAttribute('etatdate'));
 						texte=resultat.getAttribute('valeur');
 						monaText = document.createTextNode(texte);
 						mona.appendChild(monaText);
