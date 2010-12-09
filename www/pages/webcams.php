@@ -16,7 +16,7 @@ echo "<tr height=20><td colspan=5 align=center><div class=\"plan\" id=\"plan\">"
 
 echo "<div class=\"plan\">";
 
-	$sql = "SELECT * from webcams order by webcams_nom";
+	$sql = "SELECT * from webcams order by webcams_id";
 	$res = mysql_query($sql);
 	if(mysql_num_rows($res)>0){
 		while($row=mysql_fetch_array($res)){
