@@ -249,10 +249,11 @@ Public Class plcbus
             Try
                 '--- TriPhase ---
                 If domos_svc.PLC_triphase Then _cmd = _cmd Or &H40
-                '--- request ack ---
-                'If bAck Then _cmd = _cmd Or &H20
-
-                'correction data suivant la commande
+                '--- request acks --- (sauf pour les status_request car pas important et encombre le port)
+                If commande <> "STATUS_REQUEST" And commande <> "GetOnlyOnIdPulse" And commande <> "GetAllIdPulse" And commande <> "ReportAllIdPulse3Phase" And commande <> "ReportOnlyOnIdPulse3Phase" Then
+                	_cmd = _cmd Or &H20
+                End If
+                ' --- correction data suivant la commande ---
                 If commande = "ON" Then
                     data1 = 100
                     data2 = 0
