@@ -2164,7 +2164,13 @@ Public Class domos_svc
                                             Else
                                                 log("ECR : PLC : ecrit " & tabletmp(0)("composants_adresse") & " : " & valeur & " " & valeur2 & "-" & valeur3, 5)
                                             End If
-                                            err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, valeur2, valeur3)
+                                            If tabletmp(0)("composants_modele_nom") = "2263-2264" Or tabletmp(0)("composants_modele_nom") = "2267-2268" Then
+                                                'lampe ou prise, on ecrit deux fois
+                                                err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, valeur2, valeur3, True)
+                                            Else
+                                                'volets... on ecrit une seul fois (sinon ca envoie deux ordre ON
+                                                err = plcbus.ecrire(tabletmp(0)("composants_adresse"), valeur, valeur2, valeur3, False)
+                                            End If
                                             If err <> "" Then
                                                 'modification de l'etat en memoire
                                                 tabletmp(0)("lastetat") = tabletmp(0)("composants_etat") 'on garde l'ancien etat en memoire pour le test de lastetat

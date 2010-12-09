@@ -223,7 +223,7 @@ Public Class plcbus
         Return Chr(x + 65) & (y + 1)
     End Function
 
-    Public Function ecrire(ByVal adresse As String, ByVal commande As String, ByVal data1 As Integer, ByVal data2 As Integer) As String
+    Public Function ecrire(ByVal adresse As String, ByVal commande As String, ByVal data1 As Integer, ByVal data2 As Integer, ByVal ecriretwice As Boolean) As String
         'adresse= adresse du composant : A1
         'commande : ON, OFF...
         'data1 et 2, voir description des actions plus haut ou doc plcbus
@@ -250,9 +250,9 @@ Public Class plcbus
                 '--- TriPhase ---
                 If domos_svc.PLC_triphase Then _cmd = _cmd Or &H40
                 '--- request acks --- (sauf pour les status_request car pas important et encombre le port)
-                If commande <> "STATUS_REQUEST" And commande <> "GetOnlyOnIdPulse" And commande <> "GetAllIdPulse" And commande <> "ReportAllIdPulse3Phase" And commande <> "ReportOnlyOnIdPulse3Phase" Then
-                	_cmd = _cmd Or &H20
-                End If
+                'If commande <> "STATUS_REQUEST" And commande <> "GetOnlyOnIdPulse" And commande <> "GetAllIdPulse" And commande <> "ReportAllIdPulse3Phase" And commande <> "ReportOnlyOnIdPulse3Phase" Then
+                '    _cmd = _cmd Or &H20
+                'End If
                 ' --- correction data suivant la commande ---
                 If commande = "ON" Then
                     data1 = 100
@@ -266,7 +266,7 @@ Public Class plcbus
 
                 'ecriture sur le port
                 port.Write(donnee, 0, donnee.Length)
-                'port.Write(donnee, 0, donnee.Length) 'on ecrit deux fois : voir la norme PLCBUS
+                If ecriretwice Then port.Write(donnee, 0, donnee.Length) 'on ecrit deux fois : voir la norme PLCBUS
 
                 'gestion des acks (sauf pour les status_request car pas important et encombre le port)
                 If Not attente_ack() And commande <> "STATUS_REQUEST" And commande <> "GetOnlyOnIdPulse" And commande <> "GetAllIdPulse" And commande <> "ReportAllIdPulse3Phase" And commande <> "ReportOnlyOnIdPulse3Phase" Then
@@ -357,7 +357,6 @@ Public Class plcbus
         Dim data2 As String = ""
         Dim actif As Boolean
         Dim listeactif As String = ""
-        Dim ack As Boolean = False
         Dim TblBits(7) As Boolean
         Dim unbyte As Byte
 
@@ -374,12 +373,10 @@ Public Class plcbus
                     TblBits(Iteration) = unbyte And 1
                     unbyte >>= 1
                 Next
-                If TblBits(4) Then ack = True
-
-                If ack Then
+                If TblBits(4) Then
                     'c'est un Ack
                     ackreceived = True
-                    If plcbus_commande = "STATUS_REQUEST" Or plcbus_commande <> "GetOnlyOnIdPulse" Or plcbus_commande <> "GetAllIdPulse" Then
+                    If plcbus_commande = "STATUS_REQUEST" Or plcbus_commande = "GetOnlyOnIdPulse" Or plcbus_commande = "GetAllIdPulse" Then
                         domos_svc.log("DBG: " & "PLC : <- ACK :" & plcbus_commande & "-" & plcbus_adresse & " : " & data1 & "-" & data2 & " : " & comBuffer(7), 10)
                     Else
                         domos_svc.log("PLC : <- ACK :" & plcbus_commande & "-" & plcbus_adresse & " : " & data1 & "-" & data2 & " : " & comBuffer(7), 9)
