@@ -291,9 +291,14 @@ case "relever" :
 	$composants_id=@$_GET["composants_id"];
 	$resultat = mysql_query("select * from composants where composants_id='$composants_id'");
 	$composants_nom = mysql_result($resultat,0,"composants_nom");
-	$composants_modele = mysql_result($resultat,0,"composants_modele");	
+	$composants_modele = mysql_result($resultat,0,"composants_modele");
 	$resultat = mysql_query("select composants_modele_graphe from composants_modele where composants_modele_id='$composants_modele'");
-	$composants_modele_graphe = mysql_result($resultat,0,"composants_modele_graphe");	
+	$composants_modele_graphe = mysql_result($resultat,0,"composants_modele_graphe");
+	$logs_page=isset($_GET["logs_page"])?$_GET["logs_page"]:1;
+	$resultat = mysql_query("select config_valeur from config where config_nom='logs_nbparpage'");
+	$limite = mysql_result($resultat,0,"config_valeur");
+	$nbrelever = mysql_fetch_row(mysql_query("select count(0) from releve where releve_composants='$composants_id'"));
+	$nbrelever = $nbrelever[0];
 	echo "<tr height=\"23\" bgcolor=\"#5680CB\">
 		<td align=left class=\"titrecolonne\"> &nbsp;..:: Relevé du composant : $composants_nom ::..</td>
 		<td align=right class=\"titrecolonne\"><a href=\"javascript:history.go(-1);\"><img src=\"./images/plus.gif\" border=\"0\"> Retour</a>&nbsp;&nbsp;&nbsp;";
@@ -304,14 +309,78 @@ case "relever" :
 			<link rel=\"stylesheet\" type=\"text/css\" href=\"dhtmlx/dhtmlx.css\">
 			<script  src=\"dhtmlx/dhtmlx.js\"></script>
 			<div id=\"gridbox\" style=\"width:920px;height:510px;overflow:hidden\"></div> 
-			<span id='nbrelevex'>Nb relevés : </span>
+			<span id='nbrelevex'>Nb relevés : $nbrelever</span>
 			<input type=\"button\" name=\"a1\" value=\"Retour\" onClick=\"javascript:history.go(-1)\" class=\"formsubmit\">
 			<input type=\"button\" name=\"a1\" value=\"Ajouter\" onClick=\"mygrid.addRow((new Date()).valueOf(),[$composants_id,'2000-01-01 00:00:00',''],0)\" class=\"formsubmit\">
 			<input type=\"button\" name=\"a1\" value=\"Supprimer\" onClick=\"deletee()\" class=\"formsubmit\">
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<span id='pages' style='display: inline-block;width:250px;align:center;text-align:center;'> </span>
 			<script>
-				function setcounter() {
-					var span = document.getElementById('nbrelevex');
-					span.innerHTML = 'Nb relevés : '+mygrid.getRowsNum();
+				var mygrid;
+				var limitmin;
+				var limitmax;
+				var nblogs;
+				var nbjour;
+				var numpage;
+				var timeoutHnd;
+				limitmin=0;
+				limitmax=$limite;
+				nblogs=$nbrelever;
+				nbjour=1;
+				numpage=1;
+				numpage=1;
+				numpageaffiche=7;
+				timeoutHnd='';
+				function setpages() {
+					var span = document.getElementById('pages');
+					if (limitmax < nblogs) {
+						texte='';
+						if (numpage!=1) {texte='<a href=javascript:refresh('+nblogs+',' + (numpage-1) + ')><</a>';}
+						else {texte='<';}
+						//Affichage numero 1
+						if (numpage==1) {texte=texte + ' <b>1</b>';}
+						else {texte=texte + ' <a href=javascript:refresh('+nblogs+',1)>1</a>';}
+
+						if (numpage>(numpageaffiche-2)) {
+							minpage=(numpage-((numpageaffiche-1)/2))*limitmax;
+							if (numpage>=(Math.ceil(nblogs/limitmax)-((numpageaffiche-1)/2))) {minpage=(Math.ceil(nblogs/limitmax)-numpageaffiche)*limitmax}
+							texte=texte + ' .';
+							if (numpage>=(Math.ceil(nblogs/limitmax)-((numpageaffiche-1)/2)-1)) {texte=texte + '..';}
+						} else {minpage=2*limitmax;}
+						if (numpage<((nblogs/limitmax)-((numpageaffiche-1)/2)-1)) {
+							maxpage=((numpage+((numpageaffiche-1)/2)+1)*limitmax);
+							if (numpage<=((numpageaffiche-1)/2)+2) {maxpage=(numpageaffiche+2)*limitmax}
+						} else {maxpage=nblogs;}
+						for (i=minpage; i<maxpage; i=i+limitmax) {
+							nompage=i/limitmax;
+							if (nompage<=9) {nompage2='&nbsp;'+nompage;} else {nompage2=nompage;}
+							if (nompage==numpage) {texte=texte + ' <b>' + nompage2 + '</b>';}
+							else {texte=texte + ' <a href=javascript:refresh('+nblogs+','+nompage+')>' + nompage2 + '</a>';}
+						}
+						if (numpage<(Math.ceil(nblogs/limitmax)-((numpageaffiche-1)/2)-1)) {
+							texte=texte + ' .';
+							if (numpage<=(numpageaffiche-2)) {texte=texte + '..';}
+						}
+
+						//Affichage dernier numero
+						numpagemax=Math.ceil(nblogs/limitmax);
+						if (numpage==numpagemax) {texte=texte + ' <b>'+numpagemax+'</b>';}
+						else {texte=texte + ' <a href=javascript:refresh('+nblogs+','+numpagemax+')>'+numpagemax+'</a>';}
+	
+						if (numpage!=(nompage+1)) {texte=texte + ' <a href=javascript:refresh('+nblogs+','+(numpage+1)+')>></a>';}
+						else {texte=texte + ' >';}
+						span.innerHTML = texte;
+					} else {
+						span.innerHTML = '';
+					}
+				}
+				function refresh(nblog,numpag) {
+					numpage=numpag;
+					limitmin=(numpage-1) * limitmax;
+					nblogs=nblog;
+					mygrid.clearAll();
+					mygrid.loadXML('pages/dhtmlx_get.php?action=relever&compid=$composants_id&limitmin='+limitmin+'&limitmax='+limitmax);
+					setpages();
 				}
 				function deletee() {
 					x = mygrid.getSelectedId();
@@ -332,15 +401,15 @@ case "relever" :
 				mygrid.init();
 				mygrid.enableSmartRendering(true,50);
 				//mygrid.attachEvent('onXLE', setCounter);
-				mygrid.loadXML('pages/dhtmlx_get.php?action=relever&compid=$composants_id&limitmin=0&limitmax=10000');
+				mygrid.loadXML('pages/dhtmlx_get.php?action=relever&compid=$composants_id&limitmin=0&limitmax=$limite');
 				myDataProcessor = new dataProcessor('pages/dhtmlx_update_relever.php');
 				myDataProcessor.init(mygrid);
 				myDataProcessor.enableUTFencoding(false);
-				timeoutHnd = setTimeout(setcounter, 200);
-				timeoutHnd = setTimeout(setcounter, 500);
-				timeoutHnd = setTimeout(setcounter, 1000);
-				timeoutHnd = setTimeout(setcounter, 10000);
-				timeoutHnd = setTimeout(setcounter, 30000);
+				timeoutHnd = setTimeout(setpages, 200);
+				timeoutHnd = setTimeout(setpages, 500);
+				timeoutHnd = setTimeout(setpages, 1000);
+				timeoutHnd = setTimeout(setpages, 10000);
+				timeoutHnd = setTimeout(setpages, 30000);
 			</script>
 		</div></td></tr>
 	";

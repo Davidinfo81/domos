@@ -59,7 +59,7 @@ switch ($action) {
 				<a href='javascript:refresh2(\"logs_source\",\"2\")' title='$limite dernières Erreurs'> Err </a> |
 				<a href='javascript:refresh2(\"logs_description\",\"Alert\")' title='$limite dernières Alertes'> Alert </a>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				<span id='pages'> </span>
+				<span id='pages' style='display: inline-block;width:250px;align:center;text-align:center;'> </span>
 		
 				<script>
 					var mygrid;
@@ -75,36 +75,52 @@ switch ($action) {
 					nbjour=1;
 					numpage=1;
 					nompage=1;
+					numpageaffiche=7;
 					timeoutHnd='';
 					function setpages() {
 						var span = document.getElementById('pages');
 						if (limitmax < nblogs) {
 							texte='';
-							if (numpage!=1) {texte=texte + ' <a href=javascript:refresh('+nbjour+','+nblogs+',' + (numpage-1) + ')><</a>';}
+							if (numpage!=1) {texte='<a href=javascript:refresh('+nbjour+','+nblogs+',' + (numpage-1) + ')><</a>';}
+							else {texte='<';}
 							//Affichage numero 1
 							if (numpage==1) {texte=texte + ' <b>1</b>';}
 							else {texte=texte + ' <a href=javascript:refresh('+nbjour+','+nblogs+',1)>1</a>';}
-							
-							if (numpage>5) {minpage=(numpage-3)*limitmax;texte=texte + ' ... ';} else {minpage=2*limitmax;}
-							if (numpage<((nblogs/limitmax)-4)) {maxpage=((numpage+4)*limitmax);} else {maxpage=nblogs;}
+	
+							if (numpage>(numpageaffiche-2)) {
+								minpage=(numpage-((numpageaffiche-1)/2))*limitmax;
+								if (numpage>=(Math.ceil(nblogs/limitmax)-((numpageaffiche-1)/2))) {minpage=(Math.ceil(nblogs/limitmax)-numpageaffiche)*limitmax}
+								texte=texte + ' .';
+								if (numpage>=(Math.ceil(nblogs/limitmax)-((numpageaffiche-1)/2)-1)) {texte=texte + '..';}
+							} else {minpage=2*limitmax;}
+							if (numpage<((nblogs/limitmax)-((numpageaffiche-1)/2)-1)) {
+								maxpage=((numpage+((numpageaffiche-1)/2)+1)*limitmax);
+								if (numpage<=((numpageaffiche-1)/2)+2) {maxpage=(numpageaffiche+2)*limitmax}
+							} else {maxpage=nblogs;}
 							for (i=minpage; i<maxpage; i=i+limitmax) {
 								nompage=i/limitmax;
-								if (nompage==numpage) {texte=texte + ' <b>' + nompage + '</b>';}
-								else {texte=texte + ' <a href=javascript:refresh('+nbjour+','+nblogs+',' + nompage + ')>' + nompage + '</a>';}
+								if (nompage<=9) {nompage2='&nbsp;'+nompage;} else {nompage2=nompage;}
+								if (nompage==numpage) {texte=texte + ' <b>' + nompage2 + '</b>';}
+								else {texte=texte + ' <a href=javascript:refresh('+nbjour+','+nblogs+','+nompage+')>' + nompage2 + '</a>';}
 							}
-							if (numpage<(Math.ceil(nblogs/limitmax)-5)) {texte=texte + ' ... ';}
-							
+							if (numpage<(Math.ceil(nblogs/limitmax)-((numpageaffiche-1)/2)-1)) {
+								texte=texte + ' .';
+								if (numpage<=(numpageaffiche-2)) {texte=texte + '..';}
+							}
+	
 							//Affichage dernier numero
 							numpagemax=Math.ceil(nblogs/limitmax);
 							if (numpage==numpagemax) {texte=texte + ' <b>'+numpagemax+'</b>';}
 							else {texte=texte + ' <a href=javascript:refresh('+nbjour+','+nblogs+','+numpagemax+')>'+numpagemax+'</a>';}
 		
-							if (numpage!=(nompage+1)) {texte=texte + ' <a href=javascript:refresh('+nbjour+','+nblogs+',' + (numpage+1) + ')>></a>';}
+							if (numpage!=(nompage+1)) {texte=texte + ' <a href=javascript:refresh('+nbjour+','+nblogs+','+(numpage+1)+')>></a>';}
+							else {texte=texte + ' >';}
 							span.innerHTML = texte;
 						} else {
 							span.innerHTML = '';
 						}
 					}
+
 					function refresh(nbjou,nblog,numpag) {
 						nbjour=nbjou;
 						numpage=numpag;

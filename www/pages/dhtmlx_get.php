@@ -114,7 +114,6 @@ case "relever" :
 	$compid=isset($_GET["compid"])?$_GET["compid"]:"";
 	$limitmin=isset($_GET["limitmin"])?$_GET["limitmin"]:0;
 	$limitmax=isset($_GET["limitmax"])?$_GET["limitmax"]:10000;
-	
 	$sql = "SELECT * from releve where releve_composants='$compid' order by releve_dateheure desc limit ".$limitmin.",".$limitmax." ";
 	$res = mysql_query ($sql);
 	if($res){
@@ -204,13 +203,8 @@ case "logs" :
 			print("<cell><![CDATA[".$row['logs_date']."]]></cell>");
 			print("<cell><![CDATA[");
 			$description=quote(dequote($row['logs_description']));
-			//If (strpos(strtoupper($row['logs_description']),"ERR:")>0) {print("<b>".$description."</b>");}
-			//ElseIf (strpos(strtoupper($row['logs_description']),"ALERT")>0) {print("<b style='color:red;'>".$description."</b>");}
 			If (strpos(strtoupper($row['logs_description']),"ALERT")>0) {print("<b style='color:red;'>".$description."</b>");}
 			ElseIf ($row['logs_source']=="2" || $row['logs_source']=="1") {print("<b>".$description."</b>");}
-			//ElseIf ($row['logs_source']=="5") {print(" -> ".$description);}
-			//ElseIf ($row['logs_source']=="4") {print(" --> ".$description);}
-			//ElseIf ($row['logs_source']=="3") {print(" <- ".$description);}
 			else {print($description);}
 			print("]]></cell>");
 			print("</row>");
