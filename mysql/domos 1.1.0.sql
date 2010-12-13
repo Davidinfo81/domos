@@ -162,7 +162,7 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('43', 'PLC_triphase', '0', 'Configuration TriPhase PLCBUS (0:normal, 1:triphase)'), 
 ('44', 'RFX_ignoreadresse', '0', 'Ignore les adresses composants incorrectes (0:affiche, 1:ignore)'),
 ('45', 'ZIB_ignoreadresse', '0', 'Ignore les adresses composants incorrectes (0:affiche, 1:ignore)'),
-('46', 'PLC_ack', '1', 'Gestion des acks (renvoyer l ordre si ack non recu)');
+('46', 'PLC_ack', '1', 'PLCBUS : Gestion des acks (renvoyer l ordre si ack non recu) : 0=desactive 1=active');
 
 CREATE TABLE `logs` (
   `logs_id` bigint(20) NOT NULL AUTO_INCREMENT,
