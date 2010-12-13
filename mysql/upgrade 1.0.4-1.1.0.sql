@@ -105,4 +105,5 @@ INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_descri
 ('42', 'mail_action', '4', 'activer les mails 0=desactive 1=manuel 2=manuel-auto 3=manuel-auto-erreurcritique 4=manuel-auto-erreurcritique-erreursredondante 5=manuel-auto-erreurs'),
 ('43', 'PLC_triphase', '0', 'Configuration TriPhase PLCBUS (0:normal, 1:triphase)'), 
 ('44', 'RFX_ignoreadresse', '0', 'Ignore les adresses composants incorrectes (0:affiche, 1:ignore)'),
-('45', 'ZIB_ignoreadresse', '0', 'Ignore les adresses composants incorrectes (0:affiche, 1:ignore)');
+('45', 'ZIB_ignoreadresse', '0', 'Ignore les adresses composants incorrectes (0:affiche, 1:ignore)'),
+('46', 'PLC_ack', '1', 'Gestion des acks (renvoyer l ordre si ack non recu)');
