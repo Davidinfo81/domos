@@ -14,12 +14,21 @@
 	<link href="./include_cssjs/style.css" rel="stylesheet" type="text/css" />
 	<link rel="SHORTCUT ICON" href="favicon.ico" />
     <link rel="icon" type="image/ico" href="favicon.ico" />
+    <link href="./include_cssjs/prettyPhoto.css" rel="stylesheet" type="text/css" media="all" />
 	<script language="javascript" type="text/javascript" src="./include_cssjs/script_XHRConnection.js"></script>
-	<script language="javascript" type="text/javascript" src="./include_cssjs/jquery-1.4.2.min.js"></script>
+	<script language="javascript" type="text/javascript" src="./include_cssjs/jquery-1.4.4.min.js"></script>
 	<script language="javascript" type="text/javascript" src="./include_cssjs/interface.js"></script>
 	<script language="javascript" type="text/javascript" src="./include_cssjs/contextmenu.js"></script>
+	<script language="javascript" type="text/javascript" src="./include_cssjs/jquery.prettyPhoto.js"></script>
 </head>
 <body>
+<!--PrettyPhoto-->
+	<script type="text/javascript" charset="utf-8">
+		$(document).ready(function(){
+			$("a[rel^='prettyPhoto']").prettyPhoto({allow_resize:true,default_width:900,default_height:500,overlay_gallery:false,keyboard_shortcuts:true,show_title:true,animationSpeed:'slow',theme:'dark_rounded',slideshow:3000});
+		});
+	</script>
+
 <!--Context menu-->
     <div class="contextMenu" id="myMenufisheye" style="display:none;">
       <ul>

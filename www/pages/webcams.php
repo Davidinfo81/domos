@@ -22,7 +22,7 @@ echo "<div class=\"plan\">";
 		while($row=mysql_fetch_array($res)){
 			echo "<div class='cadres_webcam'><table id='weather' cellpadding='4' cellspacing='0' width='205'>";
 			echo "<tr><td colspan='2' align='left'><b> ".$row['webcams_nom']." :</b> ".$row['webcams_description']."</td></tr><tr>";
-			echo "<td align=center><a href=\"".$row['webcams_lien']."\"><img src=\"".$row['webcams_lien']."\" class='imagewebcam'/></a></td>";
+			echo "<td align=center><a href=\"".$row['webcams_lien']."\" rel=\"prettyPhoto[webcams]\" title=\"".$row['webcams_nom']." : ".$row['webcams_description']."\"><img src=\"".$row['webcams_lien']."\" class='imagewebcam'/></a></td>";
 			echo "</tr></table>";
 			echo "</div>";
 		}

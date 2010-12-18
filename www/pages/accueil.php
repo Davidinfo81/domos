@@ -102,7 +102,7 @@ echo "</div><div class=cadredroit>";
 		while($row=mysql_fetch_array($res)){
 			echo "<div class='cadresr'><table id='weather' cellpadding='4' cellspacing='0' width='205'>";
 			echo "<tr><td colspan='2' align='left'><b> ".$row['webcams_nom']." :</b></td></tr><tr>";
-			echo "<td align=center><a href=\"".$row['webcams_lien']."\"><img src=\"".$row['webcams_lien']."\" id=\"webcam\" /></a></td>";
+			echo "<td align=center><a href=\"".$row['webcams_lien']."\" rel=\"prettyPhoto[gallery1]\" title=\"".$row['webcams_nom']."\"><img src=\"".$row['webcams_lien']."\" id=\"webcam\" /></a></td>";
 			echo "</tr></table>";
 			echo "</div>";
 		}
