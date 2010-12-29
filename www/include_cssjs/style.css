@@ -374,15 +374,16 @@ html * .popup:hover{z-index:1;}
 
 .plan {
 	position: relative;
-	z-index: 0;
+	z-index: 1;
 	height: 535px;
 	margin:0;padding:0;
 }
+
 .plan .image {
 	width: 926px;
 	height: 535px;
 	z-index: 0;
-	position: absolute;
+/*	position: absolute;*/
 	top: 0px;
 	left: 0px;
 }

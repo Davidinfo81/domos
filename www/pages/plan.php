@@ -131,6 +131,29 @@ echo "<script type=\"text/javascript\">
 						monimg.style.border = '0px';
 						mona.appendChild(monimg);
 						monspan.appendChild(mona);
+						monspan.id = resultat.getAttribute('comp');
+						monspan.style.top = (resultat.getAttribute('top')-1)+'px';
+						monspan.style.left = (resultat.getAttribute('left')-20)+'px';
+						document.getElementById('valeurs').appendChild(monspan);
+						//span avec l'etat
+						var monspan = document.createElement('span');
+						monspan.className = 'spanun';
+						var mona = document.createElement('a');
+						mona.setAttribute('href','composants-relever-' + resultat.getAttribute('comp') + '.html');
+						var monimg = document.createElement('img');
+						if (resultat.getAttribute('valeur')==0) {
+							monimg.setAttribute('src',\"./images/volet_ferme.gif\");
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' Fermé' + ' - ' + resultat.getAttribute('etatdate'));
+						} else {
+							monimg.setAttribute('src',\"./images/volet_ouvert.gif\");
+							mona.setAttribute('title',resultat.getAttribute('compnom') + ' Ouvert' + ' - ' + resultat.getAttribute('etatdate'));
+						}
+						monimg.style.width = '19px';
+						monimg.style.height = '24px';
+						monimg.style.border = '0px';
+						mona.appendChild(monimg);
+						monspan.appendChild(mona);
+
 						break;
 
 					case \"voletetat\":
@@ -146,6 +169,7 @@ echo "<script type=\"text/javascript\">
 							mona.setAttribute('title',resultat.getAttribute('compnom') + ' Ouvert' + ' - ' + resultat.getAttribute('etatdate'));
 						}
 						monimg.style.width = '19px';
+						monimg.style.height = '24px';
 						monimg.style.border = '0px';
 						mona.appendChild(monimg);
 						monspan.appendChild(mona);
@@ -164,6 +188,7 @@ echo "<script type=\"text/javascript\">
 							mona.setAttribute('title','Jour - ' + resultat.getAttribute('etatdate'));
 						}
 						monimg.style.width = '60px';
+						monimg.style.height = '60px';
 						monimg.style.border = '0px';
 						mona.appendChild(monimg);
 						monspan.appendChild(mona);
@@ -293,7 +318,7 @@ echo "<script type=\"text/javascript\">
 				bindings: {
 					'grapher': function(t) {contextmenu(t.id,'grapher');},
 					'relever': function(t) {contextmenu(t.id,'relever');},
-					'editer': function(t) {contextmenu(t.id,'editer');},
+					'editer': function(t) {contextmenu(t.id,'editer');}
 				}
 			});
 			$('span').live('click', function(e) {
@@ -337,6 +362,7 @@ echo "<tr height=20><td colspan=5 align=center><div class=\"plan\" id=\"plan\">"
 
 // Affichage du plan
 echo "<img src=\"images/plans/$action.jpg\" / class=\"image\"><div class=\"valeurs\" id=\"valeurs\"></div>";
+
 //Affichage du cadre ack
 echo "<div class=\"ack\" id=\"ack\">RAS</div>";
 
