@@ -101,84 +101,10 @@ input.identification{width:220px;}
 
 /*################### LIEN ###################*/
 
-a:link {
-	color: #08438F;
-	text-decoration:none;
-}
-a:visited {
-	color: #08438F;
-	text-decoration:none;
-}
-a:hover {
-	color: #000000;
-	text-decoration:none;
-}
-a:visited:hover {
-	color: #000000;
-	text-decoration:none;
-}
-
-/*################### MENU DHTML ###################*/
-
-#mainContainer{
-	width:984px;
-	height:600px;
-	border:1px solid #000000;
-	margin:0 auto;
-	background-image:url('../../images/heading3.gif');
-	background-repeat:no-repeat;
-	padding-top:85px;			
-}
-#mainMenu{
-	background-color: #FFF;	/* Background color of main menu */
-	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;	/* Fonts of main menu items */
-	font-size:11px;	/* Font size of main menu items */
-	border-bottom:1px solid #000000;	/* Bottom border of main menu */
-	height:20px;	/* Height of main menu */
-	position:relative;	/* Don't change this position attribute */
-}
-#mainMenu a{
-	padding:5px;
-	font-weight:bold;
-	/* Don't change these two options */
-	position:absolute;
-	bottom:-1px;	/* Change this value to -2px if you're not using a strict doctype */
-}
-#submenu{		
-	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;	/* Font  of sub menu items */
-	background-color:#E2EBED;	/* Background color of sub menu items */
-	width:100%;	/* Don't change this option */
-}
-#submenu div{
-	white-space:nowrap;	/* Don't change this option */
-	padding:5px 0px 5px 0px;
-}
-#mainMenu .activeMenuItem{
-	/* Border options */
-	border-left:1px solid #000000;
-	border-top:1px solid #000000;
-	border-right:1px solid #000000;		
-	background-color: #E2EBED;	/* Background color */
-	cursor:pointer;	/* Cursor like a hand when the user moves the mouse over the menu item */
-}
-#mainMenu .activeMenuItem img{
-	position:absolute;
-	bottom:0px;
-	right:0px;
-}
-#mainMenu .inactiveMenuItem{		
-	color: #000;	/* Text color */
-	cursor:pointer;	/* Cursor like a hand when the user moves the mouse over the menu item */
-}
-#submenu a{	
-	text-decoration:none;	/* No underline on sub menu items - use text-decoration:underline; if you want the links to be underlined */
-	padding:0px;
-	color: #000;	/* Text color */
-	font-size:11px; 
-}
-#submenu a:hover{
-	color: #FF0000;	/* Red color when the user moves the mouse over sub menu items */
-}
+a:link {color: #08438F;text-decoration:none;}
+a:visited {color: #08438F;text-decoration:none;}
+a:hover {color: #000000;text-decoration:none;}
+a:visited:hover {color: #000000;text-decoration:none;}
 
 /*################### DIVERS ###################*/
 
@@ -237,107 +163,8 @@ H2 {
 	font-weight: bold;
 	text-align: left;
 }
-.authentification {
-	border: 1px solid #d5d5d5;
-	width: 400px;
-}
-li{
-	list-style:none;
-	padding:1px;
-	cursor:move;
-}
-
-/*################### Calendrier dans formulaire ###################*/
-
-.ds_box {
-	background-color: #6D6D6D;
-	border: 1px solid #000;
-	position: absolute;
-	z-index: 32767;
-}
-.ds_tbl {background-color: #6D6D6D;}
-.ds_head {
-	background-color: #6D6D6D;
-	color: #FFF;
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 12px;
-	font-weight: bold;
-	text-align: center;
-	letter-spacing: 2px;
-}
-.ds_subhead {
-	background-color: #CCC;
-	color: #000;
-	font-size: 10px;
-	font-weight: bold;
-	text-align: center;
-	font-family: Arial, Helvetica, sans-serif;
-	width: 20px;
-}
-.ds_cell {
-	background-color: #EEE;
-	color: #000;
-	font-size: 10px;
-	text-align: center;
-	font-family: Arial, Helvetica, sans-serif;
-	padding: 5px;
-	cursor: pointer;
-}
-.ds_cell2 {
-	background-color: #CCC;
-	color: #000;
-	font-size: 10px;
-	text-align: center;
-	font-family: Arial, Helvetica, sans-serif;
-	padding: 5px;
-	cursor: pointer;
-}
-.ds_cell:hover {background-color: #F3F3F3;} /* This hover code won't work for IE */
-
-/*######################## POPUP  sans js ########################*/
-
-.popup {
-	position: relative;
-	color: #FF0000;
-}
-.popup:hover{
-	background-color: transparent;
-	cursor:default;
-	background: none;
-}
-html * .popup:hover{z-index:1;} 
-
-.popup span{ /*CSS for enlarged image*/
-	position: absolute;
-	background-color: #FFFFCC;
-	padding: 0px;
-	margin: 0px;
-	left: -9999px;
-	border: 1px dashed gray;
-	visibility: hidden;
-	color: #FF0000;
-	text-decoration: none;
-	width: 250px;
-	z-index:99;
-}
-.popup span img{border-width: 0;}
-.popup span H1{
-	padding: 2px;
-	margin: 0px;
-	font-size:1.2em;
-	color: #000000;
-}
-.popup span P{
-	padding: 0px;
-	margin-top: 10px;
-	margin-bottom: 10px;
-}
-.popup:hover span{
-	visibility: visible;
-	top: 15px;
-	left: -100px;
-}
-
+.authentification {border: 1px solid #d5d5d5;width: 400px;}
+li{list-style:none;padding:1px;cursor:move;}
 
 /*################### Graphe ###################*/
 
@@ -378,12 +205,10 @@ html * .popup:hover{z-index:1;}
 	height: 535px;
 	margin:0;padding:0;
 }
-
 .plan .image {
 	width: 926px;
 	height: 535px;
 	z-index: 0;
-/*	position: absolute;*/
 	top: 0px;
 	left: 0px;
 }
@@ -485,60 +310,6 @@ html * .popup:hover{z-index:1;}
 .plan .imagewebcam {width:280px;height:210px;border: 1px solid #d5d5d5;}
 .plan .imagesimple {border: 1px solid #d5d5d5;margin:5px;}
 
-/*################### fisheye ###################*/
-
-.fisheye{
-	z-index: 99;
-	text-align: center;
-	height: 40px;
-	position: relative;
-}
-a.fisheyeItem
-{
-	text-align: center;
-	color: #000;
-	font-weight: bold;
-	text-decoration: none;
-	width: 40px;
-	position: absolute;
-	display: block;
-	top: 0;
-}
-a.fisheyeItem2
-{
-	text-align: center;
-	color: #000;
-	font-weight: bold;
-	text-decoration: none;
-	width: 40px;
-	position: absolute;
-	display: block;
-	bottom: 0;
-}
-.fisheyeItem img
-{
-	border: none;
-	margin: 0 auto 5px auto;
-	width: 100%;
-}
-.fisheyeItem2 img
-{
-	border: none;
-	margin: 5px auto 0 auto;
-	width: 100%;
-}
-.fisheyeItem span, .fisheyeItem2 span
-{
-	display: none;
-	position: absolute;
-}
-.fisheyeContainter
-{
-	height: 50px;
-	width: 200px;
-	left: 500px;
-	position: absolute;
-}
 
 /*################### prettyLoader ###################*/
 
@@ -554,6 +325,31 @@ a.fisheyeItem2
 .prettyLoader img{display:block;margin:7px 0 0 7px;}
 .pl_ie6{background-image: url(../images/prettyLoader/prettyLoader.gif);}
 
-/*################### menu ordre ###################*/
-#contentLeft { list-style-type: none; margin: 0; padding: 0; width: 300px; }
-#contentLeft li { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1em; height: 13px; border: 1px solid #d3d3d3; font-weight: normal; color: #555555; }
+/*################### menu zoom ###################*/
+
+ul.thumb {
+	list-style: none;
+	margin: 0; padding: 0px;
+	width: 900px;
+}
+ul.thumb li {
+	margin: 0; 
+	padding: 0 2px 0px 2px;
+	float: left;
+	position: relative;  /* Set the absolute positioning base coordinate */
+	width: 40px;
+	height: 40px;
+}
+ul.thumb li img {
+	width: 40px; height: 40px; /* Set the small thumbnail size */
+	-ms-interpolation-mode: bicubic; /* IE Fix for Bicubic Scaling */
+	border: 0px solid #ddd;
+	padding: 0px;
+	/*background: #f0f0f0;*/
+	position: absolute;
+	left: 0; top: 0;
+}
+ul.thumb li img.hover {
+	border: none; /* Get rid of border on hover */
+}
+

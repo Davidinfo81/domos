@@ -17,7 +17,6 @@
     <link href="./include_cssjs/prettyPhoto.css" rel="stylesheet" type="text/css" media="all" />
 	<script language="javascript" type="text/javascript" src="./include_cssjs/script_XHRConnection.js"></script>
 	<script language="javascript" type="text/javascript" src="./include_cssjs/jquery-1.4.4.min.js"></script>
-	<script language="javascript" type="text/javascript" src="./include_cssjs/interface.js"></script>
 	<script language="javascript" type="text/javascript" src="./include_cssjs/contextmenu.js"></script>
 	<script language="javascript" type="text/javascript" src="./include_cssjs/jquery.prettyPhoto.js"></script>
 </head>
@@ -50,7 +49,7 @@
     </div>
 	<script type="text/javascript">
 			$(document).ready(function() {
-					$('a.fisheyeItem').contextMenu('myMenufisheye', {
+					$('a.contextItem').contextMenu('myMenufisheye', {
 						menuStyle: {width: '120px'},
 						itemStyle: {padding: '0px'},
 						bindings: {
@@ -70,46 +69,55 @@
 	</script>
 <center>
 <table width="950" style="margin:0;padding:0;border:1px solid #53555F;background-color:#FFFFFF;">
-	<tr align="left" valign="middle" colspan="2"><td width="100%" height="5" style="background-image:url('images/bandeau_2.jpg');background-position:top left;background-repeat:no-repeat;">
-		<div id="fisheye" class="fisheye">
-				<div class="fisheyeContainter">
-					<?php
-					echo"<a href=\"domos.html\" class=\"fisheyeItem\"><img src=\"images/menu/$menuset/domos.png\" /><span>Accueil</span></a>";
-					$resultat = mysql_query("select * from menu order by menu_ordre");
-					if($resultat){
-						while($row=mysql_fetch_array($resultat)){
-							echo "<a href=\"plan-".$row['menu_lien'].".html\" class=\"fisheyeItem\"><img src=\"images/plans/menu_".$row['menu_lien'].".png\" /><span>".$row['menu_nom']."</span></a>";
-						}
+	<tr align="center" valign="middle" colspan="2"><td width="100%" height="5" style="background-image:url('images/bandeau_2.jpg');background-position:top left;background-repeat:no-repeat;">
+		<div style="text-align:right;border:0px;width:600px">
+		<ul class="thumb">
+			<?php
+				echo '<li><a href="domos.html" class="contextItem"><img src="images/menu/'.$menuset.'/domos.png" alt="Accueil"/></a></li>';
+				$resultat = mysql_query("select * from menu order by menu_ordre");
+				if($resultat){
+					while($row=mysql_fetch_array($resultat)){
+						echo '<li><a href="plan-'.$row['menu_lien'].'.html" class="contextItem"><img src="images/plans/menu_'.$row['menu_lien'].'.png" alt="'.$row['menu_nom'].'"/></a></li>';
 					}
-					echo "
-					<a href=\"meteo.html\" class=\"fisheyeItem\"><img src=\"images/menu/$menuset/meteo.png\" /><span>Météo</span></a>
-					<a href=\"calendrier.html\" class=\"fisheyeItem\"><img src=\"images/menu/$menuset/calendrier.png\" /><span>Calendrier</span></a>
-					<a href=\"logs.html\" class=\"fisheyeItem\"><img src=\"images/menu/$menuset/logs.png\" /><span>Logs</span></a>
-					<a href=\"webcams.html\" class=\"fisheyeItem\"><img src=\"images/menu/$menuset/webcam.png\" /><span>Webcams</span></a>
-					<a href=\"divers.html\" class=\"fisheyeItem\"><img src=\"images/menu/$menuset/display.png\" /><span>Divers</span></a>
-					";
-					?>
-				</div>
+				}
+				echo '
+				<li><a href="meteo.html" class="contextItem"><img src="images/menu/'.$menuset.'/meteo.png" alt="Météo"/></a></li>
+				<li><a href="calendrier.html" class="contextItem"><img src="images/menu/'.$menuset.'/calendrier.png" alt="Calendrier"/></a></li>
+				<li><a href="logs.html" class="contextItem"><img src="images/menu/'.$menuset.'/logs.png" alt="Logs"/></a></li>
+				<li><a href="webcams.html" class="contextItem"><img src="images/menu/'.$menuset.'/webcam.png" alt="Webcams"/></a></li>
+				<li><a href="divers.html" class="contextItem"><img src="images/menu/'.$menuset.'/display.png" alt="Divers"/></a></li>
+				';
+			?>
+		</ul>
 		</div>
 	</td>
   </tr>
 <script type="text/javascript">
-	$(document).ready(
-		function()
-		{
-			$('#fisheye').Fisheye(
-				{
-					maxWidth: 50,
-					items: 'a',
-					itemsText: 'span',
-					container: '.fisheyeContainter',
-					itemWidth: 40,
-					proximity: 30,
-					halign : 'center'
-				}
-			)
-		}
-	);
+	$("ul.thumb li").hover(function() {
+		$(this).css({'z-index' : '10'}); /*Add a higher z-index value so this image stays on top*/ 
+		$(this).find('img').addClass("hover").stop() /* Add class of "hover", then stop animation queue buildup*/
+			.animate({
+				marginTop: '-40px', /* The next 4 lines will vertically align this image */ 
+				marginLeft: '-60px',
+				top: '100%',
+				left: '100%',
+				width: '70px', /* Set new width */
+				height: '70px', /* Set new height */
+				padding: '0px'
+			}, 100); /* this value of "200" is the speed of how fast/slow this hover animates */
+		} , function() {
+		$(this).css({'z-index' : '10'}); /* Set z-index back to 0 */
+		$(this).find('img').removeClass("hover").stop()  /* Remove the "hover" class , then stop animation queue buildup*/
+			.animate({
+				marginTop: '0', /* Set alignment back to default */
+				marginLeft: '0',
+				top: '0',
+				left: '0',
+				width: '40px', /* Set width back to default */
+				height: '40px', /* Set height back to default */
+				padding: '0px'
+			}, 200);
+	});
 </script>
   <tr>
     <td colspan="2" align="center">
