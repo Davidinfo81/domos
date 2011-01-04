@@ -390,49 +390,42 @@ Public Class notify
         End If
     End Sub
 
-    ''---------------------- TESTS ---------------------------
-    'Dim xx10 As New x10
+    '---------------------- TESTS ---------------------------
+    Dim stick As New montellstick
 
-    'Private Sub X10openToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10openToolStripMenuItem.Click
-    '    Try
-    '        MsgBox(xx10.ouvrir("COM1"))
-    '    Catch ex As Exception
-    '        MsgBox(ex.Message)
-    '    End Try
-    'End Sub
+    Private Sub X10openToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10openToolStripMenuItem.Click
+        Try
+            MsgBox(stick.ouvrir())
+        Catch ex As Exception
+            MsgBox("Open: " & ex.Message)
+        End Try
+    End Sub
 
-    'Private Sub X10closeToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10closeToolStripMenuItem.Click
-    '     Try
-    '        MsgBox(xx10.fermer())
-    '    Catch ex As Exception
-    '        MsgBox(ex.Message)
-    '    End Try
+    Private Sub X10closeToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10closeToolStripMenuItem.Click
+        Try
+            'MsgBox(xx10.fermer())
+        Catch ex As Exception
+            MsgBox("Close: " & ex.Message)
+        End Try
+    End Sub
 
-    'End Sub
+    Private Sub X10a1onToolstripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10a1onToolstripMenuItem.Click
+        Try
+            MsgBox(stick.ecrire("ON", "test"))
+        Catch ex As Exception
+            MsgBox("ON: " & ex.Message)
+        End Try
+    End Sub
 
-    'Private Sub X10a1onToolstripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10a1onToolstripMenuItem.Click
-    '    Try
-    '        MsgBox(xx10.ecrire("A1", "ON", 0))
-    '    Catch ex As Exception
-    '        MsgBox(ex.Message)
-    '    End Try
+    Private Sub X10a1offToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10a1offToolStripMenuItem.Click
+        Try
+            MsgBox(stick.ecrire("OFF", "test"))
+        Catch ex As Exception
+            MsgBox("Off: " & ex.Message)
+        End Try
+    End Sub
 
-    'End Sub
 
-    'Private Sub X10a1offToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10a1offToolStripMenuItem.Click
-    '    Try
-    '        MsgBox(xx10.ecrire("A1", "OFF", 0))
-    '    Catch ex As Exception
-    '        MsgBox(ex.Message)
-    '    End Try
 
-    'End Sub
 
-    'Private Sub X10openToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10openToolStripMenuItem.Click
-
-    'End Sub
-
-    'Private Sub X10closeToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles X10closeToolStripMenuItem.Click
-
-    'End Sub
 End Class

@@ -15,6 +15,8 @@ Public Class plcbus
     Private firstbyte As Boolean = True
     Private bytecnt As Integer = 0
     Private recbuf(30) As Byte
+    Public gestion_ack As Boolean = True
+    Public gestion_triphase As Boolean = False
 
     Public Sub New()
         com_to_hex.Add("ALL_UNITS_OFF", 0)
@@ -101,8 +103,12 @@ Public Class plcbus
 
     End Sub
 
-    Public Function ouvrir(ByVal numero As String) As String
+    Public Function ouvrir(ByVal numero As String, ByVal plcack As Boolean, ByVal plctriphase As Boolean) As String
         Try
+            'recuperation de la configuration
+            gestion_ack = plcack
+            gestion_triphase = plctriphase
+            'ouverture du port
             If Not port_ouvert Then
                 port_name = numero
                 port.PortName = numero 'nom du port : COM1
@@ -248,7 +254,7 @@ Public Class plcbus
 
             Try
                 '--- TriPhase ---
-                If domos_svc.PLC_triphase Then _cmd = _cmd Or &H40
+                If gestion_triphase Then _cmd = _cmd Or &H40
                 '--- request acks --- (sauf pour les status_request car pas important et encombre le port)
                 'If commande <> "STATUS_REQUEST" And commande <> "GetOnlyOnIdPulse" And commande <> "GetAllIdPulse" And commande <> "ReportAllIdPulse3Phase" And commande <> "ReportOnlyOnIdPulse3Phase" Then
                 '    _cmd = _cmd Or &H20
@@ -269,7 +275,7 @@ Public Class plcbus
                 If ecriretwice Then port.Write(donnee, 0, donnee.Length) 'on ecrit deux fois : voir la norme PLCBUS
 
                 'gestion des acks (sauf pour les status_request car pas important et encombre le port)
-                If Not attente_ack() And commande <> "STATUS_REQUEST" And commande <> "GetOnlyOnIdPulse" And commande <> "GetAllIdPulse" And commande <> "ReportAllIdPulse3Phase" And commande <> "ReportOnlyOnIdPulse3Phase" Then
+                If gestion_ack And Not attente_ack() And commande <> "STATUS_REQUEST" And commande <> "GetOnlyOnIdPulse" And commande <> "GetAllIdPulse" And commande <> "ReportAllIdPulse3Phase" And commande <> "ReportOnlyOnIdPulse3Phase" Then
                     'pas de ack, on relance l ordre
                     domos_svc.log("PLC : Ecrire : Pas de Ack -> resend : " & adresse & " : " & commande & " " & data1 & "-" & data2, 2)
                     port.Write(donnee, 0, donnee.Length)
@@ -279,6 +285,8 @@ Public Class plcbus
                         domos_svc.log("PLC : Ecrire : Pas de Ack --> " & adresse & " : " & commande & " " & data1 & "-" & data2, 2)
                         Return "" 'on renvoi rien car le composant n'a pas recu l'ordre
                     End If
+                Else
+                    domos_svc.wait(30) 'on attend 0.3s pour liberer le bus correctement
                 End If
             Catch ex As Exception
                 domos_svc.log("PLC : Ecrire exception : " & ex.Message & " --> " & adresse & " : " & commande & " " & data1 & "-" & data2, 2)
@@ -484,97 +492,5 @@ Public Class plcbus
             End Try
         End If
     End Sub
-
-    'Private Sub DataReceived(ByVal sender As Object, ByVal e As SerialDataReceivedEventArgs)
-    '    Dim reponse As String = ""
-    '    Dim err As String = ""
-    '    Dim dateheure As String
-    '    Dim bytes As Integer
-    '    Dim ack As Boolean = False
-    '    'create a byte array to hold the awaiting data
-    '    bytes = port.BytesToRead
-    '    Dim comBuffer As Byte() = New Byte(bytes - 1) {}
-    '    While True
-    '        If port_ouvert Then
-    '            Try
-    '                bytes = port.BytesToRead
-    '            Catch ex As Exception
-    '            End Try
-    '            If bytes = 9 Then
-    '                comBuffer = New Byte(bytes - 1) {}
-    '                port.Read(comBuffer, 0, bytes)
-    '                If ((comBuffer(1) = &H6) And (comBuffer(0) = &H2) And (comBuffer(8) = &H3)) Then ' si trame de reponse valide
-    '                    'For Each data As Byte In comBuffer
-    '                    '    reponse = reponse & (Convert.ToString(data, 16).PadLeft(2, "0"c).PadRight(3, " "c))
-    '                    'Next
-    '                    'traitement de la trame recu
-    '                    Dim plcbus_commande As String = hex_to_com(comBuffer(4))
-    '                    Dim plcbus_adresse As String = hex_to_adresse(comBuffer(3))
-    '                    Dim data1 As String = comBuffer(5)
-    '                    Dim data2 As String = comBuffer(6)
-    '                    'If CInt(comBuffer(7) & &H20) Mod 32 Then ack = True
-
-    '                    'test si c'est un ack
-    '                    Dim TblBits(7) As Boolean
-    '                    Dim xx As Byte = comBuffer(7)
-    '                    For Iteration As Integer = 0 To 7 'Boucle
-    '                        TblBits(Iteration) = xx And 1
-    '                        xx >>= 1
-    '                    Next
-    '                    If TblBits(4) Then ack = True
-
-    '                    'If Not ack Then Domos.log(reponse)
-    '                    If ack Then
-    '                        ackreceived = True 'c'est un Ack
-    '                        reponse = "PLC : <- ACK :" & plcbus_commande & "-" & plcbus_adresse & " : " & data1 & "-" & data2 & " : " & comBuffer(7)
-    '                        If plcbus_commande = "STATUS_REQUEST" Then
-    '                            domos_svc.log("DBG: " & reponse, 10)
-    '                        Else
-    '                            domos_svc.log(reponse, 9)
-    '                        End If
-
-    '                    Else
-    '                        'ce n'est pas un ack, je traite le paquet
-    '                        ackreceived = False
-    '                        Dim valeur As String = data1
-    '                        Dim tabletmp() As DataRow
-    '                        Try
-    '                            tabletmp = domos_svc.table_composants.Select("composants_adresse = '" & plcbus_adresse & "'")
-    '                            If tabletmp.GetUpperBound(0) >= 0 Then
-    '                                'conversion de la valeur de 0 à 100 en ON/OFF
-    '                                If valeur = 0 Then
-    '                                    valeur = "OFF"
-    '                                Else
-    '                                    valeur = "ON"
-    '                                End If
-    '                                '--- comparaison du relevé avec le dernier etat ---
-    '                                Dim x As String = tabletmp(0)("composants_etat").ToString()
-    '                                If valeur <> x Then
-    '                                    domos_svc.log("PLC : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur, 6)
-    '                                    '  --- modification de l'etat du composant dans la table en memoire ---
-    '                                    tabletmp(0)("composants_etat") = valeur
-    '                                    tabletmp(0)("composants_etatdate") = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-    '                                Else
-    '                                    domos_svc.log("PLC : " & tabletmp(0)("composants_nom").ToString() & " : " & tabletmp(0)("composants_adresse").ToString() & " : " & valeur & " (inchangé)", 7)
-    '                                    '--- Modification de la date dans la base SQL ---
-    '                                    dateheure = DateAndTime.Now.Year.ToString() & "-" & DateAndTime.Now.Month.ToString() & "-" & DateAndTime.Now.Day.ToString() & " " & STRGS.Left(DateAndTime.Now.TimeOfDay.ToString(), 8)
-    '                                    err = domos_svc.mysql.mysql_nonquery("UPDATE composants SET composants_etatdate='" & dateheure & "' WHERE composants_id='" & tabletmp(0)("composants_id") & "'")
-    '                                    If err <> "" Then domos_svc.log("PLC: inchange precision " & err, 8)
-    '                                End If
-    '                            Else
-    '                                domos_svc.log("PLC : Pas de composant pour cette adresse : " & plcbus_adresse & " : " & valeur, 2)
-    '                            End If
-    '                        Catch ex As Exception
-    '                            domos_svc.log("PLC : ERROR acces table_composants : " & ex.Message, 2)
-    '                        End Try
-
-    '                    End If
-    '                    Exit While
-    '                End If
-    '            End If
-    '        End If
-
-    '    End While
-    'End Sub
 
 End Class

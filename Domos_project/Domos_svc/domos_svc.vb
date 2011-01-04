@@ -24,9 +24,9 @@ Public Class domos_svc
     Public Shared table_config, table_composants, table_composants_bannis, table_macros, table_timer, table_thread, table_erreur As New DataTable
     Public Shared Serv_DOMOS, Serv_WIR, Serv_WI2, Serv_PLC, Serv_X10, Serv_RFX, Serv_ZIB, Serv_TSK, Serv_SOC As Boolean
     Public Shared Port_PLC, Port_X10, Port_RFX, Port_WIR, Port_WI2, socket_ip, WIR_adaptername As String
-    Public Shared PLC_timeout, X10_timeout, Action_timeout, rfx_tpsentrereponse, socket_port, lastetat, WIR_res As Integer
+    Public Shared PLC_timeout, X10_timeout, Action_timeout, rfx_tpsentrereponse, socket_port, WIR_res As Integer
     Public Shared WIR_timeout, ZIB_timeout, TSK_timeout, heure_coucher_correction, heure_lever_correction As Integer
-    Public Shared RFX_ignoreadresse, ZIB_ignoreadresse, PLC_triphase As Boolean
+    Public Shared RFX_ignoreadresse, ZIB_ignoreadresse, PLC_triphase, PLC_ack, lastetat As Boolean
     Public Shared logs_erreur_nb, logs_erreur_duree As Integer
     Public Shared gps_longitude, gps_latitude, mail_smtp, mail_from, mail_to As String
     Public Shared mail_action as integer
@@ -115,6 +115,7 @@ Public Class domos_svc
         RFX_ignoreadresse = False
         ZIB_ignoreadresse = False
         PLC_triphase = False
+        PLC_ack = True
 
         svc_start()
     End Sub
@@ -266,13 +267,14 @@ Public Class domos_svc
                 logs_erreur_duree = table_config.Select("config_nom = 'logs_erreur_duree'")(0)("config_valeur")
                 RFX_ignoreadresse = table_config.Select("config_nom = 'RFX_ignoreadresse'")(0)("config_valeur")
                 PLC_triphase = table_config.Select("config_nom = 'PLC_triphase'")(0)("config_valeur")
+                PLC_ack = table_config.Select("config_nom = 'PLC_ack'")(0)("config_valeur")
                 ZIB_ignoreadresse = table_config.Select("config_nom = 'ZIB_ignoreadresse'")(0)("config_valeur")
                 log("      -> LOG_NIVEAU=" & log_niveau & " LOG_DESTINATION=" & log_dest, 0)
                 log("      -> WIR=" & Serv_WIR & " WI2=" & Serv_WI2 & " PLC=" & Serv_PLC & ":" & Port_PLC & " X10=" & Serv_X10 & ":" & Port_X10, 0)
                 log("      -> ZIB=" & Serv_ZIB & " TSK=" & Serv_TSK & " RFX=" & Serv_RFX & ":" & Port_RFX, 0)
                 log("      -> Action_timeout=" & Action_timeout & " PLC_timeout=" & PLC_timeout & " X10_timeout=" & X10_timeout & " WIR_timeout=" & WIR_timeout & " ZIB_timeout=" & ZIB_timeout & " TSK_timeout=" & TSK_timeout, 0)
                 log("      -> RFX_tpsentrereponse=" & rfx_tpsentrereponse & " Lastetat=" & lastetat, 0)
-                log("      -> RFX_ignoreadresse=" & RFX_ignoreadresse & " ZIB_ignoreadresse=" & ZIB_ignoreadresse & " PLC_triphase=" & PLC_triphase, 0)
+                log("      -> RFX_ignoreadresse=" & RFX_ignoreadresse & " ZIB_ignoreadresse=" & ZIB_ignoreadresse & " PLC_triphase=" & PLC_triphase & " PLC_ack=" & PLC_ack, 0)
                 log("      -> heure_lever_correction=" & heure_lever_correction & " heure_coucher_correction=" & heure_coucher_correction, 0)
                 log("      -> longitude=" & gps_longitude & " latitude=" & gps_latitude, 0)
                 log("      -> Mail smtp=" & mail_smtp & " From=" & mail_from & " To=" & mail_to & " Action=" & mail_action, 0)
@@ -319,7 +321,7 @@ Public Class domos_svc
             etape_startup = 6
             If Serv_RFX Then
                 resumemail = resumemail & Chr(10) & "Initialisation RFXCOM"
-                err = rfxcom.ouvrir(Port_RFX)
+                err = rfxcom.ouvrir(Port_RFX, rfx_tpsentrereponse, RFX_ignoreadresse, lastetat)
                 If STRGS.Left(err, 4) = "ERR:" Then
                     Serv_RFX = False 'desactivation du RFXCOM car erreur d'ouverture
                     log("RFX : " & err, 2)
@@ -333,7 +335,7 @@ Public Class domos_svc
             etape_startup = 7
             If Serv_PLC Then
                 resumemail = resumemail & Chr(10) & "Initialisation PLC"
-                err = plcbus.ouvrir(Port_PLC)
+                err = plcbus.ouvrir(Port_PLC, PLC_ack, PLC_triphase)
                 If STRGS.Left(err, 4) = "ERR:" Then
                     Serv_PLC = False 'desactivation du PLCBUS car erreur d'ouverture
                     log("PLC : " & err, 2)
@@ -902,7 +904,7 @@ Public Class domos_svc
     '         texte = texte.Replace("'", "")
     '         'si on doit loguer une erreur et pas en mode debug et config > 0
     '         ' : gestion de la table des erreurs 
-    '         If niveau = "2" And STRGS.InStr("-10", niveau) <= 0 and logs_erreur_nb>0 and logs_erreur_duree>0 Then
+    '         If niveau = "2" And STRGS.InStr(niveau,"-10") <= 0 and logs_erreur_nb>0 and logs_erreur_duree>0 Then
     '             textemodifie = Left(texte, texte.Length - 4)
     '             'si c'est une erreur générale
     '             tabletemp = table_erreur.Select("texte = '" & textemodifie & "'")
@@ -944,7 +946,7 @@ Public Class domos_svc
     '         ecrireevtlog("LOG: Exception Table_erreur : " & ex.ToString & " --> " & texte, 1, 109)
     '            SendMessage("LOG: Exception Table_erreur", ex.ToString & " --> " & texte, 4)
     '         'si erreur de corruption : Réinitialisation de la gestion de la table des erreurs
-    '         If STRGS.InStr("DataTable internal index is corrupted", ex.ToString) > 0 then
+    '         If STRGS.InStr(ex.ToString,"DataTable internal index is corrupted") > 0 then
     '	'logs_erreur_nb=0
     '	table_erreur.dispose()
     '	Dim x As New DataColumn
@@ -968,7 +970,7 @@ Public Class domos_svc
     '    try
     '        'si on peut loguer ou si c'est un debug
     '        If erreur_log = 1 and not (texte Is Nothing) Then
-    '            If niveau <> "-1" And niveau <> "-2" And STRGS.InStr("-" & log_niveau, niveau) > 0 Then
+    '            If niveau <> "-1" And niveau <> "-2" And STRGS.InStr(niveau,"-" & log_niveau) > 0 Then
     '                fichierlog = install_dir & "logs\log_" & DateAndTime.Now.ToString("yyyyMMdd") & ".txt"
     '                dateheure = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
     '                If Not Directory.Exists(install_dir & "logs") Then
@@ -1662,6 +1664,8 @@ Public Class domos_svc
                                 log("MAC : " & table_macros.Rows(i).Item("macro_nom") & " : OK", 4)
                                 action(table_macros.Rows(i).Item("macro_actions"))
                                 table_macros.Rows(i).Item("verrou") = False
+                            Else
+                                log("MAC : " & table_macros.Rows(i).Item("macro_nom") & " : déjà en cours d execution", 2)
                             End If
                         End If
                     End If
@@ -1936,7 +1940,7 @@ Public Class domos_svc
                     Else
                         log("MAC :  -> Action composant : composant ID=" & contenu(1) & " non trouvé", 2)
                     End If
-                    wait(50) 'pause de 0.5 secondes entre chaque action
+                    wait(70) 'pause de 0.7 secondes entre chaque action
 
                     '--------------------------- ME = Etat d'un composant -------------------------
                 ElseIf contenu(0) = "ME" Then 'c'est l'etat d'un composant à modifier :  : [ME#compid#Etat]
@@ -2555,7 +2559,7 @@ Public Class domos_svc
                     texte = texte.Replace("'", "")
                     'si on doit loguer une erreur et pas en mode debug et config > 0
                     ' : gestion de la table des erreurs 
-                    If niveau = "2" And STRGS.InStr("-10", niveau) <= 0 And logs_erreur_nb > 0 And logs_erreur_duree > 0 Then
+                    If niveau = "2" And STRGS.InStr(niveau, "-10") <= 0 And logs_erreur_nb > 0 And logs_erreur_duree > 0 Then
                         textemodifie = Left(texte, texte.Length - 4)
                         'si c'est une erreur générale
                         tabletemp = table_erreur.Select("texte = '" & textemodifie & "'")
@@ -2597,20 +2601,21 @@ Public Class domos_svc
                     ecrireevtlog("LOG: Exception Table_erreur : " & ex.ToString & " --> " & texte, 1, 109)
                     SendMessage("LOG: Exception Table_erreur", ex.ToString & " --> " & texte, 4)
                     'si erreur de corruption : Réinitialisation de la gestion de la table des erreurs
-                    If STRGS.InStr("DataTable internal index is corrupted", ex.ToString) > 0 Then
+                    If STRGS.InStr(ex.ToString, "DataTable internal index is corrupted") > 0 Then
                         'logs_erreur_nb=0
-                        table_erreur.Dispose()
-                        Dim x As New DataColumn
-                        x = New DataColumn
-                        x.ColumnName = "texte"
-                        table_erreur.Columns.Add(x)
-                        x = New DataColumn
-                        x.ColumnName = "nombre"
-                        table_erreur.Columns.Add(x)
-                        x = New DataColumn
-                        x.ColumnName = "datetime"
-                        table_erreur.Columns.Add(x)
-                        log("LOG : Error DataTable internal index is corrupted --> Réinitialisation de la table des erreurs", 2)
+                        table_erreur.Clear()
+                        'table_erreur.Dispose()
+                        'Dim x As New DataColumn
+                        'x = New DataColumn
+                        'x.ColumnName = "texte"
+                        'table_erreur.Columns.Add(x)
+                        'x = New DataColumn
+                        'x.ColumnName = "nombre"
+                        'table_erreur.Columns.Add(x)
+                        'x = New DataColumn
+                        'x.ColumnName = "datetime"
+                        'table_erreur.Columns.Add(x)
+                        ecrireevtlog("LOG : Error DataTable internal index is corrupted --> Réinitialisation de la table des erreurs", 1, 109)
                         SendMessage("LOG: ERR: DataTable internal index is corrupted", "LOG : Error DataTable internal index is corrupted --> Réinitialisation de la table des erreurs", 2)
                     End If
                 Catch ex2 As Exception
@@ -2621,7 +2626,7 @@ Public Class domos_svc
             Try
                 'si on peut loguer ou si c'est un debug
                 If erreur_log = 1 And Not (texte Is Nothing) Then
-                    If niveau <> "-1" And niveau <> "-2" And STRGS.InStr("-" & log_niveau, niveau) > 0 Then
+                    If niveau <> "-1" And niveau <> "-2" And STRGS.InStr(niveau, "-" & log_niveau) > 0 Then
                         fichierlog = install_dir & "logs\log_" & DateAndTime.Now.ToString("yyyyMMdd") & ".txt"
                         dateheure = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                         If Not Directory.Exists(install_dir & "logs") Then
@@ -2666,7 +2671,7 @@ Public Class domos_svc
                 End Select
                 'Diagnostics.EventLog.WriteEntry("Domos", message)
             Catch ex As Exception
-                log("LOG : EcrireEvtLog Execption : " & ex.ToString, 2)
+                log("LOG : EcrireEvtLog Exception : " & ex.ToString, 2)
             End Try
         End Sub
         Public Sub EcrireFichier(ByVal CheminFichier As String, ByVal Texte As String)

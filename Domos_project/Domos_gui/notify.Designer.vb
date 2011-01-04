@@ -210,31 +210,30 @@ Partial Class notify
         Me.TestsToolStripMenuItem.Name = "TestsToolStripMenuItem"
         Me.TestsToolStripMenuItem.Size = New System.Drawing.Size(152, 22)
         Me.TestsToolStripMenuItem.Text = "tests"
-        Me.TestsToolStripMenuItem.Visible = False
         '
         'X10openToolStripMenuItem
         '
         Me.X10openToolStripMenuItem.Name = "X10openToolStripMenuItem"
         Me.X10openToolStripMenuItem.Size = New System.Drawing.Size(152, 22)
-        Me.X10openToolStripMenuItem.Text = "x10_open"
+        Me.X10openToolStripMenuItem.Text = "open"
         '
         'X10closeToolStripMenuItem
         '
         Me.X10closeToolStripMenuItem.Name = "X10closeToolStripMenuItem"
         Me.X10closeToolStripMenuItem.Size = New System.Drawing.Size(152, 22)
-        Me.X10closeToolStripMenuItem.Text = "x10_close"
+        Me.X10closeToolStripMenuItem.Text = "close"
         '
         'X10a1onToolstripMenuItem
         '
         Me.X10a1onToolstripMenuItem.Name = "X10a1onToolstripMenuItem"
         Me.X10a1onToolstripMenuItem.Size = New System.Drawing.Size(152, 22)
-        Me.X10a1onToolstripMenuItem.Text = "x10_a1on"
+        Me.X10a1onToolstripMenuItem.Text = "1on"
         '
         'X10a1offToolStripMenuItem
         '
         Me.X10a1offToolStripMenuItem.Name = "X10a1offToolStripMenuItem"
         Me.X10a1offToolStripMenuItem.Size = New System.Drawing.Size(152, 22)
-        Me.X10a1offToolStripMenuItem.Text = "x10_a1off"
+        Me.X10a1offToolStripMenuItem.Text = "1off"
         '
         'Domosnotify
         '
