@@ -566,18 +566,18 @@ Public Class domos_svc
                 If STRGS.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err, 0)
                 'err = rfxcom.ecrire(&HF0, rfxcom.DISOREGON)
                 'If STR.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err, 0)
-                err = rfxcom.ecrire(&HF0, rfxcom.DISATI)
-                If STRGS.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err, 0)
-                err = rfxcom.ecrire(&HF0, rfxcom.DISSOMFY)
-                If STRGS.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err, 0)
-                err = rfxcom.ecrire(&HF0, rfxcom.DISVIS)
-                If STRGS.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err, 0)
+                'err = rfxcom.ecrire(&HF0, rfxcom.DISATI)
+                'If STRGS.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err, 0)
+                'err = rfxcom.ecrire(&HF0, rfxcom.DISSOMFY)
+                'If STRGS.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err, 0)
+                'err = rfxcom.ecrire(&HF0, rfxcom.DISVIS)
+                'If STRGS.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err, 0)
                 'err = rfxcom.ecrire(&HF0, rfxcom.DISHE)
                 'If STRGS.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err, 0)
-                err = rfxcom.ecrire(&HF0, rfxcom.DISKOP)
-                If STRGS.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err, 0)
-                err = rfxcom.ecrire(&HF0, rfxcom.DISARC)
-                If STRGS.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err, 0)
+                'err = rfxcom.ecrire(&HF0, rfxcom.DISKOP)
+                'If STRGS.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err, 0)
+                'err = rfxcom.ecrire(&HF0, rfxcom.DISARC)
+                'If STRGS.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err, 0)
                 'err = rfxcom.ecrire(&HF0, rfxcom.SWVERS)
                 'If STR.Left(err, 4) = "ERR:" Then log(err, 0) Else log("RFX : " & err)
                 log("", 0)
@@ -2626,7 +2626,8 @@ Public Class domos_svc
             Try
                 'si on peut loguer ou si c'est un debug
                 If erreur_log = 1 And Not (texte Is Nothing) Then
-                    If niveau <> "-1" And niveau <> "-2" And STRGS.InStr(niveau, "-" & log_niveau) > 0 Then
+                    If niveau <> "-1" And niveau <> "-2" And STRGS.InStr(log_niveau, "-" & niveau) > 0 Then
+                        'If niveau <> "-1" And niveau <> "-2" Then
                         fichierlog = install_dir & "logs\log_" & DateAndTime.Now.ToString("yyyyMMdd") & ".txt"
                         dateheure = DateAndTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                         If Not Directory.Exists(install_dir & "logs") Then
