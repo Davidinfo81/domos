@@ -1,0 +1,40 @@
+# WAMP #
+Instal the last WAMP version :
+  * Create a "domos" folder in www directory and copy all www data.
+  * In phpmyadmin create a "domos" database
+  * In phpmyadmin create a user domos/domos and give him rights on the domos database  select/update/delete
+  * Import the sql database file
+
+# Drivers #
+Install last drivers depending on the technology you wan to use :
+  * divers : dotnetfx35.exe + dotnetfx35langpack\_x86fr.exe + vjredist.exe
+  * 1-wire : install\_1\_wire\_drivers\_x86\_v402beta.msi + last JRE
+  * PLCBUS : install driver for Prolific PL 2303
+  * RFXCOM USB : install the driver manually from the device console and search the driver to the directory "CDM 2.04.06 WHQL Certified" (from the rfxcom cd)
+  * X10 USB :
+
+# Configure drivers #
+  * RFXCOM USB : verify/configure the port number in device console
+  * PLCBUS : verify/configure the port number in device console
+
+# Test drivers #
+  * 1-wire : verify it with the 1-wire viewer (and note the 1-wire component addresses)
+  * RFXCOM : use rfreceiver.exe program to verify that you receive data (and note the RF component addresses)
+  * PLCBUS : use PLCBUS1141.exe program to verify the plc-bus connexion
+
+# Install DOMOS #
+  * copy all the program data in a folder ("c:\domos" for example)
+  * edit in notepad the domos.exe.config file and configure the IP/user/password to sql server.
+
+# Configure DOMOS #
+  * In Firefox, go to "http://localhost/domos/"
+  * Modify the configuration (Port Number, weather.com, logs, IP address...)
+  * Add components
+  * Add Macros/Timer
+  * Add Menu and add plan image which correspond to the menu link : "www\images\plans\menu\_xxx.png" for the menu image and "www\images\plans\xxx.jpg" for the plan image used in plan page
+  * Add captors in plan
+
+# USE #
+Start domos.exe
+Click on INIT button
+Logs are stored in Mysql database and in "logs" subfolder

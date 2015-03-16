@@ -1,0 +1,26 @@
+I will had here all modifications made to the database scheme
+
+### Version 1.0.3 --> 1.0.4 ###
+
+INSERT INTO `domos`.`config` (`config_id`, `config_nom`, `config_valeur`, `config_description`) VALUES (NULL, 'logs\_erreur\_nb', '3', 'Nb d erreurs identique a loguer pendant logs\_erreur\_duree'), (NULL, 'logs\_erreur\_duree', '60', 'Duree pendant laquelle on ne logue pas plus de logs\_erreur\_duree erreurs identiques');
+
+### Version 1.0.2 --> 1.0.3 ###
+
+Add X10\_timeout parameter :
+INSERT INTO `config` (`config_id`, `config_nom`, `config_valeur`, `config_description`) VALUES
+('5', 'X10\_timeout', '500', 'Timeout pour attendre que le port X10 soit disponible en ecriture (D�faut : 500 = 5 sec)');
+
+Modify X10 port to COM1
+
+Many new component/macro... added for exemple
+
+### Version 1.0.1 --> 1.0.2 ###
+
+Adding menu table :
+
+CREATE TABLE `menu` (
+`menu_id` int(11) NOT NULL AUTO\_INCREMENT PRIMARY KEY ,
+`menu_ordre` int(11) NOT NULL ,
+`menu_nom` tinytext NOT NULL ,
+`menu_lien` tinytext NOT NULL
+) ENGINE=MyISAM AUTO\_INCREMENT=1 DEFAULT CHARSET=latin1;
